@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Judgle</title>
+    <style>
+        /* Light & Dark Mode Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .light-mode {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .dark-mode {
+            background-color: #1a1a2e;
+            color: #f5f5f5;
+        }
+		
+		/* Buttons */
+        .button {
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .light-mode .button {
+            background-color: #007bff;
+            color: white;
+        }
+        .dark-mode .button {
+            background-color: #4caf50;
+            color: white;
+        }
+        .button:hover {
+            opacity: 0.8;
+        }
+
+		/* Mode Toggle Button */
+        .toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .toggle-btn:hover {
+            opacity: 0.8;
+        }
+		
+		.input-box {
+            width: 50px;
+            padding: 10px;
+            margin: 5px;
+            text-align: center;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            border: none;
+            transition: transform 0.5s;
+            display: inline-block;
+        }
+		.input-container {
+			display: inline-block;
+			perspective: 1000px; /* Creates a 3D effect */
+		}
+		.flip-wrapper {
+			display: inline-block;
+			transition: transform 0.5s ease-in-out;
+			transform-style: preserve-3d;
+		}
+		.flip {
+            
+			animation: flip 500ms ease forwards;
+        }
+		@keyframes flip {
+		  0% {
+			transform: scaleY(1);
+		  }
+
+		  50% {
+			
+			transform: scaleY(0);
+		  }
+
+		  100% {
+			transform: scaleY(1);
+			
+		  }
+		}
+        .correct {
+            background-color: green;
+            color: white;
+        }
+        .close {
+            background-color: yellow;
+            color: black;
+        }
+        .default {
+            background-color: lightgray;
+        }
+        .container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 1.5rem;
+        }
+        .video-list {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .video-item {
+            cursor: pointer;
+            text-align: center;
+			transition: transform 0.3s;
+		}
+		.video-item:hover {
+            transform: scale(1.05);
+        }
+        .explanation {
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 5px;
+        }
+        .answer-table {
+            margin-top: 20px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse;
+        }
+        .answer-table th, .answer-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .answer-table th {
+            background-color: #f2f2f2;
+			color: #333;
+        }
+        .correct-row {
+            background-color: green;
+            color: white;
+        }
+        .close-row {
+            background-color: yellow;
+            color: black;
+        }
+        .incorrect-row {
+            background-color: white;
+            color: black;
+        }
+		#videoPlayer video {
+			width: 70%;
+			max-width: 1200px; /* Prevents it from becoming too large on big screens */
+			height: auto;
+			display: block;
+			margin: 20px auto; /* Centers the player */
+			border-radius: 12px; /* Adds a rounded look */
+			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Adds a slight shadow */
+		}
+
+    </style>
+</head>
+<body class="dark-mode" onload="loadVideo('video1')">
+	<button class="toggle-btn" onclick="toggleMode()">Switch to Light Mode</button>
+    <div class="container">
+        <h1>Judgle</h1>
+
+        <!-- Video Library -->
+        <div class="video-list">
+            <div class="video-item" onclick="loadVideo('video1')">
+                <!--<img src="video1-thumbnail.jpg" alt="Video 1" width="150">-->
+                <p>Video 1</p>
+            </div>
+            <div class="video-item" onclick="loadVideo('video2')">
+                <!--<img src="video2-thumbnail.jpg" alt="Video 2" width="150">-->
+                <p>Video 2</p>
+            </div>
+        </div>
+
+        <!-- Video Embed -->
+        <div id="videoPlayer">
+            <!-- Will load selected video here -->
+        </div>
+
+        <!-- Number Input Section -->
+        <div>
+            <h3>Enter Your Deductions:</h3>
+            <form id="quizForm">
+                <div id="inputContainer">
+                    <!-- Input fields will be dynamically generated here -->
+                </div>
+                <br>
+                <button type="button" id="submitButton" onclick="checkAnswers()">Submit</button>
+            </form>
+
+            <!-- Result Section -->
+            <div class="result" id="result"></div>
+        </div>
+
+        <!-- Answer Table -->
+        <table class="answer-table" id="answerTable" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Element</th>
+                    <th>Your Deduction</th>
+                    <th>Correct Deduction</th>
+                    <th>Explanation</th>
+                </tr>
+            </thead>
+            <tbody id="answerTableBody">
+                <!-- Answer details will be added dynamically here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        
+		
+		// Predefined video data with correct answers and explanations for each video
+        const videoData = {
+            video1: {
+                src: "TRA - Exam_1.mp4",
+                correctAnswers: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 10],
+                explanations: [
+                    "Explanation for answer 1...",
+                    "Explanation for answer 2...",
+                    "Explanation for answer 3...",
+                    "Explanation for answer 4...",
+                    "Explanation for answer 5...",
+                    "Explanation for answer 6...",
+                    "Explanation for answer 7...",
+                    "Explanation for answer 8...",
+                    "Explanation for answer 9...",
+                    "Explanation for answer 10...",
+                    "Explanation for the final answer"
+                ],
+                ranges: [
+                    { min: 0, max: 1 },
+                    { min: 1, max: 2 },
+                    { min: 2, max: 3 },
+                    { min: 3, max: 4 },
+                    { min: 4, max: 5 },
+                    { min: 1, max: 1 },
+                    { min: 2, max: 2 },
+                    { min: 3, max: 3 },
+                    { min: 4, max: 4 },
+                    { min: 5, max: 5 },
+                    { min: 10, max: 10 }
+                ]
+            },
+            video2: {
+                src: "TRA - Exam_2.mp4",
+                correctAnswers: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1],
+                explanations: [
+                    "Explanation for answer 1...",
+                    "Explanation for answer 2...",
+                    "Explanation for answer 3...",
+                    "Explanation for answer 4...",
+                    "Explanation for answer 5...",
+                    "Explanation for answer 6...",
+                    "Explanation for answer 7...",
+                    "Explanation for answer 8...",
+                    "Explanation for answer 9...",
+                    "Explanation for answer 10...",
+                    "Explanation for the final answer"
+                ],
+                ranges: [
+                    { min: 0, max: 1 },
+                    { min: 1, max: 2 },
+                    { min: 2, max: 3 },
+                    { min: 3, max: 4 },
+                    { min: 4, max: 5 },
+                    { min: 1, max: 1 },
+                    { min: 2, max: 2 },
+                    { min: 3, max: 3 },
+                    { min: 4, max: 4 },
+                    { min: 5, max: 5 },
+                    { min: 5, max: 10 }
+                ]
+            }
+        };
+
+        // Valid entries for each box
+        const validEntries = {
+            first10: [0, 1, 2, 3, 4, 5],
+            lastBox: [0, 1, 2, 3, 5, 10]
+        };
+
+        function toggleMode() {
+            const body = document.body;
+            body.classList.toggle('light-mode');
+            body.classList.toggle('dark-mode');
+            const toggleButton = document.querySelector('.toggle-btn');
+            toggleButton.innerText = body.classList.contains('light-mode') ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+        }
+		
+		// Load the selected video and corresponding range data
+        function loadVideo(videoId) {
+            const video = videoData[videoId];
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.innerHTML = `<video controls>
+                                        <source src="${video.src}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                      </video>`;
+
+            const inputContainer = document.getElementById('inputContainer');
+            inputContainer.innerHTML = ''; // Clear previous inputs
+            for (let i = 0; i < 11; i++) {
+                //const wrapper = document.createElement('div');
+				//wrapper.classList.add('flip-wrapper');
+
+				const input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'input-box';
+                input.id = `input${i+1}`;
+                input.min = video.ranges[i].min;
+                input.max = video.ranges[i].max;
+                input.addEventListener('input', autoTab);
+                input.addEventListener('input', validateInput);
+				if (i === 10) {
+                    input.addEventListener('keypress', function(event) {
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+                            document.getElementById('submitButton').click();
+                        }
+                    });
+                }
+                //wrapper.appendChild(input)
+				inputContainer.appendChild(input);
+            }
+			
+			hideResults();
+        }
+
+        // Auto Tab functionality - Move to next input box on enter (if valid)
+        function autoTab(event) {
+            const currentInput = event.target;
+            if (!validateInput(event) || currentInput.value === "") {
+                return; // Don't tab if invalid or empty
+            }
+
+            const nextInput = currentInput.nextElementSibling;
+            if (nextInput && nextInput.classList.contains('input-box')) {
+                nextInput.focus();
+            }
+        }
+
+        // Validate input to ensure it is in the allowed range
+        function validateInput(event) {
+            const currentInput = event.target;
+            let validValues;
+
+            if (currentInput.id === 'input11') {
+                validValues = validEntries.lastBox;
+            } else {
+                validValues = validEntries.first10;
+            }
+
+            const isValid = validValues.includes(parseInt(currentInput.value));
+            if (isValid) {
+                currentInput.setCustomValidity("");
+            } else {
+                currentInput.setCustomValidity("Invalid value");
+            }
+
+            return isValid;
+        }
+
+        function hideResults() {
+			document.getElementById('answerTable').style.display = 'none';
+			document.getElementById('result').innerText = '';
+			// Reset the table and result display
+			document.getElementById('answerTableBody').innerHTML = '';
+		}
+		
+		// Check answers and show results
+        function checkAnswers() {
+            const video = videoData[Object.keys(videoData)[0]]; // Assume first video is selected
+            const userAnswers = [];
+            let correctCount = 0;
+
+            // Clear previous answer tables and explanations
+            document.getElementById('answerTableBody').innerHTML = '';
+            const answerTable = document.getElementById('answerTable');
+            answerTable.style.display = 'table'; // Show the answer table
+
+            // Loop over all inputs and evaluate answers
+            video.correctAnswers.forEach((correctAnswer, index) => {
+                const userAnswer = parseInt(document.getElementById(`input${index + 1}`).value);
+                const input = document.getElementById(`input${index + 1}`);
+                const answerText = document.getElementById(`answer${index + 1}`);
+				let tableText = 'Element'
+                let rowClass = 'incorrect-row';
+				let inputClass = 'default';
+                let explanation = video.explanations[index];
+
+                if (userAnswer === correctAnswer) {
+                    rowClass = 'correct-row';
+                    correctCount++;
+					inputClass = 'correct';
+                } else if (userAnswer >= video.ranges[index].min && userAnswer <= video.ranges[index].max) {
+                    rowClass = 'close-row';
+					inputClass = 'close';
+                }
+				
+				 // Apply flip animation dynamically
+				//input.classList.add('flip');
+				//input.style.animationDelay = `${(index+1) * 100}ms`;
+				
+				
+				if (index === 10) { tableText='Landing';} else { tableText = 'Element '+(index+1);}
+				
+				// Update the input field's class
+				input.className = `input-box ${inputClass}`;
+				
+                // Add to the answer table
+                const row = document.createElement('tr');
+                row.className = rowClass;
+                row.innerHTML = `<td>${tableText}</td>
+                                 <td>${userAnswer}</td>
+                                 <td>${correctAnswer}</td>
+                                 <td>${explanation}</td>`;
+                document.getElementById('answerTableBody').appendChild(row);
+            });
+
+            // Show the result summary
+            // document.getElementById('result').innerText = `You got ${correctCount} out of 11 correct.`;
+        }
+		
+	
+
+    </script>
+</body>
+</html>
