@@ -44,6 +44,20 @@
 		.button:active {
 			transform: scale(0.95);
 		}
+		.reset-button {
+		/* Mode Toggle Button */
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+		}
 		/* Mode Toggle Button */
         .toggle-btn {
             position: absolute;
@@ -172,7 +186,7 @@
             color: black;
         }
 		#videoPlayer video {
-			width: 70%;
+			width: 60%;
 			max-width: 1200px; /* Prevents it from becoming too large on big screens */
 			height: auto;
 			display: block;
@@ -180,11 +194,32 @@
 			border-radius: 12px; /* Adds a rounded look */
 			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Adds a slight shadow */
 		}
-
-    </style>
+		@media (max-width: 768px) {
+			.video-list {
+				flex-direction: column;
+				align-items: center;
+			}
+			.input-box {
+				width: 40px;
+				font-size: 1rem;
+			}
+			.button {
+				font-size: 1rem;
+				padding: 12px 24px;
+			}
+		}
+		.fade-in {
+			animation: fadeIn 0.5s ease-in-out;
+		}
+		@keyframes fadeIn {
+			from { opacity: 0; }
+			to { opacity: 1; }
+		}
+</style>
 </head>
 <body class="dark-mode">
 	<button class="toggle-btn" onclick="toggleMode()">Switch to Light Mode</button>
+	<button class="reset-button" onclick="restartQuiz()">Reset</button>
     <div class="container">
         <h1>Judgle</h1>
 
@@ -340,8 +375,8 @@
 
 			// Add 'active' class to selected video
 			document.querySelector(`[onclick="loadVideo('${videoId}')"]`).classList.add('active');
-
-            const inputContainer = document.getElementById('inputContainer');
+			document.getElementById('videoPlayer').classList.add('fade-in');
+            videoPlayer.classList.add('fade-in');
             inputContainer.innerHTML = ''; // Clear previous inputs
             for (let i = 0; i < 11; i++) {
                 //const wrapper = document.createElement('div');
@@ -464,7 +499,14 @@
             // Show the result summary
             // document.getElementById('result').innerText = `You got ${correctCount} out of 11 correct.`;
         }
-		
+		function restartQuiz() {
+			document.querySelectorAll('.input-box').forEach(input => {
+			input.value = '';
+			input.className = 'input-box';
+			});
+		document.getElementById('result').innerText = '';
+		document.getElementById('answerTable').style.display = 'none';
+		}
 	
 
     </script>
