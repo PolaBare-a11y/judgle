@@ -41,7 +41,9 @@
         .button:hover {
             opacity: 0.8;
         }
-
+		.button:active {
+			transform: scale(0.95);
+		}
 		/* Mode Toggle Button */
         .toggle-btn {
             position: absolute;
@@ -126,7 +128,12 @@
         .video-item {
             cursor: pointer;
             text-align: center;
-			transition: transform 0.3s;
+			transition: transform 0.3s, border-bottom 0.3s;
+			padding-bottom: 5px;
+		}
+		.video-item.active {
+			border-bottom: 3px solid #007bff; /* Highlight color */
+			font-weight: bold; /* Make it more noticeable */
 		}
 		.video-item:hover {
             transform: scale(1.05);
@@ -176,7 +183,7 @@
 
     </style>
 </head>
-<body class="dark-mode" onload="loadVideo('video1')">
+<body class="dark-mode">
 	<button class="toggle-btn" onclick="toggleMode()">Switch to Light Mode</button>
     <div class="container">
         <h1>Judgle</h1>
@@ -206,7 +213,7 @@
                     <!-- Input fields will be dynamically generated here -->
                 </div>
                 <br>
-                <button type="button" id="submitButton" onclick="checkAnswers()">Submit</button>
+                <button type="button" id="submitButton" class="button" onclick="checkAnswers()">Submit</button>
             </form>
 
             <!-- Result Section -->
@@ -301,7 +308,14 @@
             first10: [0, 1, 2, 3, 4, 5],
             lastBox: [0, 1, 2, 3, 5, 10]
         };
-
+		
+		window.onload = () => {
+		if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+			document.body.classList.add('dark-mode');
+		}
+		loadVideo('video1');
+		};
+		
         function toggleMode() {
             const body = document.body;
             body.classList.toggle('light-mode');
@@ -318,6 +332,14 @@
                                         <source src="${video.src}" type="video/mp4">
                                         Your browser does not support the video tag.
                                       </video>`;
+
+			// Remove 'active' class from all videos
+			document.querySelectorAll('.video-item').forEach(item => {
+				item.classList.remove('active');
+			});
+
+			// Add 'active' class to selected video
+			document.querySelector(`[onclick="loadVideo('${videoId}')"]`).classList.add('active');
 
             const inputContainer = document.getElementById('inputContainer');
             inputContainer.innerHTML = ''; // Clear previous inputs
