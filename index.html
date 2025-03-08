@@ -250,7 +250,7 @@
 </head>
 <body class="dark-mode">
 	<div class="top-buttons">
-		<button class="toggle-btn" onclick="toggleMode()">Switch to Light Mode</button>
+		<button class="toggle-btn" onclick="toggleMode()">Light Mode</button>
 		<button class="toggle-btn" onclick="restartQuiz()">Reset</button>
 		<button id="historyButton" class="toggle-btn" onclick="toggleVideoHistory()">View All</button>
 	</div>
@@ -396,7 +396,7 @@
             body.classList.toggle('light-mode');
             body.classList.toggle('dark-mode');
             const toggleButton = document.querySelector('.toggle-btn');
-            toggleButton.innerText = body.classList.contains('light-mode') ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+            toggleButton.innerText = body.classList.contains('light-mode') ? 'Dark Mode' : 'Light Mode';
         }
 		
 		// Load the selected video and corresponding range data
