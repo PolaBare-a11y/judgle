@@ -143,6 +143,8 @@
             text-align: center;
 			transition: transform 0.3s, border-bottom 0.3s;
 			padding-bottom: 5px;
+			padding-right: 10px;
+			display: inline-block;
 		}
 		.video-item.active {
 			border-bottom: 3px solid #007bff; /* Highlight color */
@@ -261,13 +263,17 @@
 				<div class="video-list">
 					<div class="video-item" onclick="loadVideo('video1')">
 						<!--<img src="video1-thumbnail.jpg" alt="Video 1" width="150">-->
-						<p>Video 1</p>
+						<p>TRA 1</p>
 					</div>
 
 					<!-- Hidden videos (will be shown when clicking "View History") -->
 					<div id="hiddenVideos" style="display: none;">
 						<div class="video-item" onclick="loadVideo('video2')">
-						<p>Video 2</p>
+						<p>TRA 2</p>
+						</div>
+						<div class="video-item" onclick="loadVideo('video3')">
+						<p>DMT</p>
+						</div>
 					</div>
 				</div>			
 			</div>
@@ -308,7 +314,7 @@
             </tbody>
         </table>
     </div>
-	<div>
+	<div class="container">
 	<h3>Development in Progress.  All scores are test scores and not relevant to the video shown. Created by Jed</h3>
 	</div>
     <script>
@@ -375,6 +381,20 @@
                     { min: 5, max: 5 },
                     { min: 5, max: 10 }
                 ]
+            },
+			video3: {
+                src: "https://www.youtube.com/embed/K-0Cl0o_qx4",
+                correctAnswers: [3, 4, 0],
+                explanations: [
+                    "Explanation for answer 1...",
+                    "Explanation for answer 2...",
+                    "Explanation for answer 3..."
+                ],
+                ranges: [
+                    { min: 3, max: 4 },
+                    { min: 3, max: 4 },
+                    { min: 0, max: 0 }
+                ]
             }
         };
 
@@ -384,11 +404,13 @@
             lastBox: [0, 1, 2, 3, 5, 10]
         };
 		
+		let currentVideoId = 'video1';
+		
 		window.onload = () => {
 		if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
 			document.body.classList.add('dark-mode');
 		}
-		loadVideo('video1');
+		loadVideo(currentVideoId);
 		};
 		
         function toggleMode() {
@@ -408,7 +430,9 @@
 					allowfullscreen
 					>
 					</iframe>`;
-
+			
+			currentVideoId = videoId
+			
 			// Remove 'active' class from all videos
 			document.querySelectorAll('.video-item').forEach(item => {
 				item.classList.remove('active');
@@ -419,7 +443,7 @@
 			document.getElementById('videoPlayer').classList.add('fade-in');
             videoPlayer.classList.add('fade-in');
             inputContainer.innerHTML = ''; // Clear previous inputs
-            for (let i = 0; i < 11; i++) {
+            for (let i = 0; i < video.correctAnswers.length; i++) {
                 //const wrapper = document.createElement('div');
 				//wrapper.classList.add('flip-wrapper');
 
@@ -431,7 +455,7 @@
                 input.max = video.ranges[i].max;
                 input.addEventListener('input', autoTab);
                 input.addEventListener('input', validateInput);
-				if (i === 10) {
+				if (i === video.correctAnswers.length-1) {
                     input.addEventListener('keypress', function(event) {
                         if (event.key === 'Enter') {
                             event.preventDefault();
@@ -444,6 +468,12 @@
             }
 			
 			hideResults();
+			// Set focus to the first input field
+				setTimeout(() => {
+					const firstInput = document.getElementById('input1');
+					if (firstInput) firstInput.focus();
+				}, 300); // Small delay ensures elements are fully loaded before focusing
+
         }
 
         // Auto Tab functionality - Move to next input box on enter (if valid)
@@ -505,7 +535,8 @@
 		
 		// Check answers and show results
         function checkAnswers() {
-            const video = videoData[Object.keys(videoData)[0]]; // Assume first video is selected
+            const video = videoData[currentVideoId]; // Get the currently selected video
+			if (!video) return; // Safety check
             const userAnswers = [];
             let correctCount = 0;
 
