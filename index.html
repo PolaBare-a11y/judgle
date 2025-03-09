@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
     <title>Judgle</title>
     <style>
         /* Light & Dark Mode Styles */
@@ -248,14 +250,50 @@
 			border-radius: 12px; /* Optional: Adds rounded corners */
 			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional: Adds a slight shadow */
 		}
+		.top-icons {
+			display: flex;
+			justify-content: center; /* Centers icons */
+			align-items: center;
+			gap: 15px;
+			margin: 0 auto; /* Adds spacing and keeps it centered */
+			width: fit-content; /* Only takes as much width as needed */
+			padding: 10px 20px;
+			border-radius: 10px;
+			background: rgba(0, 0, 0, 0.6);
+			backdrop-filter: blur(10px); /* Optional: Adds a nice blur effect */
+			top: 0;
+		}
+
+		.light-mode .top-icons {
+			background: rgba(255, 255, 255, 0.8);
+		}
+
+		.light-mode .top-icons i {
+			color: black;
+		}
+
+		.top-icons i {
+			font-size: 1.5rem;
+			color: white;
+			cursor: pointer;
+			padding: 10px;
+			border-radius: 50%;
+			transition: background 0.3s ease, transform 0.2s ease;
+		}
+
+		.top-icons i:hover {
+			background: rgba(255, 255, 255, 0.7);
+			transform: scale(1.1);
+		}		
 </style>
 </head>
 <body class="dark-mode">
-	<div class="top-buttons">
-		<button class="toggle-btn" onclick="toggleMode()">Light Mode</button>
-		<button class="toggle-btn" onclick="restartQuiz()">Reset</button>
-		<button id="historyButton" class="toggle-btn" onclick="toggleVideoHistory()">View All</button>
+	<div class="top-icons">
+		<i class="fas fa-adjust mode-toggle" title="Toggle Light/Dark Mode" onclick="toggleMode()"></i>
+		<i class="fas fa-undo reset-icon" title="Reset Quiz" onclick="restartQuiz()"></i>
+		<i class="fas fa-history history-icon" title="View History" id="historyButton" onclick="toggleVideoHistory()"></i>
 	</div>
+	
 	    <div class="container">
 			<h1>Judgle</h1>
 			<!-- Video Library -->
@@ -524,11 +562,11 @@
 			if (hiddenVideos.style.display === "none") {
 				hiddenVideos.style.display = "block";
 				setTimeout(() => hiddenVideos.classList.add('show'), 10);
-				historyButton.innerText = "Hide All";
+				//historyButton.innerText = "Hide All";
 			} else {
 				hiddenVideos.classList.remove('show');
 				setTimeout(() => hiddenVideos.style.display = "none", 500);
-				historyButton.innerText = "View All";
+				//historyButton.innerText = "View All";
 			}
 		}
 		
@@ -595,7 +633,7 @@
 		document.getElementById('result').innerText = '';
 		document.getElementById('answerTable').style.display = 'none';
 		}
-	
+
 
     </script>
 </body>
