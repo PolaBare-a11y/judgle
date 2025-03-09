@@ -31,18 +31,7 @@
             background-color: #1a1a2e;
             color: #f5f5f5;
         }
-		/* Flex container for top buttons */
-		.top-buttons {
-			display: flex;
-			flex-direction: column;  /* Stack buttons vertically */
-			align-items: flex-end;   /* Align to the right */
-			position: absolute;
-			top: 10px;
-			right: 10px;
-			gap: 10px;  /* Space between buttons */
-			z-index: 1000; /* Keep buttons on top */
-			white-space: nowrap;
-		}
+		
 		/* Buttons */
         .button, .toggle-btn {
             padding: 10px 15px;
@@ -227,17 +216,16 @@
 			}
 			
 			.top-icons {
-				gap: 10px; /* Less space between icons */
-				padding: 8px 15px;
+				gap: 5px; /* Less space between icons */
+				padding: 5px 10px;
 			}
 			
 			.logo {
-				font-size: 0.5rem; /* Slightly smaller */
+				font-size: 0.9rem !important; /* Slightly smaller */
 			}
 
 			.top-icons i {
-				font-size: 0.5rem; /* Smaller icons */
-				padding: 8px;
+				font-size: 0.9rem !important; /* Smaller icons */
 			}
 		}
 		.fade-in {
@@ -294,7 +282,11 @@
 			margin-right: 10px; /* Space between text and icons */
 		}
 
-
+		.light-mode .logo {
+			color: black;
+		}
+		
+		
 		.light-mode .top-icons {
 			background: rgba(255, 255, 255, 0.8);
 		}
@@ -309,13 +301,25 @@
 			cursor: pointer;
 			padding: 10px;
 			border-radius: 50%;
-			transition: background 0.3s ease, transform 0.2s ease;
+			transition: none;
+			outline: none; /* Removes default focus outline */
+			user-select: none; /* Prevents text selection */
+			background: transparent; /* Ensures no lingering background */
 		}
+		
 
+		.top-icons i:active {
+			background: transparent; /* Click effect */
+		}
 		.top-icons i:hover {
 			background: rgba(255, 255, 255, 0.7);
 			transform: scale(1.1);
-		}		
+		}	
+
+}		
+
+}
+		
 </style>
 </head>
 <body class="dark-mode">
