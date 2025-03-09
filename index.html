@@ -216,6 +216,20 @@
 				font-size: 0.9rem;  /* Slightly smaller for mobile */
 				padding: 8px 12px;
 			}
+			
+			.top-icons {
+				gap: 10px; /* Less space between icons */
+				padding: 8px 15px;
+			}
+			
+			.logo {
+				font-size: 1.5rem; /* Slightly smaller */
+			}
+
+			.top-icons i {
+				font-size: 1.2rem; /* Smaller icons */
+				padding: 8px;
+			}
 		}
 		.fade-in {
 			animation: fadeIn 0.5s ease-in-out;
@@ -263,6 +277,14 @@
 			backdrop-filter: blur(10px); /* Optional: Adds a nice blur effect */
 			top: 0;
 		}
+		/* "Judgle" Logo Styling */
+		.logo {
+			font-size: 1.8rem;
+			font-weight: bold;
+			color: white;
+			margin-right: 10px; /* Space between text and icons */
+		}
+
 
 		.light-mode .top-icons {
 			background: rgba(255, 255, 255, 0.8);
@@ -289,13 +311,13 @@
 </head>
 <body class="dark-mode">
 	<div class="top-icons">
+		 <h1 class="logo">Judgle</h1>
 		<i class="fas fa-adjust mode-toggle" title="Toggle Light/Dark Mode" onclick="toggleMode()"></i>
 		<i class="fas fa-undo reset-icon" title="Reset Quiz" onclick="restartQuiz()"></i>
 		<i class="fas fa-history history-icon" title="View History" id="historyButton" onclick="toggleVideoHistory()"></i>
 	</div>
 	
 	    <div class="container">
-			<h1>Judgle</h1>
 			<!-- Video Library -->
 			<div class="container">
 				<div class="video-list">
