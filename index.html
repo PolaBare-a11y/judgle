@@ -195,6 +195,24 @@
 			border-radius: 12px; /* Adds a rounded look */
 			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Adds a slight shadow */
 		}	
+		.video-container {
+			display: flex; /* Ensures proper alignment */
+			justify-content: center; /* Centers the video */
+			align-items: center; /* Centers vertically */
+			width: 50%; /* Adjust width as needed */
+			max-width: 1200px; /* Prevents it from being too large */
+			aspect-ratio: 16 / 9; /* Keeps the correct video aspect ratio */
+			margin: 20px auto; /* Centers the video on the page */
+		}
+
+		.video-container iframe, .video-container object, .video-container embed {
+			width: 100%; /* Makes the iframe take up the full width of its container */
+			height: auto; /* Automatically scales the height */
+			aspect-ratio: 16 / 9; /* Ensures the video maintains a proper aspect ratio */
+			border-radius: 12px; /* Optional: Adds rounded corners */
+			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional: Adds a slight shadow */
+		}
+		
 		@media (max-width: 768px) {
 			.video-list {
 				flex-direction: column;
@@ -227,6 +245,14 @@
 			.top-icons i {
 				font-size: 0.9rem !important; /* Smaller icons */
 			}
+			.video-container{
+				width: 90% !important; 
+				max-width: none;
+			}
+			
+			.video-container iframe, .video-container object, .video-container embed {
+				width: 100%
+			}
 		}
 		.fade-in {
 			animation: fadeIn 0.5s ease-in-out;
@@ -244,23 +270,7 @@
 			display: block;
 			opacity: 1;
 		}
-		.video-container {
-			display: flex; /* Ensures proper alignment */
-			justify-content: center; /* Centers the video */
-			align-items: center; /* Centers vertically */
-			width: 50%; /* Adjust width as needed */
-			max-width: 1200px; /* Prevents it from being too large */
-			aspect-ratio: 16 / 9; /* Keeps the correct video aspect ratio */
-			margin: 20px auto; /* Centers the video on the page */
-		}
-
-		.video-container iframe, .video-container object, .video-container embed {
-			width: 100%; /* Makes the iframe take up the full width of its container */
-			height: auto; /* Automatically scales the height */
-			aspect-ratio: 16 / 9; /* Ensures the video maintains a proper aspect ratio */
-			border-radius: 12px; /* Optional: Adds rounded corners */
-			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional: Adds a slight shadow */
-		}
+		
 		.top-icons {
 			display: flex;
 			justify-content: center; /* Centers icons */
