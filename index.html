@@ -344,18 +344,17 @@
 			<!-- Video Library -->
 			<div class="container">
 				<div class="video-list">
-					<div class="video-item" onclick="loadVideo('video1')">
-						<!--<img src="video1-thumbnail.jpg" alt="Video 1" width="150">-->
-						<p>TRA 1</p>
-					</div>
+					<div id="latestVideoContainer">
+						
+					</div> <!-- Placeholder for the latest video -->
 
 					<!-- Hidden videos (will be shown when clicking "View History") -->
 					<div id="hiddenVideos" style="display: none;">
-						<div class="video-item" onclick="loadVideo('video2')">
-						<p>TRA 2</p>
+						<div class="video-item" onclick="loadVideo('vid2')">
+							<p>TRA 2</p>
 						</div>
-						<div class="video-item" onclick="loadVideo('video3')">
-						<p>DMT</p>
+						<div class="video-item" onclick="loadVideo('vid3')">
+							<p>DMT</p>
 						</div>
 					</div>
 				</div>			
@@ -405,7 +404,7 @@
 		
 		// Predefined video data with correct answers and explanations for each video
         const videoData = {
-            video1: {
+            vid1: {
                 src: "https://www.youtube.com/embed/qkfBtD3IbNw",
                 correctAnswers: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 10],
                 explanations: [
@@ -433,9 +432,10 @@
                     { min: 4, max: 4 },
                     { min: 5, max: 5 },
                     { min: 10, max: 10 }
-                ]
+                ],
+				title: "2025-03-01 (TRA)"
             },
-            video2: {
+            vid2: {
                 src: "https://www.youtube.com/embed/KAgB7tq25GI",
                 correctAnswers: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1],
                 explanations: [
@@ -463,9 +463,10 @@
                     { min: 4, max: 4 },
                     { min: 5, max: 5 },
                     { min: 5, max: 10 }
-                ]
+                ],
+				title: "2025-03-08 (TRA)"
             },
-			video3: {
+			vid3: {
                 src: "https://www.youtube.com/embed/K-0Cl0o_qx4",
                 correctAnswers: [3, 4, 0],
                 explanations: [
@@ -477,7 +478,8 @@
                     { min: 3, max: 4 },
                     { min: 3, max: 4 },
                     { min: 0, max: 0 }
-                ]
+                ],
+				title: "2025-03-10 (DMT)"
             }
         };
 
@@ -487,13 +489,16 @@
             lastBox: [0, 1, 2, 3, 5, 10]
         };
 		
-		let currentVideoId = 'video1';
+		const videoKeys = Object.keys(videoData);
+		currentVideoId = videoKeys[videoKeys.length - 1]; // Last video
+
 		
 		window.onload = () => {
 		if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
 			document.body.classList.add('dark-mode');
 		}
-		loadVideo(currentVideoId);
+			loadVideo(currentVideoId);
+			populateHistoryList();
 		};
 		
         function toggleMode() {
@@ -679,6 +684,39 @@
 		document.getElementById('answerTable').style.display = 'none';
 		}
 
+		function populateHistoryList() {
+			const hiddenVideosContainer = document.getElementById('hiddenVideos');
+			const latestVideoContainer = document.getElementById('latestVideoContainer');
+			hiddenVideosContainer.innerHTML = ""; // Clear existing history list
+			latestVideoContainer.innerHTML = ""; // Clear latest video (prevents duplication)
+
+			const videoKeysToLoad = Object.keys(videoData).reverse(); // Reverse order
+			const latestVideoId = videoKeysToLoad[0]; // Get the latest video
+
+			// Create the latest video item dynamically
+			const latestVideoItem = document.createElement('div');
+			latestVideoItem.className = 'video-item active'; // Mark as active
+			latestVideoItem.onclick = () => loadVideo(latestVideoId);
+			latestVideoItem.innerHTML = `<p>${formatVideoTitle(latestVideoId)}</p>`; // Dynamic title
+
+			latestVideoContainer.appendChild(latestVideoItem); // Insert into list
+
+			// Populate history list, excluding the latest video
+			videoKeysToLoad.slice(1).forEach(videoId => {
+				const videoItem = document.createElement('div');
+				videoItem.className = 'video-item';
+				videoItem.onclick = () => loadVideo(videoId);
+				videoItem.innerHTML = `<p>${formatVideoTitle(videoId)}</p>`;
+				hiddenVideosContainer.appendChild(videoItem);
+			});
+			
+
+		}	
+
+		function formatVideoTitle(videoId) {
+			return videoData[videoId].title;
+		}
+		
 
     </script>
 </body>
