@@ -527,7 +527,13 @@
 			});
 
 			// Add 'active' class to selected video
-			document.querySelector(`[onclick="loadVideo('${videoId}')"]`).classList.add('active');
+			document.querySelectorAll('.video-item').forEach(item => {
+			if (item.textContent.trim() === formatVideoTitle(videoId)) {
+				item.classList.add('active');
+			}
+			});
+			
+			
 			document.getElementById('videoPlayer').classList.add('fade-in');
             videoPlayer.classList.add('fade-in');
             inputContainer.innerHTML = ''; // Clear previous inputs
