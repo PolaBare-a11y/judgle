@@ -433,7 +433,8 @@
                     { min: 5, max: 5 },
                     { min: 10, max: 10 }
                 ],
-				title: "2025-03-01 (TRA)"
+				title: "2025-03-01 (TRA)",
+				releaseDate: "2025-03-01"
             },
             vid2: {
                 src: "https://www.youtube.com/embed/KAgB7tq25GI",
@@ -464,7 +465,8 @@
                     { min: 5, max: 5 },
                     { min: 5, max: 10 }
                 ],
-				title: "2025-03-08 (TRA)"
+				title: "2025-03-08 (TRA)",
+				releaseDate: "2025-03-08"
             },
 			vid3: {
                 src: "https://www.youtube.com/embed/K-0Cl0o_qx4",
@@ -479,7 +481,8 @@
                     { min: 3, max: 4 },
                     { min: 0, max: 0 }
                 ],
-				title: "2025-03-10 (DMT)"
+				title: "2025-03-12 (DMT)",
+				releaseDate: "2025-03-12"
             }
         };
 
@@ -497,11 +500,20 @@
 		if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
 			document.body.classList.add('dark-mode');
 		}
+			const availableVideos = getAvailableVideos();
+
+			currentVideoId = availableVideos[availableVideos.length-1];
 			loadVideo(currentVideoId);
 			populateHistoryList();
 		};
 		
-        function toggleMode() {
+        // Get available videos (released ones)
+		function getAvailableVideos() {
+			const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+			return Object.keys(videoData).filter(videoId => videoData[videoId].releaseDate <= today);
+		}
+		
+		function toggleMode() {
             const body = document.body;
             body.classList.toggle('light-mode');
             body.classList.toggle('dark-mode');
@@ -696,7 +708,7 @@
 			hiddenVideosContainer.innerHTML = ""; // Clear existing history list
 			latestVideoContainer.innerHTML = ""; // Clear latest video (prevents duplication)
 
-			const videoKeysToLoad = Object.keys(videoData).reverse(); // Reverse order
+			const videoKeysToLoad = getAvailableVideos().reverse(); // Reverse order
 			const latestVideoId = videoKeysToLoad[0]; // Get the latest video
 
 			// Create the latest video item dynamically
