@@ -482,7 +482,7 @@
                     { min: 0, max: 0 }
                 ],
 				title: "2025-03-12 (DMT)",
-				releaseDate: "2025-03-12"
+				releaseDate: "2025-03-17"
             }
         };
 
@@ -509,7 +509,7 @@
 		
         // Get available videos (released ones)
 		function getAvailableVideos() {
-			const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+			const today = new Date().toLocaleDateString('en-CA'); // Get today's date in YYYY-MM-DD format
 			return Object.keys(videoData).filter(videoId => videoData[videoId].releaseDate <= today);
 		}
 		
