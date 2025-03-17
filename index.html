@@ -370,41 +370,32 @@
 			transform: scale(1.1);
 		}
 
-		/* Help Menu - Initially Hidden */
-		.help-menu {
+		#helpMenu {
 			position: absolute;
-			background: rgba(0, 0, 0, 0.9);
+			top: 100%; /* Below the icon bar */
+			left: 50%;
+			transform: translateX(-50%);
+			width: 200px;
+			background: rgba(0, 0, 0, 0.8);
 			color: white;
-			padding: 10px;
+			padding: 5px;
 			border-radius: 8px;
-			font-size: 0.9rem;
-			box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+			text-align: left;
+			font-size: 0.8rem;
+			box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
 			opacity: 0;
 			transition: opacity 0.3s ease-in-out;
-			z-index: 1000;
-			display: none; /* Hide by default */
-			width: 180px;
+			display: none; /* Initially hidden */
 		}
 
-		/* Show the Help Menu */
-		.help-menu.show {
-			opacity: 1;
-			display: block;
-		}
-
-		/* Adjust for Light Mode */
-		.light-mode .help-menu {
+		.light-mode #helpMenu {
 			background: rgba(255, 255, 255, 0.9);
 			color: black;
 		}
 
-		.light-mode .help-icon {
-			color: black;
-		}
-
-		/* Adjust icon sizes inside help menu */
-		.help-menu i {
-			margin-right: 10px;
+		#helpMenu.show {
+			display: block;
+			opacity: 1;
 		}
 }		
 
@@ -419,14 +410,13 @@
 		<i class="fas fa-undo reset-icon" title="Reset Quiz" onclick="restartQuiz()"></i>
 		<i class="fas fa-history history-icon" title="View History" id="historyButton" onclick="toggleVideoHistory()"></i>
 		<i class="fas fa-question-circle help-icon" title="Help" onclick="toggleHelpMenu()"></i>
-
-	</div>
-				<!-- Help Menu (Initially Hidden) -->
-		<div id="helpMenu" class="help-menu hidden">
+		<div id="helpMenu">
 			<p><i class="fas fa-adjust"></i> Light/Dark Mode</p>
 			<p><i class="fas fa-undo"></i> Reset Answers</p>
 			<p><i class="fas fa-history"></i> View Video History</p>
-		</div>		
+		</div>	
+	</div>
+	
 
 	<div id="warningMessage" class="hidden">Please fill in all deductions before submitting.</div>
 	    <div class="container">
@@ -624,37 +614,22 @@
 			populateHistoryList();
 		};
 		
-        function toggleHelpMenu() {
-			event.stopPropagation();
+		function toggleHelpMenu() {
 			const helpMenu = document.getElementById("helpMenu");
-			const helpIcon = event.target;
 
-			// Get the icon's position
-			const iconRect = helpIcon.getBoundingClientRect();
-
-			// Position the help menu next to the icon
-			helpMenu.style.top = `${iconRect.bottom + window.scrollY}px`;
-			helpMenu.style.left = `${iconRect.left + window.scrollX + 25}px`; // Offset to the right of the icon
-
-			// Toggle visibility
-			helpMenu.classList.toggle("show");
-		}
-
-		// Close help menu when clicking outside
-		document.addEventListener("click", function (event) {
-			const helpMenu = document.getElementById("helpMenu");
-			const helpIcon = document.querySelector(".help-icon");
-
-			if (!helpMenu.contains(event.target) && !helpIcon.contains(event.target)) {
+			if (helpMenu.classList.contains("show")) {
 				helpMenu.classList.remove("show");
+				setTimeout(() => {
+					helpMenu.style.display = "none";
+				}, 100); // Wait for fade-out before hiding
+			} else {
+				helpMenu.style.display = "block";
+				setTimeout(() => {
+					helpMenu.classList.add("show");
+				}, 10); // Small delay to trigger fade-in
 			}
-		});
-		
-		// 🛑 Stop clicks inside help menu from closing it
-		document.getElementById("helpMenu").addEventListener("click", function (event) {
-			event.stopPropagation();
-		});
-		
+		}
+						
 		// Get available videos (released ones)
 		function getAvailableVideos() {
 			const today = new Date().toLocaleDateString('en-CA'); // Get today's date in YYYY-MM-DD format
