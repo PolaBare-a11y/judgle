@@ -625,6 +625,7 @@
 		};
 		
         function toggleHelpMenu() {
+			event.stopPropagation();
 			const helpMenu = document.getElementById("helpMenu");
 			const helpIcon = event.target;
 
@@ -647,6 +648,11 @@
 			if (!helpMenu.contains(event.target) && !helpIcon.contains(event.target)) {
 				helpMenu.classList.remove("show");
 			}
+		});
+		
+		// 🛑 Stop clicks inside help menu from closing it
+		document.getElementById("helpMenu").addEventListener("click", function (event) {
+			event.stopPropagation();
 		});
 		
 		// Get available videos (released ones)
