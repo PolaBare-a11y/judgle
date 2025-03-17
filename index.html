@@ -163,7 +163,7 @@
         }
         .answer-table {
             margin-top: 20px;
-            width: 80%;
+           /* width: 80%;*/
             margin-left: auto;
             margin-right: auto;
             border-collapse: collapse;
@@ -328,7 +328,32 @@
 			background: rgba(255, 255, 255, 0.7);
 			transform: scale(1.1);
 		}	
+		#warningMessage {
+			position: fixed;
+			top: 10px;
+			left: 50%;
+			transform: translateX(-50%);
+			background-color: rgba(255, 0, 0, 0.8); /* Red background */
+			color: white;
+			padding: 10px 20px;
+			font-size: 1rem;
+			border-radius: 8px;
+			text-align: center;
+			z-index: 1000;
+			opacity: 0; /* Start hidden */
+			transition: opacity 0.5s ease-in-out;
+		}
 
+		/* Show Warning */
+		#warningMessage.show {
+			opacity: 1; /* Fully visible */
+		}
+
+		/* Hide Warning after 5 seconds */
+		@keyframes fadeOut {
+			0% { opacity: 1; }
+			100% { opacity: 0; }
+		}
 }		
 
 }
@@ -342,7 +367,7 @@
 		<i class="fas fa-undo reset-icon" title="Reset Quiz" onclick="restartQuiz()"></i>
 		<i class="fas fa-history history-icon" title="View History" id="historyButton" onclick="toggleVideoHistory()"></i>
 	</div>
-	
+	<div id="warningMessage" class="hidden">Please fill in all deductions before submitting.</div>
 	    <div class="container">
 			<!-- Video Library -->
 			<div class="container">
@@ -404,7 +429,7 @@
 	</div>
     <script>
         
-		
+
 		// Predefined video data with correct answers and explanations for each video
         const videoData = {
             vid1: {
@@ -516,7 +541,7 @@
 				releaseDate: "2025-03-17"
             }
         };
-
+		
         // Valid entries for each box
         const validEntries = {
             first10: [0, 1, 2, 3, 4, 5],
@@ -674,7 +699,35 @@
         function checkAnswers() {
             const video = videoData[currentVideoId]; // Get the currently selected video
 			if (!video) return; // Safety check
-            const userAnswers = [];
+            
+			console.warn(video.correctAnswers.length);
+			
+			let allFilled = video.correctAnswers.length>0;
+			
+			// Check if all input fields are filled
+			for (let i = 0; i < video.correctAnswers.length; i++) {
+				const input = document.getElementById(`input${i+1}`);
+				if (!input || input.value.trim() === "") {
+					allFilled = false;
+					break;
+				}
+			}
+
+			if (!allFilled) {
+				const warning = document.getElementById("warningMessage");
+				warning.classList.add("show"); // Make it visible
+
+				// Remove after 5 seconds
+				setTimeout(() => {
+					warning.classList.remove("show");
+				}, 5000);
+
+				return;
+			}
+			
+			
+			
+			const userAnswers = [];
             let correctCount = 0;
 
             // Clear previous answer tables and explanations
