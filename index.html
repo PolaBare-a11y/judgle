@@ -354,6 +354,58 @@
 			0% { opacity: 1; }
 			100% { opacity: 0; }
 		}
+		/* Help Icon */
+		.help-icon {
+			cursor: pointer;
+			font-size: 1.5rem;
+			color: white;
+			padding: 10px;
+			border-radius: 50%;
+			transition: background 0.3s ease-in-out, transform 0.2s ease;
+			position: relative;
+		}
+
+		.help-icon:hover {
+			background: rgba(255, 255, 255, 0.7);
+			transform: scale(1.1);
+		}
+
+		/* Help Menu - Initially Hidden */
+		.help-menu {
+			position: absolute;
+			background: rgba(0, 0, 0, 0.9);
+			color: white;
+			padding: 10px;
+			border-radius: 8px;
+			font-size: 0.9rem;
+			box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+			opacity: 0;
+			transition: opacity 0.3s ease-in-out;
+			z-index: 1000;
+			display: none; /* Hide by default */
+			width: 180px;
+		}
+
+		/* Show the Help Menu */
+		.help-menu.show {
+			opacity: 1;
+			display: block;
+		}
+
+		/* Adjust for Light Mode */
+		.light-mode .help-menu {
+			background: rgba(255, 255, 255, 0.9);
+			color: black;
+		}
+
+		.light-mode .help-icon {
+			color: black;
+		}
+
+		/* Adjust icon sizes inside help menu */
+		.help-menu i {
+			margin-right: 10px;
+		}
 }		
 
 }
@@ -366,7 +418,16 @@
 		<i class="fas fa-adjust mode-toggle" title="Toggle Light/Dark Mode" onclick="toggleMode()"></i>
 		<i class="fas fa-undo reset-icon" title="Reset Quiz" onclick="restartQuiz()"></i>
 		<i class="fas fa-history history-icon" title="View History" id="historyButton" onclick="toggleVideoHistory()"></i>
+		<i class="fas fa-question-circle help-icon" title="Help" onclick="toggleHelpMenu()"></i>
+
 	</div>
+				<!-- Help Menu (Initially Hidden) -->
+		<div id="helpMenu" class="help-menu hidden">
+			<p><i class="fas fa-adjust"></i> Light/Dark Mode</p>
+			<p><i class="fas fa-undo"></i> Reset Answers</p>
+			<p><i class="fas fa-history"></i> View Video History</p>
+		</div>		
+
 	<div id="warningMessage" class="hidden">Please fill in all deductions before submitting.</div>
 	    <div class="container">
 			<!-- Video Library -->
@@ -563,7 +624,32 @@
 			populateHistoryList();
 		};
 		
-        // Get available videos (released ones)
+        function toggleHelpMenu() {
+			const helpMenu = document.getElementById("helpMenu");
+			const helpIcon = event.target;
+
+			// Get the icon's position
+			const iconRect = helpIcon.getBoundingClientRect();
+
+			// Position the help menu next to the icon
+			helpMenu.style.top = `${iconRect.bottom + window.scrollY}px`;
+			helpMenu.style.left = `${iconRect.left + window.scrollX + 25}px`; // Offset to the right of the icon
+
+			// Toggle visibility
+			helpMenu.classList.toggle("show");
+		}
+
+		// Close help menu when clicking outside
+		document.addEventListener("click", function (event) {
+			const helpMenu = document.getElementById("helpMenu");
+			const helpIcon = document.querySelector(".help-icon");
+
+			if (!helpMenu.contains(event.target) && !helpIcon.contains(event.target)) {
+				helpMenu.classList.remove("show");
+			}
+		});
+		
+		// Get available videos (released ones)
 		function getAvailableVideos() {
 			const today = new Date().toLocaleDateString('en-CA'); // Get today's date in YYYY-MM-DD format
 			return Object.keys(videoData).filter(videoId => videoData[videoId].releaseDate <= today);
