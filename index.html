@@ -699,8 +699,7 @@
         function checkAnswers() {
             const video = videoData[currentVideoId]; // Get the currently selected video
 			if (!video) return; // Safety check
-            
-			console.warn(video.correctAnswers.length);
+           
 			
 			let allFilled = video.correctAnswers.length>0;
 			
