@@ -7,26 +7,37 @@
   <style>
     /* ==========================================================================
        COLOR PALETTE & STYLING CUSTOMIZATION
-       World Gymnastics FIG Ribbon Gradient Palette:
-       - FIG Green:  #9bd98b  (0.0 Deduction / Clean execution)
-       - FIG Orange: #d97706  (Max Deduction / High penalty)
-       - FIG Blue:   #4495e5  (Primary accent / Active state)
-       - FIG Purple: #7d5fb3  (Secondary accent / Borders)
-       - FIG Pink:   #dc5183  (Landing phase highlight)
        ========================================================================== */
 
     :root {
+      /* World Gymnastics Ribbon Palette */
       --fig-blue:   #4495e5;
       --fig-purple: #7d5fb3;
       --fig-pink:   #dc5183;
       --fig-green:  #9bd98b;
-      --fig-orange: #d97706;
+      --fig-orange: #e68a00;
 
+      /* Dark Mode Surfaces */
       --bg-dark:    #0a0a0f;
       --card-bg:    #14141f;
       --border-col: #2c2940;
       --text-main:  #ffffff;
       --text-sub:   #8a8a9e;
+
+      /* ==========================================================================
+         2x3 GRID ROW BANDING COLORS (ADJUST ZONE ROW COLORS HERE)
+         ========================================================================== */
+      /* Top Band (Row 1: Zone 1 & 2 - Clean / Low Deductions) */
+      --band-top-color: #9bd98b;
+      --band-top-bg:    rgba(155, 217, 139, 0.12);
+
+      /* Middle Band (Row 2: Zone 3 & 4 - Moderate Deductions) */
+      --band-mid-color: #4495e5;
+      --band-mid-bg:    rgba(68, 149, 229, 0.12);
+
+      /* Bottom Band (Row 3: Zone 5 & 6 - Higher Deductions / Landing) */
+      --band-bot-color: #e68a00;
+      --band-bot-bg:    rgba(230, 138, 0, 0.12);
     }
 
     * {
@@ -108,7 +119,7 @@
       overflow: hidden;
     }
 
-    /* 2 COLUMNS x 3 ROWS GRID LAYOUT */
+    /* 2 COLUMNS x 3 ROWS GRID LAYOUT WITH ROW BANDING */
     .grid-container {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -125,10 +136,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: var(--card-bg);
-      border: 3px solid var(--fig-purple);
       border-radius: 14px;
-      color: var(--text-main);
       font-size: 3rem;
       font-weight: 800;
       cursor: pointer;
@@ -136,9 +144,28 @@
       position: relative;
     }
 
+    /* Row Banding Styles */
+    .zone-row-top {
+      border: 3px solid var(--band-top-color);
+      color: var(--band-top-color);
+      background: var(--band-top-bg);
+    }
+
+    .zone-row-mid {
+      border: 3px solid var(--band-mid-color);
+      color: var(--band-mid-color);
+      background: var(--band-mid-bg);
+    }
+
+    .zone-row-bot {
+      border: 3px solid var(--band-bot-color);
+      color: var(--band-bot-color);
+      background: var(--band-bot-bg);
+    }
+
     .zone-btn:active, .zone-btn.active-touch {
       transform: scale(0.97);
-      filter: brightness(1.25);
+      filter: brightness(1.3);
     }
 
     .zone-sub {
@@ -206,7 +233,7 @@
 
     .btn-primary:active { opacity: 0.9; transform: scale(0.99); }
 
-    /* REVIEW SCREEN: ZERO-SCROLL SINGLE-PAGE DYNAMIC SQUEEZE LAYOUT */
+    /* REVIEW SCREEN */
     .review-screen {
       padding: 8px 12px;
       display: flex;
@@ -216,38 +243,31 @@
       overflow: hidden;
     }
 
-    .review-header-bar {
+    /* Combined Score Banner */
+    .score-banner {
       background: var(--card-bg);
       border: 1px solid var(--border-col);
       border-radius: 10px;
-      padding: 8px 12px;
+      padding: 8px 10px;
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      justify-content: space-around;
+      align-items: center;
       flex-shrink: 0;
       margin-bottom: 6px;
     }
 
-    .skills-count-row {
+    .score-box { 
+      text-align: center; 
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border-col);
-    }
-
-    .score-banner {
-      display: flex;
-      justify-content: space-around;
+      flex-direction: column;
       align-items: center;
     }
 
-    .score-box { text-align: center; }
-    .score-val { font-size: 1.6rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
-    .deduct-val { font-size: 1.6rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
-    .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+    .score-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
+    .deduct-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
+    .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
 
-    /* Dynamic flex-fill container for 11 rows */
+    /* Dynamic flex-fill container for 11 squeezed rows */
     .review-list {
       flex: 1;
       display: flex;
@@ -310,8 +330,8 @@
     }
 
     .btn-step {
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       border-radius: 6px;
       background: #1e1c2e;
       border: 1px solid var(--fig-purple);
@@ -383,49 +403,49 @@
       <button class="btn-primary" onclick="startRoutine()" style="margin-top:auto;">Start Routine Judging</button>
     </div>
 
-    <!-- 2. ROUTINE & LANDING 2x3 GRID INPUT -->
+    <!-- 2. ROUTINE & LANDING 2x3 GRID INPUT WITH ROW BANDING -->
     <div id="gridScreen" class="grid-container hidden">
-      <!-- 2 Columns x 3 Rows = 6 Zones -->
-      <div class="zone-btn" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
-      <div class="zone-btn" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
-      <div class="zone-btn" id="zone2"><span class="val">0.2</span><span class="zone-sub">Zone 3</span></div>
-      <div class="zone-btn" id="zone3"><span class="val">0.3</span><span class="zone-sub">Zone 4</span></div>
-      <div class="zone-btn" id="zone4"><span class="val">0.4</span><span class="zone-sub">Zone 5</span></div>
-      <div class="zone-btn" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
+      <!-- Top Row Band (FIG Green) -->
+      <div class="zone-btn zone-row-top" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
+      <div class="zone-btn zone-row-top" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
+      
+      <!-- Middle Row Band (FIG Blue) -->
+      <div class="zone-btn zone-row-mid" id="zone2"><span class="val">0.2</span><span class="zone-sub">Zone 3</span></div>
+      <div class="zone-btn zone-row-mid" id="zone3"><span class="val">0.3</span><span class="zone-sub">Zone 4</span></div>
+      
+      <!-- Bottom Row Band (Soft FIG Orange) -->
+      <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span><span class="zone-sub">Zone 5</span></div>
+      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
     </div>
 
-    <!-- 3. REVIEW & EDIT SCREEN (WITH SKILLS COUNT ADJUSTER) -->
+    <!-- 3. REVIEW & EDIT SCREEN -->
     <div id="reviewScreen" class="review-screen hidden">
-      <div class="review-header-bar">
+      <div class="score-banner">
         <!-- Skills Performed Adjuster -->
-        <div class="skills-count-row">
-          <span class="score-lbl">Skills Performed</span>
+        <div class="score-box">
+          <span class="score-lbl">Skills</span>
           <div class="value-controls-group">
             <button class="btn-step" onclick="adjustSkillsCount(-1)">−</button>
-            <span class="sk-val" id="skillsCountDisplay">10</span>
+            <span class="sk-val" id="skillsCountDisplay" style="color:var(--fig-blue);">10</span>
             <button class="btn-step" onclick="adjustSkillsCount(1)">+</button>
           </div>
         </div>
 
-        <!-- Scores Summary -->
-        <div class="score-banner">
-          <div class="score-box">
-            <div class="score-lbl">Max Base</div>
-            <div class="sk-val" id="maxBaseDisplay" style="color:var(--fig-blue);">10.00</div>
-          </div>
-          <div class="score-box">
-            <div class="score-lbl">Total Deduction</div>
-            <div class="deduct-val" id="totalDeductDisplay">0.00</div>
-          </div>
-          <div class="score-box">
-            <div class="score-lbl">Net E-Score</div>
-            <div class="score-val" id="netScoreDisplay">10.00</div>
-          </div>
+        <!-- Total Deductions Accumulator (Starts at 0.0) -->
+        <div class="score-box">
+          <span class="score-lbl">Total Deductions</span>
+          <div class="deduct-val" id="totalDeductDisplay">0.00</div>
+        </div>
+
+        <!-- Net E-Score Calculation -->
+        <div class="score-box">
+          <span class="score-lbl">Net E-Score</span>
+          <div class="score-val" id="netScoreDisplay">10.00</div>
         </div>
       </div>
 
       <div class="review-list" id="reviewList">
-        <!-- 11 Rows generated dynamically -->
+        <!-- 11 Squeezed Rows generated dynamically -->
       </div>
 
       <button class="btn-primary" onclick="resetToSetup()">Confirm & Next Routine</button>
@@ -451,7 +471,7 @@
   let currentSkillIndex = 0;
   let skillDeductions = new Array(10).fill(0);
   let landingDeduction = 0;
-  let skillsPerformed = 10; // Default 10 skills
+  let skillsPerformed = 10;
 
   // DOM Elements
   const setupScreen  = document.getElementById('setupScreen');
@@ -459,21 +479,6 @@
   const reviewScreen = document.getElementById('reviewScreen');
   const phaseBadge   = document.getElementById('phaseBadge');
   const skillCounter = document.getElementById('skillCounter');
-
-  /* ==========================================================================
-     COLOR GRADIENT HELPER: FIG Green (#9bd98b) -> FIG Orange (#d97706)
-     ========================================================================== */
-  function getGradientColor(val, maxVal) {
-    if (maxVal <= 0) return 'rgb(155, 217, 139)';
-    const ratio = Math.min(1, Math.max(0, val / maxVal));
-
-    // RGB Interpolation: Green (155, 217, 139) -> Orange (217, 119, 6)
-    const r = Math.round(155 + (217 - 155) * ratio);
-    const g = Math.round(217 + (119 - 217) * ratio);
-    const b = Math.round(139 + (6 - 139) * ratio);
-
-    return `rgb(${r}, ${g}, ${b})`;
-  }
 
   /* ==========================================================================
      AUDIO SYNTHESIS FEEDBACK
@@ -509,20 +514,12 @@
     el.classList.add('selected');
   }
 
-  // Render Grid Display Values with Color Gradient
+  // Render Grid Values
   function renderGrid(values) {
-    const numericVals = values.filter(v => typeof v === 'number');
-    const maxVal = phase === 'landing' ? 1.0 : (Math.max(...numericVals) || 0.5);
-
     for (let i = 0; i < 6; i++) {
       const btn = document.getElementById(`zone${i}`);
       const val = values[i];
       btn.querySelector('.val').textContent = typeof val === 'number' ? val.toFixed(1) : val;
-
-      const color = getGradientColor(val, maxVal);
-      btn.style.borderColor = color;
-      btn.style.color = color;
-      btn.style.background = `rgba(${color.replace('rgb(','').replace(')','')}, 0.12)`;
     }
   }
 
@@ -615,14 +612,13 @@
   function renderReviewSummary() {
     document.getElementById('skillsCountDisplay').textContent = skillsPerformed;
 
-    // Calculate sum of only active performed skills + landing
+    // Sum active performed skill deductions + landing
     const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
     const totalDeduct = activeSkillDeductions.reduce((a, b) => a + b, 0) + landingDeduction;
 
     const maxBaseScore = skillsPerformed * 1.0;
     const netScore = Math.max(0, maxBaseScore - totalDeduct);
 
-    document.getElementById('maxBaseDisplay').textContent = maxBaseScore.toFixed(2);
     document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
     document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
 
