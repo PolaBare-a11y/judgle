@@ -6,20 +6,41 @@
   <title>Trampoline Execution Judge - Dual Interface</title>
   <style>
     /* ==========================================================================
-       WORLD GYMNASTICS FIG RIBBON GRADIENT PALETTE
+       WORLD GYMNASTICS FIG PALETTE & SURFACES
        ========================================================================== */
     :root {
       --fig-blue: #4495e5;
       --fig-purple: #7d5fb3;
       --fig-pink: #dc5183;
-      --fig-green: #9bd98b;
+      --fig-green: #22c55e;
 
-      /* Dark Mode Surfaces */
+      /* Dark Mode Backgrounds */
       --bg-dark: #0a0a0f;
       --card-bg: #14141f;
       --border-col: #2c2940;
       --text-main: #ffffff;
       --text-sub: #8a8a9e;
+
+      /* ==========================================================================
+         GRID BANDED COLOURS (CUSTOMIZE ZONE BACKGROUNDS & BORDERS HERE)
+         ========================================================================== */
+      --zone0-bg: rgba(34, 197, 94, 0.12);   /* Zone 1 (0.0 Clean): Soft Green */
+      --zone0-border: #22c55e;
+      
+      --zone1-bg: rgba(163, 230, 53, 0.12);  /* Zone 2 (0.1 Minor): Lime */
+      --zone1-border: #84cc16;
+      
+      --zone2-bg: rgba(250, 204, 21, 0.12);  /* Zone 3 (0.2 Medium): Yellow */
+      --zone2-border: #eab308;
+      
+      --zone3-bg: rgba(251, 146, 60, 0.12);  /* Zone 4 (0.3 Substantial): Orange */
+      --zone3-border: #f97316;
+      
+      --zone4-bg: rgba(248, 113, 113, 0.14); /* Zone 5 (0.4 Major): Dark Orange/Red */
+      --zone4-border: #ef4444;
+      
+      --zone5-bg: rgba(225, 29, 72, 0.18);   /* Zone 6 (0.5 Max Error): Deep Crimson */
+      --zone5-border: #dc2626;
     }
 
     * {
@@ -48,17 +69,17 @@
       height: 100dvh;
     }
 
-    /* Status Bar */
+    /* Top Status Bar */
     .status-bar {
-      height: 48px;
+      height: 44px;
       background: #111118;
       border-bottom: 1px solid var(--border-col);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
+      padding: 0 12px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       z-index: 10;
     }
 
@@ -71,7 +92,7 @@
     .phase-badge {
       padding: 3px 8px;
       border-radius: 4px;
-      font-size: 11px;
+      font-size: 10px;
       text-transform: uppercase;
       font-weight: 700;
     }
@@ -79,15 +100,15 @@
     .badge-setup { background: var(--fig-purple); color: #fff; }
     .badge-routine { background: var(--fig-blue); color: #fff; }
     .badge-landing { background: var(--fig-pink); color: #fff; }
-    .badge-review { background: var(--fig-green); color: #111; }
+    .badge-review { background: var(--fig-green); color: #000; }
 
     .btn-header {
       background: #1d1b2a;
       border: 1px solid var(--border-col);
       color: #ccc;
-      padding: 6px 12px;
+      padding: 5px 10px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11px;
       cursor: pointer;
     }
 
@@ -97,7 +118,7 @@
       flex: 1;
       position: relative;
       width: 100%;
-      height: calc(100% - 48px);
+      height: calc(100% - 44px);
       overflow: hidden;
     }
 
@@ -105,10 +126,10 @@
        SECTIONED SETUP SCREEN
        ========================================================================== */
     .setup-screen {
-      padding: 20px 16px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
       height: 100%;
       overflow-y: auto;
       background: var(--bg-dark);
@@ -117,35 +138,35 @@
     .setup-section {
       background: #10101a;
       border: 1px solid var(--border-col);
-      border-radius: 14px;
-      padding: 16px;
+      border-radius: 12px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
 
     .section-title {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 700;
       color: var(--fig-blue);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .preset-group {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 8px;
     }
 
     .preset-card {
       background: var(--card-bg);
       border: 2px solid var(--border-col);
-      border-radius: 10px;
-      padding: 12px;
+      border-radius: 8px;
+      padding: 10px;
       cursor: pointer;
     }
 
@@ -154,58 +175,55 @@
       background: rgba(68, 149, 229, 0.15);
     }
 
-    .preset-card h4 { font-size: 0.95rem; margin-bottom: 2px; color: var(--text-main); }
-    .preset-card p { font-size: 0.75rem; color: var(--text-sub); }
+    .preset-card h4 { font-size: 0.9rem; margin-bottom: 2px; color: var(--text-main); }
+    .preset-card p { font-size: 0.72rem; color: var(--text-sub); }
 
     .gesture-map-card {
       background: var(--card-bg);
       border: 1px solid var(--border-col);
-      border-radius: 10px;
-      padding: 12px;
+      border-radius: 8px;
+      padding: 10px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      gap: 6px;
       text-align: center;
     }
 
     .gesture-item {
       background: #181826;
       border: 1px solid var(--border-col);
-      padding: 8px;
-      border-radius: 8px;
+      padding: 6px;
+      border-radius: 6px;
     }
 
-    .gesture-item .g-symbol { font-size: 1.1rem; color: var(--fig-pink); font-weight: 800; }
-    .gesture-item .g-val { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
-    .gesture-item .g-lbl { font-size: 0.68rem; color: var(--text-sub); }
+    .gesture-item .g-symbol { font-size: 1rem; color: var(--fig-pink); font-weight: 800; }
+    .gesture-item .g-val { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
+    .gesture-item .g-lbl { font-size: 0.65rem; color: var(--text-sub); }
 
     .btn-primary {
       background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple));
       color: white;
       border: none;
-      padding: 14px;
-      border-radius: 10px;
-      font-size: 1rem;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.95rem;
       font-weight: 700;
       cursor: pointer;
       text-align: center;
     }
 
     .btn-primary:active { opacity: 0.9; transform: scale(0.99); }
-
-    .btn-swipe-launch {
-      background: linear-gradient(135deg, var(--fig-pink), var(--fig-purple));
-    }
+    .btn-swipe-launch { background: linear-gradient(135deg, var(--fig-pink), var(--fig-purple)); }
 
     /* ==========================================================================
-       2x3 GRID INTERFACE
+       2x3 GRID INTERFACE WITH BANDED COLOURS
        ========================================================================== */
     .grid-container {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       grid-template-rows: repeat(3, 1fr);
-      gap: 8px;
-      padding: 8px;
+      gap: 6px;
+      padding: 6px;
       width: 100%;
       height: 100%;
       background: #000000;
@@ -216,35 +234,35 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: var(--card-bg);
-      border: 2px solid var(--fig-purple);
-      border-radius: 14px;
+      border-radius: 12px;
       color: var(--text-main);
       font-size: 2.8rem;
       font-weight: 800;
       cursor: pointer;
       position: relative;
+      transition: transform 0.05s ease, filter 0.05s ease;
     }
+
+    /* BANDED COLOUR ASSIGNMENTS FOR GRID ZONES */
+    #zone0 { background: var(--zone0-bg); border: 2px solid var(--zone0-border); }
+    #zone1 { background: var(--zone1-bg); border: 2px solid var(--zone1-border); }
+    #zone2 { background: var(--zone2-bg); border: 2px solid var(--zone2-border); }
+    #zone3 { background: var(--zone3-bg); border: 2px solid var(--zone3-border); }
+    #zone4 { background: var(--zone4-bg); border: 2px solid var(--zone4-border); }
+    #zone5 { background: var(--zone5-bg); border: 2px solid var(--zone5-border); }
 
     .zone-btn:active, .zone-btn.active-touch {
-      background: rgba(68, 149, 229, 0.25) !important;
-      border-color: var(--fig-blue) !important;
-      transform: scale(0.98);
-    }
-
-    .landing-mode .zone-btn { border-color: var(--fig-pink); }
-    .landing-mode .zone-btn:active, .landing-mode .zone-btn.active-touch {
-      background: rgba(220, 81, 131, 0.25) !important;
-      border-color: var(--fig-pink) !important;
+      filter: brightness(1.4);
+      transform: scale(0.97);
     }
 
     .zone-sub {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
       color: var(--text-sub);
       margin-top: 2px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
     }
 
     /* ==========================================================================
@@ -275,8 +293,8 @@
 
     .guide-grid {
       display: grid;
-      grid-template-columns: 80px 80px 80px;
-      grid-template-rows: 80px 80px 80px;
+      grid-template-columns: 75px 75px 75px;
+      grid-template-rows: 75px 75px 75px;
       gap: 6px;
       align-items: center;
       justify-items: center;
@@ -286,14 +304,14 @@
 
     .gesture-badge {
       position: absolute;
-      bottom: 24px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       background-color: rgba(20, 20, 31, 0.95);
       border: 1px solid var(--fig-blue);
-      padding: 8px 18px;
+      padding: 6px 16px;
       border-radius: 20px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 700;
       color: var(--fig-blue);
       pointer-events: none;
@@ -303,10 +321,10 @@
     }
 
     /* ==========================================================================
-       REVIEW SCREEN
+       REVIEW SCREEN WITH INLINE +/- STEP CONTROLS & MAX SKILLS SELECTOR
        ========================================================================== */
     .review-screen {
-      padding: 16px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -317,31 +335,58 @@
     .score-banner {
       background: var(--card-bg);
       border: 1px solid var(--border-col);
-      border-radius: 12px;
-      padding: 14px;
+      border-radius: 10px;
+      padding: 10px 14px;
       display: flex;
       justify-content: space-around;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 10px;
     }
 
     .score-box { text-align: center; }
-    .score-val { font-size: 2.2rem; font-weight: 800; color: var(--fig-green); }
-    .deduct-val { font-size: 2.2rem; font-weight: 800; color: var(--fig-pink); }
-    .score-lbl { font-size: 0.72rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+    .score-val { font-size: 1.8rem; font-weight: 800; color: var(--fig-green); }
+    .deduct-val { font-size: 1.8rem; font-weight: 800; color: var(--fig-pink); }
+    .score-lbl { font-size: 0.68rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .review-controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .skills-selector {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .skills-selector label { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; }
+    .skills-selector select {
+      background: none;
+      border: none;
+      color: var(--text-main);
+      font-size: 0.85rem;
+      font-weight: 700;
+      outline: none;
+    }
 
     .review-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-bottom: 16px;
+      gap: 6px;
+      margin-bottom: 12px;
     }
 
     .review-row {
       background: var(--card-bg);
       border: 1px solid var(--border-col);
-      border-radius: 10px;
-      padding: 8px 14px;
+      border-radius: 8px;
+      padding: 6px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -355,35 +400,40 @@
     .row-info {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
 
     .sk-lbl {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--text-sub);
       font-weight: 600;
-      width: 65px;
+      width: 60px;
     }
 
     .sk-val {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: var(--text-main);
       min-width: 45px;
     }
 
-    .landing-row .sk-lbl, .landing-row .sk-val { color: var(--fig-pink); }
+    .landing-row .sk-lbl, .landing-row .sk-val {
+      color: var(--fig-pink);
+    }
 
-    .row-controls { display: flex; gap: 8px; }
+    .row-controls {
+      display: flex;
+      gap: 6px;
+    }
 
     .btn-step {
-      width: 42px;
-      height: 42px;
-      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
       background: #1e1c2e;
       border: 1px solid var(--fig-purple);
       color: var(--text-main);
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -403,13 +453,13 @@
 <body>
 
 <div class="app-wrapper">
-  <!-- Top Status Bar -->
+  <!-- Status Bar -->
   <div class="status-bar">
     <div class="status-title">
       <span id="phaseBadge" class="phase-badge badge-setup">Setup</span>
       <span id="skillCounter">Select Interface Mode</span>
     </div>
-    <div style="display:flex; gap:8px;">
+    <div style="display:flex; gap:6px;">
       <button class="btn-header" onclick="toggleFullscreen()">Fullscreen</button>
       <button class="btn-header" onclick="resetToSetup()">Reset</button>
     </div>
@@ -424,11 +474,11 @@
       <!-- Section 1: Grid Interface Options -->
       <div class="setup-section">
         <div class="section-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
           Grid Interface (Button Pad)
         </div>
 
-        <div style="font-size:0.8rem; color:var(--text-sub);">Select Deduction Scale Preset:</div>
+        <div style="font-size:0.75rem; color:var(--text-sub);">Select Preset Scale:</div>
         <div class="preset-group">
           <div class="preset-card selected" onclick="selectPreset('fig', this)">
             <h4>FIG Standard</h4>
@@ -454,11 +504,11 @@
       <!-- Section 2: Swipe Interface Options -->
       <div class="setup-section">
         <div class="section-title" style="color:var(--fig-pink);">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"></path><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 0 1 2 2v4a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.8-5.6-2.4L2.5 15a1.2 1.2 0 0 1 .4-1.7v0a1.2 1.2 0 0 1 1.6.4l2.5 3.8"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"></path><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 0 1 2 2v4a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.8-5.6-2.4L2.5 15a1.2 1.2 0 0 1 .4-1.7v0a1.2 1.2 0 0 1 1.6.4l2.5 3.8"></path></svg>
           Swipe Interface (Eyes-Free Gestures)
         </div>
 
-        <div style="font-size:0.8rem; color:var(--text-sub);">Cardinal & Shape Gesture Map:</div>
+        <div style="font-size:0.75rem; color:var(--text-sub);">Gesture Map:</div>
         <div class="gesture-map-card">
           <div class="gesture-item"><div class="g-symbol">●</div><div class="g-val">0.0</div><div class="g-lbl">Tap</div></div>
           <div class="gesture-item"><div class="g-symbol">▲</div><div class="g-val">0.1</div><div class="g-lbl">Flick Up</div></div>
@@ -473,7 +523,7 @@
 
     </div>
 
-    <!-- 2. ROUTINE & LANDING 2x3 GRID INPUT -->
+    <!-- 2. ROUTINE & LANDING 2x3 GRID INPUT WITH BANDED COLOURS -->
     <div id="gridScreen" class="grid-container hidden">
       <div class="zone-btn" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
       <div class="zone-btn" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
@@ -496,7 +546,7 @@
       <div class="gesture-badge" id="gestureBadge">Detected: Tap (0.0)</div>
     </div>
 
-    <!-- 4. REVIEW & EDIT SCREEN -->
+    <!-- 4. REVIEW & EDIT SCREEN WITH INLINE +/- STEP CONTROLS -->
     <div id="reviewScreen" class="review-screen hidden">
       <div class="score-banner">
         <div class="score-box">
@@ -509,10 +559,27 @@
         </div>
       </div>
 
-      <div style="font-size:0.85rem; font-weight:700; color:var(--text-sub); text-transform:uppercase; margin-bottom:10px;">Skill Breakdown</div>
+      <div class="review-controls-bar">
+        <div style="font-size:0.75rem; font-weight:700; color:var(--text-sub); text-transform:uppercase;">Skill Breakdown</div>
+        <div class="skills-selector">
+          <label for="skillsPerformedSelect">Max Skills:</label>
+          <select id="skillsPerformedSelect" onchange="updateSkillsCount(this.value)">
+            <option value="10" selected>10</option>
+            <option value="9">9</option>
+            <option value="8">8</option>
+            <option value="7">7</option>
+            <option value="6">6</option>
+            <option value="5">5</option>
+            <option value="4">4</option>
+            <option value="3">3</option>
+            <option value="2">2</option>
+            <option value="1">1</option>
+          </select>
+        </div>
+      </div>
 
       <div class="review-list" id="reviewList">
-        <!-- Rows generated dynamically -->
+        <!-- Rows with inline +/- step controls generated dynamically -->
       </div>
 
       <button class="btn-primary" onclick="resetToSetup()" style="margin-top:auto;">Confirm & Next Routine</button>
@@ -539,6 +606,7 @@
   let currentSkillIndex = 0; // 0 to 9 for skills
   let skillDeductions = new Array(10).fill(0);
   let landingDeduction = 0;
+  let skillsPerformed = 10;
 
   // DOM Elements
   const setupScreen = document.getElementById('setupScreen');
@@ -592,7 +660,7 @@
     el.classList.add('selected');
   }
 
-  // Render Grid Display Values
+  // Render Grid Values
   function renderGrid(values) {
     for (let i = 0; i < 6; i++) {
       const btn = document.getElementById(`zone${i}`);
@@ -607,6 +675,8 @@
     currentSkillIndex = 0;
     skillDeductions = new Array(10).fill(0);
     landingDeduction = 0;
+    skillsPerformed = 10;
+    document.getElementById('skillsPerformedSelect').value = "10";
 
     setupScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
@@ -805,11 +875,19 @@
   }
 
   /* ==========================================================================
-     REVIEW SCREEN SUMMARY & ADJUSTMENTS
+     REVIEW SCREEN SUMMARY & INLINE +/- STEP CONTROLS
      ========================================================================== */
   function renderReviewSummary() {
-    const totalDeduct = skillDeductions.reduce((a, b) => a + b, 0) + landingDeduction;
-    const netScore = Math.max(0, 10 - totalDeduct);
+    let activeCount = parseInt(skillsPerformed);
+    let skillSum = 0;
+
+    for (let i = 0; i < activeCount; i++) {
+      skillSum += skillDeductions[i];
+    }
+
+    const totalDeduct = skillSum + (activeCount === 10 ? landingDeduction : 0);
+    const maxPossibleScore = activeCount * 1.0;
+    const netScore = Math.max(0, maxPossibleScore - totalDeduct);
 
     document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
     document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
@@ -817,8 +895,9 @@
     const listContainer = document.getElementById('reviewList');
     listContainer.innerHTML = '';
 
-    // Render Rows for Skills 1 to 10
-    skillDeductions.forEach((val, i) => {
+    // Render Active Skill Rows with Inline +/- Buttons
+    for (let i = 0; i < activeCount; i++) {
+      const val = skillDeductions[i];
       const row = document.createElement('div');
       row.className = 'review-row';
       row.innerHTML = `
@@ -832,35 +911,44 @@
         </div>
       `;
       listContainer.appendChild(row);
-    });
+    }
 
-    // Render Landing Row
-    const landingRow = document.createElement('div');
-    landingRow.className = 'review-row landing-row';
-    landingRow.innerHTML = `
-      <div class="row-info">
-        <span class="sk-lbl">Landing</span>
-        <span class="sk-val">-${landingDeduction.toFixed(1)}</span>
-      </div>
-      <div class="row-controls">
-        <button class="btn-step" onclick="adjustValue(10, -0.1)">−</button>
-        <button class="btn-step" onclick="adjustValue(10, 0.1)">+</button>
-      </div>
-    `;
-    listContainer.appendChild(landingRow);
+    // Render Landing Row with Inline +/- Buttons (if 10 skills performed)
+    if (activeCount === 10) {
+      const landingRow = document.createElement('div');
+      landingRow.className = 'review-row landing-row';
+      landingRow.innerHTML = `
+        <div class="row-info">
+          <span class="sk-lbl">Landing</span>
+          <span class="sk-val">-${landingDeduction.toFixed(1)}</span>
+        </div>
+        <div class="row-controls">
+          <button class="btn-step" onclick="adjustValue(10, -0.1)">−</button>
+          <button class="btn-step" onclick="adjustValue(10, 0.1)">+</button>
+        </div>
+      `;
+      listContainer.appendChild(landingRow);
+    }
   }
 
   function adjustValue(index, delta) {
     triggerFeedback('tap');
 
     if (index === 10) {
+      // Landing range: 0.0 to 1.0
       let updated = Math.round((landingDeduction + delta) * 10) / 10;
       landingDeduction = Math.min(1.0, Math.max(0.0, updated));
     } else {
+      // Skill range: 0.0 to 0.5
       let updated = Math.round((skillDeductions[index] + delta) * 10) / 10;
       skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
     }
 
+    renderReviewSummary();
+  }
+
+  function updateSkillsCount(val) {
+    skillsPerformed = parseInt(val);
     renderReviewSummary();
   }
 
