@@ -24,22 +24,22 @@
       /* ==========================================================================
          GRID BANDED COLOURS (CUSTOMIZE ZONE BACKGROUNDS & BORDERS HERE)
          ========================================================================== */
-      --zone0-bg: rgba(34, 197, 94, 0.12);   /* Zone 1 (0.0 Clean): Soft Green */
+      --zone0-bg: rgba(34, 197, 94, 0.15);   /* Zone 1 (0.0 Clean): Soft Green */
       --zone0-border: #22c55e;
       
-      --zone1-bg: rgba(163, 230, 53, 0.12);  /* Zone 2 (0.1 Minor): Lime */
+      --zone1-bg: rgba(163, 230, 53, 0.15);  /* Zone 2 (0.1 Minor): Lime Green */
       --zone1-border: #84cc16;
       
-      --zone2-bg: rgba(250, 204, 21, 0.12);  /* Zone 3 (0.2 Medium): Yellow */
+      --zone2-bg: rgba(250, 204, 21, 0.15);  /* Zone 3 (0.2 Medium): Amber Yellow */
       --zone2-border: #eab308;
       
-      --zone3-bg: rgba(251, 146, 60, 0.12);  /* Zone 4 (0.3 Substantial): Orange */
+      --zone3-bg: rgba(251, 146, 60, 0.15);  /* Zone 4 (0.3 Substantial): Orange */
       --zone3-border: #f97316;
       
-      --zone4-bg: rgba(248, 113, 113, 0.14); /* Zone 5 (0.4 Major): Dark Orange/Red */
+      --zone4-bg: rgba(248, 113, 113, 0.15); /* Zone 5 (0.4 Major): Red-Orange */
       --zone4-border: #ef4444;
       
-      --zone5-bg: rgba(225, 29, 72, 0.18);   /* Zone 6 (0.5 Max Error): Deep Crimson */
+      --zone5-bg: rgba(225, 29, 72, 0.20);   /* Zone 6 (0.5 Max Error): Crimson Red */
       --zone5-border: #dc2626;
     }
 
@@ -321,119 +321,131 @@
     }
 
     /* ==========================================================================
-       REVIEW SCREEN WITH INLINE +/- STEP CONTROLS & MAX SKILLS SELECTOR
+       NON-SCROLLING 2-COLUMN REVIEW SCREEN WITH MAX SKILLS
        ========================================================================== */
     .review-screen {
-      padding: 12px;
+      padding: 8px 10px;
       display: flex;
       flex-direction: column;
       height: 100%;
       background: var(--bg-dark);
-      overflow-y: auto;
+      overflow: hidden; /* Fits on single viewport without scrolling */
+      justify-content: space-between;
     }
 
     .score-banner {
       background: var(--card-bg);
       border: 1px solid var(--border-col);
       border-radius: 10px;
-      padding: 10px 14px;
-      display: flex;
-      justify-content: space-around;
+      padding: 8px 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      text-align: center;
       align-items: center;
-      margin-bottom: 10px;
     }
 
-    .score-box { text-align: center; }
-    .score-val { font-size: 1.8rem; font-weight: 800; color: var(--fig-green); }
-    .deduct-val { font-size: 1.8rem; font-weight: 800; color: var(--fig-pink); }
-    .score-lbl { font-size: 0.68rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+    .score-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .max-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-blue); line-height: 1.1; }
+    .deduct-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
+    .score-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
+    .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
     .review-controls-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin: 4px 0;
+      padding: 4px 8px;
+      background: #12121a;
+      border-radius: 8px;
+      border: 1px solid var(--border-col);
     }
 
     .skills-selector {
       display: flex;
       align-items: center;
       gap: 6px;
-      background: var(--card-bg);
-      border: 1px solid var(--border-col);
-      padding: 4px 8px;
-      border-radius: 6px;
     }
 
-    .skills-selector label { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; }
+    .skills-selector label { font-size: 0.78rem; color: var(--fig-blue); font-weight: 700; text-transform: uppercase; }
     .skills-selector select {
-      background: none;
-      border: none;
-      color: var(--text-main);
+      background: var(--card-bg);
+      border: 1px solid var(--fig-blue);
+      color: #ffffff;
       font-size: 0.85rem;
-      font-weight: 700;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
       outline: none;
     }
 
-    .review-list {
-      display: flex;
-      flex-direction: column;
+    /* 2-Column Compact Grid for Skills */
+    .review-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 6px;
-      margin-bottom: 12px;
+      flex: 1;
+      align-content: start;
     }
 
-    .review-row {
+    .review-card {
       background: var(--card-bg);
       border: 1px solid var(--border-col);
       border-radius: 8px;
-      padding: 6px 12px;
+      padding: 4px 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      height: 38px;
     }
 
-    .review-row.landing-row {
+    .review-card.landing-card {
+      grid-column: span 2;
       border-color: var(--fig-pink);
       background: rgba(220, 81, 131, 0.08);
     }
 
-    .row-info {
+    .card-label-val {
       display: flex;
       align-items: center;
-      gap: 12px;
-    }
-
-    .sk-lbl {
-      font-size: 0.85rem;
-      color: var(--text-sub);
-      font-weight: 600;
-      width: 60px;
-    }
-
-    .sk-val {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--text-main);
-      min-width: 45px;
-    }
-
-    .landing-row .sk-lbl, .landing-row .sk-val {
-      color: var(--fig-pink);
-    }
-
-    .row-controls {
-      display: flex;
       gap: 6px;
     }
 
-    .btn-step {
-      width: 36px;
-      height: 36px;
+    .sk-lbl {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      font-weight: 600;
+    }
+
+    .sk-val {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .landing-card .sk-lbl, .landing-card .sk-val {
+      color: var(--fig-pink);
+    }
+
+    .card-step-btns {
+      display: flex;
+      gap: 4px;
+    }
+
+    .btn-step-mini {
+      width: 28px;
+      height: 28px;
       border-radius: 6px;
       background: #1e1c2e;
       border: 1px solid var(--fig-purple);
       color: var(--text-main);
-      font-size: 1.2rem;
+      font-size: 1rem;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -441,7 +453,7 @@
       cursor: pointer;
     }
 
-    .btn-step:active {
+    .btn-step-mini:active {
       background: var(--fig-blue);
       border-color: var(--fig-blue);
       color: #fff;
@@ -546,12 +558,16 @@
       <div class="gesture-badge" id="gestureBadge">Detected: Tap (0.0)</div>
     </div>
 
-    <!-- 4. REVIEW & EDIT SCREEN WITH INLINE +/- STEP CONTROLS -->
+    <!-- 4. REVIEW SCREEN (SINGLE-VIEWPORT 2-COLUMN GRID WITH MAX SKILLS) -->
     <div id="reviewScreen" class="review-screen hidden">
       <div class="score-banner">
         <div class="score-box">
+          <div class="max-val" id="maxSkillsDisplay">10.00</div>
+          <div class="score-lbl">Max Score</div>
+        </div>
+        <div class="score-box">
           <div class="deduct-val" id="totalDeductDisplay">0.00</div>
-          <div class="score-lbl">Total Deduction</div>
+          <div class="score-lbl">Total Deductions</div>
         </div>
         <div class="score-box">
           <div class="score-val" id="netScoreDisplay">10.00</div>
@@ -578,11 +594,11 @@
         </div>
       </div>
 
-      <div class="review-list" id="reviewList">
-        <!-- Rows with inline +/- step controls generated dynamically -->
+      <div class="review-grid" id="reviewGridList">
+        <!-- 2-Column Grid with inline +/- buttons generated dynamically -->
       </div>
 
-      <button class="btn-primary" onclick="resetToSetup()" style="margin-top:auto;">Confirm & Next Routine</button>
+      <button class="btn-primary" onclick="resetToSetup()" style="margin-top:6px;">Confirm & Next Routine</button>
     </div>
 
   </div>
@@ -875,7 +891,7 @@
   }
 
   /* ==========================================================================
-     REVIEW SCREEN SUMMARY & INLINE +/- STEP CONTROLS
+     NON-SCROLLING 2-COLUMN REVIEW SCREEN SUMMARY & INLINE +/- STEP CONTROLS
      ========================================================================== */
   function renderReviewSummary() {
     let activeCount = parseInt(skillsPerformed);
@@ -885,49 +901,51 @@
       skillSum += skillDeductions[i];
     }
 
-    const totalDeduct = skillSum + (activeCount === 10 ? landingDeduction : 0);
+    const landingVal = (activeCount === 10) ? landingDeduction : 0;
+    const totalDeduct = skillSum + landingVal;
     const maxPossibleScore = activeCount * 1.0;
     const netScore = Math.max(0, maxPossibleScore - totalDeduct);
 
+    document.getElementById('maxSkillsDisplay').textContent = `${activeCount}.00`;
     document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
     document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
 
-    const listContainer = document.getElementById('reviewList');
-    listContainer.innerHTML = '';
+    const gridContainer = document.getElementById('reviewGridList');
+    gridContainer.innerHTML = '';
 
-    // Render Active Skill Rows with Inline +/- Buttons
+    // Render 2-Column Cards for Active Skills (1 to activeCount)
     for (let i = 0; i < activeCount; i++) {
       const val = skillDeductions[i];
-      const row = document.createElement('div');
-      row.className = 'review-row';
-      row.innerHTML = `
-        <div class="row-info">
-          <span class="sk-lbl">Skill ${i + 1}</span>
+      const card = document.createElement('div');
+      card.className = 'review-card';
+      card.innerHTML = `
+        <div class="card-label-val">
+          <span class="sk-lbl">Sk ${i + 1}</span>
           <span class="sk-val">-${val.toFixed(1)}</span>
         </div>
-        <div class="row-controls">
-          <button class="btn-step" onclick="adjustValue(${i}, -0.1)">−</button>
-          <button class="btn-step" onclick="adjustValue(${i}, 0.1)">+</button>
+        <div class="card-step-btns">
+          <button class="btn-step-mini" onclick="adjustValue(${i}, -0.1)">−</button>
+          <button class="btn-step-mini" onclick="adjustValue(${i}, 0.1)">+</button>
         </div>
       `;
-      listContainer.appendChild(row);
+      gridContainer.appendChild(card);
     }
 
-    // Render Landing Row with Inline +/- Buttons (if 10 skills performed)
+    // Render Landing Card if 10 skills performed
     if (activeCount === 10) {
-      const landingRow = document.createElement('div');
-      landingRow.className = 'review-row landing-row';
-      landingRow.innerHTML = `
-        <div class="row-info">
+      const landingCard = document.createElement('div');
+      landingCard.className = 'review-card landing-card';
+      landingCard.innerHTML = `
+        <div class="card-label-val">
           <span class="sk-lbl">Landing</span>
           <span class="sk-val">-${landingDeduction.toFixed(1)}</span>
         </div>
-        <div class="row-controls">
-          <button class="btn-step" onclick="adjustValue(10, -0.1)">−</button>
-          <button class="btn-step" onclick="adjustValue(10, 0.1)">+</button>
+        <div class="card-step-btns">
+          <button class="btn-step-mini" onclick="adjustValue(10, -0.1)">−</button>
+          <button class="btn-step-mini" onclick="adjustValue(10, 0.1)">+</button>
         </div>
       `;
-      listContainer.appendChild(landingRow);
+      gridContainer.appendChild(landingCard);
     }
   }
 
@@ -935,11 +953,9 @@
     triggerFeedback('tap');
 
     if (index === 10) {
-      // Landing range: 0.0 to 1.0
       let updated = Math.round((landingDeduction + delta) * 10) / 10;
       landingDeduction = Math.min(1.0, Math.max(0.0, updated));
     } else {
-      // Skill range: 0.0 to 0.5
       let updated = Math.round((skillDeductions[index] + delta) * 10) / 10;
       skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
     }
