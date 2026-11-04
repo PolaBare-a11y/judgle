@@ -1,876 +1,1298 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-FWWG0H2N09"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trampoline Execution Judge Interface</title>
+  <style>
+    /* ==========================================================================
+       COLOR PALETTE & STYLING CUSTOMIZATION
+       ========================================================================== */
 
-  gtag('config', 'G-FWWG0H2N09');
-</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-	<link rel="manifest" href="/site.webmanifest">
-    <title>Judgle</title>
-    <link rel="stylesheet" href="style.css">
+    :root {
+      /* World Gymnastics Ribbon Palette */
+      --fig-blue:   #4495e5;
+      --fig-purple: #7d5fb3;
+      --fig-pink:   #dc5183;
+      --fig-green:  #9bd98b;
+      --fig-orange: #e68a00;
+      --fig-red:    #f44336;
+
+      /* Dark Mode Surfaces */
+      --bg-dark:    #0a0a0f;
+      --card-bg:    #14141f;
+      --border-col: #2c2940;
+      --text-main:  #ffffff;
+      --text-sub:   #8a8a9e;
+
+      /* ==========================================================================
+         2x3 GRID ROW BANDING COLORS
+         ========================================================================== */
+      /* Top Band (Row 1: Zone 1 & 2 - Clean / Low Deductions) */
+      --band-top-color: #9bd98b;
+      --band-top-bg:    rgba(155, 217, 139, 0.12);
+
+      /* Middle Band (Row 2: Zone 3 & 4 - Moderate Deductions) */
+      --band-mid-color: #4495e5;
+      --band-mid-bg:    rgba(68, 149, 229, 0.12);
+
+      /* Bottom Band (Row 3: Zone 5 & 6 - Higher Deductions / Landing) */
+      --band-bot-color: #e68a00;
+      --band-bot-bg:    rgba(230, 138, 0, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .app-wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    /* Top Status Bar */
+    .status-bar {
+      height: 44px;
+      flex-shrink: 0;
+      background: #111118;
+      border-bottom: 1px solid var(--border-col);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-weight: 600;
+      font-size: 13px;
+      z-index: 10;
+    }
+
+    .status-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .phase-badge {
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .badge-routine { background: var(--fig-blue); color: #fff; }
+    .badge-landing { background: var(--fig-pink); color: #fff; }
+    .badge-review  { background: var(--fig-green); color: #111; }
+
+    .btn-header {
+      background: #1d1b2a;
+      border: 1px solid var(--border-col);
+      color: #ccc;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .btn-header:active { background: var(--fig-purple); color: #fff; }
+
+    .main-content {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: calc(100% - 44px);
+      overflow: hidden;
+    }
+
+    /* 2 COLUMNS x 3 ROWS GRID LAYOUT WITH ROW BANDING */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 8px;
+      padding: 8px;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+    }
+
+    .zone-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      font-size: 3rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.05s ease, filter 0.05s ease;
+      position: relative;
+    }
+
+    /* Row Banding Styles */
+    .zone-row-top {
+      border: 3px solid var(--band-top-color);
+      color: var(--band-top-color);
+      background: var(--band-top-bg);
+    }
+
+    .zone-row-mid {
+      border: 3px solid var(--band-mid-color);
+      color: var(--band-mid-color);
+      background: var(--band-mid-bg);
+    }
+
+    .zone-row-bot {
+      border: 3px solid var(--band-bot-color);
+      color: var(--band-bot-color);
+      background: var(--band-bot-bg);
+    }
+
+    .zone-btn:active, .zone-btn.active-touch {
+      transform: scale(0.97);
+      filter: brightness(1.3);
+    }
+
+    .zone-sub {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* SWIPE GESTURE INTERFACE */
+    .swipe-container {
+      width: 100%;
+      height: 100%;
+      background: #08080d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      position: relative;
+      touch-action: none;
+    }
+
+    .swipe-feedback-area {
+      text-align: center;
+      margin-top: 20px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .swipe-feedback-label {
+      font-size: 1.1rem;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+
+    .swipe-feedback-val {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--fig-blue);
+      line-height: 1;
+    }
+
+    .swipe-last-action {
+      font-size: 1rem;
+      color: var(--fig-green);
+      font-weight: 600;
+      margin-top: 8px;
+      min-height: 24px;
+    }
+
+    /* FAINT BACKGROUND WATERMARK COMPASS GUIDE */
+    .swipe-bg-overlay {
+      position: absolute;
+      top: 46%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 280px;
+      height: 280px;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.15;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bg-compass {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .compass-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 170px;
+      height: 170px;
+      border: 2px dashed var(--fig-purple);
+      border-radius: 50%;
+    }
+
+    .compass-item {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-main);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .compass-icon { font-size: 1.6rem; line-height: 1; }
+
+    .compass-top { top: 0; left: 50%; transform: translateX(-50%); }
+    .compass-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
+    .compass-left { left: 0; top: 50%; transform: translateY(-50%); }
+    .compass-right { right: 0; top: 50%; transform: translateY(-50%); }
+    .compass-center { top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+
+    .swipe-guide-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 420px;
+      margin-bottom: 20px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .swipe-guide-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .swipe-guide-icon {
+      font-size: 1.3rem;
+      color: var(--fig-purple);
+      margin-bottom: 4px;
+    }
+
+    .swipe-guide-action {
+      font-size: 0.75rem;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .swipe-guide-zone {
+      font-size: 0.65rem;
+      color: var(--text-sub);
+    }
+
+    .gesture-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* SETUP SCREEN - TWO SECTIONS LAYOUT */
+    .setup-screen {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+      overflow-y: auto;
+      background: var(--bg-dark);
+    }
+
+    .setup-section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--fig-blue);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .section-desc {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      line-height: 1.3;
+    }
+
+    .section-subtitle {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    .preset-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .preset-card {
+      background: #1a1926;
+      border: 2px solid var(--border-col);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .preset-card.selected {
+      border-color: var(--fig-blue);
+      background: rgba(68, 149, 229, 0.15);
+    }
+
+    .preset-card h4 { font-size: 0.9rem; margin-bottom: 2px; color: var(--text-main); }
+    .preset-card p { font-size: 0.72rem; color: var(--text-sub); }
+
+    /* SETUP SWIPE INSTRUCTIONS WITH VISUAL GRADIENT DIAL & RED REFRESH CIRCLE GUIDE */
+    .swipe-setup-content {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .visual-guide-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* SMALL GRADIENT VISUAL COMPASS DIAL */
+    .visual-compass-wrapper {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg, 
+        var(--band-top-color) 0deg 45deg, 
+        var(--band-mid-color) 45deg 225deg, 
+        var(--band-bot-color) 225deg 315deg, 
+        var(--band-top-color) 315deg 360deg
+      );
+      padding: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+    }
+
+    .visual-compass-inner {
+      width: 100%;
+      height: 100%;
+      background: #1a1926;
+      border-radius: 50%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .v-compass-node {
+      position: absolute;
+      font-weight: 800;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .v-node-top    { top: 5px; left: 50%; transform: translateX(-50%); color: var(--band-top-color); }
+    .v-node-right  { right: 7px; top: 50%; transform: translateY(-50%); color: var(--band-mid-color); }
+    .v-node-bottom { bottom: 5px; left: 50%; transform: translateX(-50%); color: var(--band-mid-color); }
+    .v-node-left   { left: 7px; top: 50%; transform: translateY(-50%); color: var(--band-bot-color); }
+
+    .v-node-center {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--band-top-bg);
+      border: 2px solid var(--band-top-color);
+      color: var(--band-top-color);
+      font-size: 0.8rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* RED REFRESH ICON & 0.5 CIRCLE GUIDE BELOW DIAL */
+    .visual-circle-guide {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .red-refresh-svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--fig-red);
+      filter: drop-shadow(0px 0px 4px rgba(244, 67, 54, 0.4));
+    }
+
+    .circle-val-label {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--fig-red);
+      line-height: 1;
+    }
+
+    .setup-guide-grid {
+      margin-bottom: 0;
+      flex: 1;
+      pointer-events: auto;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple));
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .btn-swipe-start {
+      background: linear-gradient(135deg, var(--fig-purple), var(--fig-pink));
+    }
+
+    .btn-primary:active { opacity: 0.9; transform: scale(0.99); }
+
+    /* REVIEW SCREEN */
+    .review-screen {
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: var(--bg-dark);
+      overflow: hidden;
+    }
+
+    /* Combined Score Banner */
+    .score-banner {
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-shrink: 0;
+      margin-bottom: 6px;
+    }
+
+    .score-box { 
+      text-align: center; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .score-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
+    .deduct-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
+    .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+
+    /* Dynamic flex-fill container for 11 squeezed rows */
+    .review-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-height: 0;
+      margin-bottom: 6px;
+    }
+
+    /* Single Row Format */
+    .review-row {
+      flex: 1;
+      min-height: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 6px;
+      padding: 0 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .review-row.disabled-row {
+      opacity: 0.35;
+      background: #0d0d14;
+      border-color: #1a1a26;
+    }
+
+    .review-row.landing-row {
+      border-color: var(--fig-pink);
+      background: rgba(220, 81, 131, 0.08);
+    }
+
+    .landing-row.disabled-row {
+      border-color: #2c2430;
+      background: #0d0a12;
+    }
+
+    .sk-lbl {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      font-weight: 600;
+    }
+
+    .landing-row .sk-lbl {
+      color: var(--fig-pink);
+    }
+
+    .disabled-row .sk-lbl {
+      color: #555566;
+    }
+
+    /* Value and +/- controls grouped tightly together */
+    .value-controls-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sk-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      min-width: 44px;
+      text-align: center;
+    }
+
+    .landing-row .sk-val {
+      color: var(--fig-pink);
+    }
+
+    .disabled-row .sk-val {
+      color: #555566;
+    }
+
+    .btn-step {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #1e1c2e;
+      border: 1px solid var(--fig-purple);
+      color: var(--text-main);
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .btn-step:active {
+      background: var(--fig-blue);
+      border-color: var(--fig-blue);
+      color: #fff;
+    }
+
+    .hidden { display: none !important; }
+  </style>
 </head>
-<body class="dark-mode">
-	<div class="top-icons">
-		 <h1 class="logo">Judgle</h1>
+<body>
 
-		<i class="fas fa-home home-icon" title="Home - Reset & Return to Quiz" onclick="goHome()"></i>
-		<i class="fas fa-adjust mode-toggle" title="Toggle Light/Dark Mode" onclick="toggleMode()"></i>
-		<i class="fas fa-undo reset-icon" title="Reset Quiz" onclick="restartQuiz()"></i>
-		<i class="fas fa-history history-icon" title="View History" id="historyButton" onclick="toggleVideoHistory()"></i>
-		<i class="fas fa-book resource-icon" title="Resource Library" onclick="toggleResourceLibrary()"></i>
-		<i class="fas fa-question-circle help-icon" title="Help" onclick="toggleHelpMenu()"></i>
-	
-	</div>
-	
-	<div id="helpMenu">
-		<p><i class="fas fa-home"></i> Home (Reset & Return)</p>
-		<p><i class="fas fa-adjust"></i> Light/Dark Mode</p>
-		<p><i class="fas fa-undo"></i> Reset Answers</p>
-		<p><i class="fas fa-history"></i> View Video History</p>
-		<p><i class="fas fa-book"></i> Resource Library</p>
-	</div>
+<div class="app-wrapper">
+  <!-- Top Status Bar -->
+  <div class="status-bar">
+    <div class="status-title">
+      <span id="phaseBadge" class="phase-badge badge-routine">Routine</span>
+      <span id="skillCounter">Skill 1 / 10</span>
+    </div>
+    <div style="display:flex; gap:6px;">
+      <button class="btn-header" onclick="toggleFullscreen()">Fullscreen</button>
+      <button class="btn-header" onclick="resetToSetup()">Reset</button>
+    </div>
+  </div>
 
-	<!-- Resource Library Section -->
-	<div id="resourceLibrary" class="resource-library hidden">
-		<div class="resource-header">
-			<h2>Resource Library</h2>
-			<i class="fas fa-times resource-close-icon" title="Close Resource Library" onclick="toggleResourceLibrary()"></i>
-			<!--<button class="share-link-btn" onclick="copyResourceLink()" title="Copy shareable link to resource library">
-				<i class="fas fa-share-alt"></i> Share Resource Link
-			</button>-->
-			<div class="tag-filter-container">
-				<span class="filter-label">Filter by tag:</span>
-				<div id="tagFilters" class="tag-filters"></div>
-				<button class="clear-filters-btn" onclick="clearTagFilters()">Clear Filters</button>
-			</div>
-		</div>
-		<div id="resourceGrid" class="resource-grid"></div>
-	</div>
+  <!-- Main Canvas -->
+  <div class="main-content">
 
-	<!-- Main Content -->
-	<div id="mainContent">
-		<div class="container">
-			<!-- Video Library -->
-			<div class="container">
-				<div class="video-list">
-					<div id="latestVideoContainer">
-						
-					</div> <!-- Placeholder for the latest video -->
+    <!-- 1. SETUP / CONFIGURATION SCREEN (TWO SECTIONS) -->
+    <div id="setupScreen" class="setup-screen">
 
-					<!-- Hidden videos (will be shown when clicking "View History") -->
-					<div id="hiddenVideos" style="display: none;">
-						<div class="video-item" onclick="loadVideo('vid2')">
-							<p>TRA 2</p>
-						</div>
-						<div class="video-item" onclick="loadVideo('vid3')">
-							<p>DMT</p>
-						</div>
-					</div>
-				</div>			
-			</div>
-		</div>
-		<div id="warningMessage" class="hidden">Please fill in all deductions before submitting.</div>
-		<!-- Video Embed -->
-		<div class="video-container" id="videoPlayer">
-			<!-- Will load selected video here -->
-		</div>
-		
-		<div class="container">
-			<!-- Number Input Section -->
-			<div>
-				<h3>Enter Your Deductions:</h3>
-				<form id="quizForm">
-					<div id="inputContainer">
-						<!-- Input fields will be dynamically generated here -->
-					</div>
-					<br>
-					<button type="button" id="submitButton" class="button" onclick="checkAnswers()">Submit</button>
-				</form>
+      <!-- TOP SECTION: GRID INTERFACE & PRESETS -->
+      <div class="setup-section-card">
+        <div class="section-title">Grid Interface</div>
+        <div class="section-desc">Traditional 2x3 on-screen touch zones spanning 95%+ of the display during live judging.</div>
 
-				<!-- Result Section -->
-				<div class="result" id="result"></div>
-			</div>
+        <div class="section-subtitle">Select E-Judge Preset</div>
+        <div class="preset-group">
+          <div class="preset-card selected" id="presetFigCard" onclick="selectPreset('fig', this)">
+            <h4>FIG Standard</h4>
+            <p>0.0, 0.1, 0.2, 0.3, 0.4, 0.5</p>
+          </div>
+          <div class="preset-card" id="presetFlippedCard" onclick="selectPreset('flipped', this)">
+            <h4>FIG (Flipped)</h4>
+            <p>Right-to-Left orientation</p>
+          </div>
+        </div>
 
-			<!-- Answer Table -->
-			<table class="answer-table" id="answerTable" style="display:none;">
-				<thead>
-					<tr>
-						<th>Element</th>
-						<th>Your Deduction</th>
-						<th>Correct Deduction</th>
-						<th>Explanation</th>
-					</tr>
-				</thead>
-				<tbody id="answerTableBody">
-					<!-- Answer details will be added dynamically here -->
-				</tbody>
-			</table>
-		</div>
-		<div class="container">
-			<h5>Development in Progress.  All scores are test scores and not relevant to the video shown. Created by Jed</h5>
-		</div>
-	</div>
-    <script>
-        
+        <button class="btn-primary" onclick="startRoutine('grid')" style="width:100%; margin-top:4px;">Start Grid Judging</button>
+      </div>
 
-		// Predefined video data with correct answers and explanations for each video
-        const videoData = {
-            vid1: {
-                src: "https://www.youtube.com/embed/qkfBtD3IbNw",
-                correctAnswers: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 10],
-                explanations: [
-                    "Explanation for answer 1...",
-                    "Explanation for answer 2...",
-                    "Explanation for answer 3...",
-                    "Explanation for answer 4...",
-                    "Explanation for answer 5...",
-                    "Explanation for answer 6...",
-                    "Explanation for answer 7...",
-                    "Explanation for answer 8...",
-                    "Explanation for answer 9...",
-                    "Explanation for answer 10...",
-                    "Explanation for the final answer"
-                ],
-                ranges: [
-                    { min: 0, max: 1 },
-                    { min: 1, max: 2 },
-                    { min: 2, max: 3 },
-                    { min: 3, max: 4 },
-                    { min: 4, max: 5 },
-                    { min: 1, max: 1 },
-                    { min: 2, max: 2 },
-                    { min: 3, max: 3 },
-                    { min: 4, max: 4 },
-                    { min: 5, max: 5 },
-                    { min: 10, max: 10 }
-                ],
-				title: "2025-03-01 (TRA)",
-				releaseDate: "2025-03-01"
-            },
-            vid2: {
-                src: "https://www.youtube.com/embed/KAgB7tq25GI",
-                correctAnswers: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1],
-                explanations: [
-                    "Explanation for answer 1...",
-                    "Explanation for answer 2...",
-                    "Explanation for answer 3...",
-                    "Explanation for answer 4...",
-                    "Explanation for answer 5...",
-                    "Explanation for answer 6...",
-                    "Explanation for answer 7...",
-                    "Explanation for answer 8...",
-                    "Explanation for answer 9...",
-                    "Explanation for answer 10...",
-                    "Explanation for the final answer"
-                ],
-                ranges: [
-                    { min: 0, max: 1 },
-                    { min: 1, max: 2 },
-                    { min: 2, max: 3 },
-                    { min: 3, max: 4 },
-                    { min: 4, max: 5 },
-                    { min: 1, max: 1 },
-                    { min: 2, max: 2 },
-                    { min: 3, max: 3 },
-                    { min: 4, max: 4 },
-                    { min: 5, max: 5 },
-                    { min: 5, max: 10 }
-                ],
-				title: "2025-03-08 (TRA)",
-				releaseDate: "2025-03-08"
-            },
-			vid3: {
-                src: "https://www.youtube.com/embed/K-0Cl0o_qx4",
-                correctAnswers: [3, 4, 0],
-                explanations: [
-                    "Explanation for answer 1...",
-                    "Explanation for answer 2...",
-                    "Explanation for answer 3..."
-                ],
-                ranges: [
-                    { min: 3, max: 4 },
-                    { min: 3, max: 4 },
-                    { min: 0, max: 0 }
-                ],
-				title: "2025-03-12 (DMT)",
-				releaseDate: "2025-03-17"
-            },
-			vid4: {
-                src: "https://www.youtube.com/embed/_lRiCGFKKrY",
-                correctAnswers: [1,3,2,3,2,3,3,5,2],
-                explanations: [
-                    "Explanation for answer 1...",
-                    "Explanation for answer 2...",
-					"Explanation for answer 3...",
-					"Explanation for answer 4...",
-					"Explanation for answer 5...",
-					"Explanation for answer 6...",
-					"Explanation for answer 7...",
-					"Explanation for answer 8...",
-                    "Explanation for answer 9..."
-                ],
-                ranges: [
-                    { min: 1, max: 1 },
-					{ min: 3, max: 3 },
-					{ min: 2, max: 3 },
-					{ min: 3, max: 3 },
-					{ min: 2, max: 3 },
-                    { min: 3, max: 3 },
-					{ min: 3, max: 3 },
-					{ min: 5, max: 5 },
-                    { min: 0, max: 2 }
-                ],
-				title: "2025-03-17 (TUM)",
-				releaseDate: "2025-03-17"
-            }
-        };
+      <!-- BOTTOM SECTION: SWIPE INTERFACE & DEDUCTION GUIDE -->
+      <div class="setup-section-card">
+        <div class="section-title" style="color:var(--fig-pink);">Swipe Interface</div>
+        <div class="section-desc">Full-screen gesture input. Perform gestures anywhere on screen to record deductions.</div>
 
-		// Resource Library Data
-		const resourceData = [
-			{
-				id: 'res3',
-				type: 'video',
-				title: 'TRP Instability Deductions - No Deduction',
-				description: 'A compilation of routine finishes with no outbounce or stability deductions',
-				videoId: '6NX9BeV8r2o', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res4',
-				type: 'video',
-				title: 'TRP Instability Deductions - 0.1 Deduction',
-				description: 'A compilation of routine finishes with 0.1 for outbounce or stability deductions',
-				videoId: '1RbzrN0n8dE', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res5',
-				type: 'video',
-				title: 'TRP Instability Deductions - 0.2 Deduction',
-				description: 'A compilation of routine finishes with 0.1 for outbounce or stability deductions',
-				videoId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res1',
-				type: 'pdf',
-				title: 'Competition Information Sheets',
-				description: 'Essential information sheets for CJP/DD Rules, and ToF Machine functionality',
-				url: 'https://drive.google.com/file/d/1c97Evq53z6jOxgvf_FqmSsjBGzmwubA_/view?usp=sharing',
-				tags: ['CJP', 'DD']
-			},
-			{
-				id: 'res2',
-				type: 'pdf',
-				title: 'Execution Reference Guide',
-				description: 'Quick reference guide for execution judging for each discipline',
-				url: 'https://drive.google.com/file/d/1gWkP7un3DrwY4vEtg-dvHfzlKpZ1oK4P/view?usp=sharing',
-				tags: ['Execution']
-			},
-			{
-				id: 'res6',
-				type: 'video',
-				title: 'DMT Instability Deductions - No Deduction',
-				description: 'A compilation of routine finishes with no deductions for instability',
-				videoId: 'Nxg5WjYFfvM', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res7',
-				type: 'video',
-				title: 'DMT Instability Deductions - 0.1 Deduction',
-				description: 'A compilation of routine finishes with 0.1 deduction for instability',
-				videoId: 'ljnwU-s5pi8', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res8',
-				type: 'video',
-				title: 'DMT Instability Deductions - 0.2 Deduction',
-				description: 'A compilation of routine finishes with 0.2 deduction for instability',
-				videoId: 'HJF5reAIkU4', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res9',
-				type: 'video',
-				title: 'DMT Instability Deductions - 0.3 Deduction',
-				description: 'A compilation of routine finishes with 0.3 deduction for instability',
-				videoId: '4P8YqcmX1xk', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res10',
-				type: 'video',
-				title: 'DMT Instability Deductions - 1.0 Deduction',
-				description: 'A compilation of routine finishes with 1.0 deduction for instability',
-				videoId: '9QfVUR-8ZpY', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			}
-		];
-		
-        // Valid entries for each box
-        const validEntries = {
-            first10: [0, 1, 2, 3, 4, 5],
-            lastBox: [0, 1, 2, 3, 5, 10]
-        };
-		
-		const videoKeys = Object.keys(videoData);
-		currentVideoId = videoKeys[videoKeys.length - 1]; // Last video
-		let activeTagFilters = [];
+        <div class="section-subtitle">Gesture Guide</div>
+        <div class="swipe-setup-content">
+          
+          <!-- Visual Compass Dial + Red Refresh Circle Guide Column -->
+          <div class="visual-guide-column">
+            <div class="visual-compass-wrapper">
+              <div class="visual-compass-inner">
+                <div class="v-compass-node v-node-top">1</div>
+                <div class="v-compass-node v-node-right">2</div>
+                <div class="v-compass-node v-node-bottom">3</div>
+                <div class="v-compass-node v-node-left">4</div>
+                <div class="v-compass-node v-node-center">0</div>
+              </div>
+            </div>
 
-		
-		window.onload = () => {
-			if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-				document.body.classList.add('dark-mode');
-			}
-			const availableVideos = getAvailableVideos();
+            <!-- Red Refresh Icon + 0.5 underneath -->
+            <div class="visual-circle-guide">
+              <svg class="red-refresh-svg" viewBox="0 0 24 24" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              <span class="circle-val-label">0.5</span>
+            </div>
+          </div>
 
-			currentVideoId = availableVideos[availableVideos.length-1];
-			loadVideo(currentVideoId);
-			populateHistoryList();
-			initializeResourceLibrary();
+          <!-- Gesture Cards Grid -->
+          <div class="swipe-guide-grid setup-guide-grid">
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">👆</div>
+              <div class="swipe-guide-action">Tap</div>
+              <div class="swipe-guide-zone">0</div>
+            </div>
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">⬆️</div>
+              <div class="swipe-guide-action">Flick Up</div>
+              <div class="swipe-guide-zone">0.1</div>
+            </div>
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">➡️</div>
+              <div class="swipe-guide-action">Swipe Right</div>
+              <div class="swipe-guide-zone">0.2</div>
+            </div>
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">⬇️</div>
+              <div class="swipe-guide-action">Flick Down</div>
+              <div class="swipe-guide-zone">0.3</div>
+            </div>
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">⬅️</div>
+              <div class="swipe-guide-action">Swipe Left</div>
+              <div class="swipe-guide-zone">0.4</div>
+            </div>
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">🔄</div>
+              <div class="swipe-guide-action">Circle</div>
+              <div class="swipe-guide-zone">0.5</div>
+            </div>
+          </div>
 
-			// Check URL parameter for direct resource library access
-			const urlParams = new URLSearchParams(window.location.search);
-			if (urlParams.get('view') === 'resources') {
-				// Open resource library directly
-				const resourceLibrary = document.getElementById('resourceLibrary');
-				const mainContent = document.getElementById('mainContent');
-				mainContent.style.display = 'none';
-				resourceLibrary.classList.remove('hidden');
-				resourceLibrary.classList.add('fade-in');
-			}
-		};
-		
-		function toggleHelpMenu() {
-			const helpMenu = document.getElementById("helpMenu");
+        </div>
 
-			if (helpMenu.classList.contains("show")) {
-				helpMenu.classList.remove("show");
-				setTimeout(() => {
-					helpMenu.style.display = "none";
-				}, 100); // Wait for fade-out before hiding
-			} else {
-				helpMenu.style.display = "block";
-				setTimeout(() => {
-					helpMenu.classList.add("show");
-				}, 10); // Small delay to trigger fade-in
-			}
-		}
+        <button class="btn-primary btn-swipe-start" onclick="startRoutine('swipe')" style="width:100%; margin-top:4px;">Start Swipe Judging</button>
+      </div>
 
-		// Resource Library Functions
-		function toggleResourceLibrary() {
-			const resourceLibrary = document.getElementById('resourceLibrary');
-			const mainContent = document.getElementById('mainContent');
-			
-			if (resourceLibrary.classList.contains('hidden')) {
-				// Show resource library
-				mainContent.classList.add('fade-out');
-				setTimeout(() => {
-					mainContent.style.display = 'none';
-					resourceLibrary.classList.remove('hidden');
-					resourceLibrary.classList.add('fade-in');
-					// Update URL without reloading page
-					history.pushState({view: 'resources'}, '', '?view=resources');
-				}, 300);
-			} else {
-				// Show main content
-				resourceLibrary.classList.remove('fade-in');
-				resourceLibrary.classList.add('fade-out');
-				setTimeout(() => {
-					resourceLibrary.classList.add('hidden');
-					resourceLibrary.classList.remove('fade-out');
-					mainContent.style.display = 'block';
-					mainContent.classList.remove('fade-out');
-					mainContent.classList.add('fade-in');
-					// Update URL to remove parameter
-					history.pushState({view: 'quiz'}, '', window.location.pathname);
-				}, 300);
-			}
-		}
+    </div>
 
-		// Handle browser back/forward buttons
-		window.addEventListener('popstate', function(event) {
-			const resourceLibrary = document.getElementById('resourceLibrary');
-			const mainContent = document.getElementById('mainContent');
-			const urlParams = new URLSearchParams(window.location.search);
-			
-			if (urlParams.get('view') === 'resources') {
-				// Show resources
-				if (resourceLibrary.classList.contains('hidden')) {
-					mainContent.style.display = 'none';
-					resourceLibrary.classList.remove('hidden');
-					resourceLibrary.classList.add('fade-in');
-				}
-			} else {
-				// Show main content
-				if (!resourceLibrary.classList.contains('hidden')) {
-					resourceLibrary.classList.add('hidden');
-					mainContent.style.display = 'block';
-					mainContent.classList.add('fade-in');
-				}
-			}
-		});
+    <!-- 2A. ROUTINE & LANDING 2x3 GRID INPUT WITH ROW BANDING -->
+    <div id="gridScreen" class="grid-container hidden">
+      <!-- Top Row Band (FIG Green) -->
+      <div class="zone-btn zone-row-top" id="zone0"><span class="val">0.0</span></div>
+      <div class="zone-btn zone-row-top" id="zone1"><span class="val">0.1</span></div>
+      
+      <!-- Middle Row Band (FIG Blue) -->
+      <div class="zone-btn zone-row-mid" id="zone2"><span class="val">0.2</span></div>
+      <div class="zone-btn zone-row-mid" id="zone3"><span class="val">0.3</span></div>
+      
+      <!-- Bottom Row Band (Soft FIG Orange) -->
+      <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span></div>
+      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><!--<span class="zone-sub">0.5</span>--></div>
+    </div>
 
-		function initializeResourceLibrary() {
-			generateTagFilters();
-			renderResources();
-		}
+    <!-- 2B. SWIPE / GESTURE INPUT INTERFACE -->
+    <div id="swipeScreen" class="swipe-container hidden">
+      <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
 
-		function generateTagFilters() {
-			const allTags = new Set();
-			resourceData.forEach(resource => {
-				resource.tags.forEach(tag => allTags.add(tag));
-			});
+      <!-- Faint Background Watermark Compass Guide -->
+      <div class="swipe-bg-overlay">
+        <div class="bg-compass">
+          <div class="compass-ring"></div>
+          <div class="compass-item compass-top">
+            <span class="compass-icon">⬆️</span>
+            <span>0.1</span>
+          </div>
+          <div class="compass-item compass-right">
+            <span class="compass-icon">➡️</span>
+            <span>0.2</span>
+          </div>
+          <div class="compass-item compass-bottom">
+            <span class="compass-icon">⬇️</span>
+            <span>0.3</span>
+          </div>
+          <div class="compass-item compass-left">
+            <span class="compass-icon">⬅️</span>
+            <span>0.4</span>
+          </div>
+          <div class="compass-item compass-center">
+            <span class="compass-icon">👆</span>
+            <span>0.0</span>
+            <div style="font-size:0.6rem; color:var(--fig-purple); margin-top:2px;">🔄 0.5</div>
+          </div>
+        </div>
+      </div>
 
-			const tagFiltersContainer = document.getElementById('tagFilters');
-			tagFiltersContainer.innerHTML = '';
+      <div class="swipe-feedback-area">
+        <div class="swipe-feedback-label" id="swipeFeedbackLabel">Skill 1 / 10</div>
+        <div class="swipe-feedback-val" id="swipeFeedbackVal">0.0</div>
+        <div class="swipe-last-action" id="swipeLastAction">Ready for gesture</div>
+      </div>
 
-			allTags.forEach(tag => {
-				const tagButton = document.createElement('button');
-				tagButton.className = 'tag-filter-btn';
-				tagButton.textContent = tag;
-				tagButton.onclick = () => toggleTagFilter(tag, tagButton);
-				tagFiltersContainer.appendChild(tagButton);
-			});
-		}
+      <div class="swipe-guide-grid">
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">👆</div>
+          <div class="swipe-guide-action">Tap</div>
+          <div class="swipe-guide-zone">0</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">⬆️</div>
+          <div class="swipe-guide-action">Flick Up</div>
+          <div class="swipe-guide-zone">0.1</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">➡️</div>
+          <div class="swipe-guide-action">Swipe Right</div>
+          <div class="swipe-guide-zone">0.2</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">⬇️</div>
+          <div class="swipe-guide-action">Flick Down</div>
+          <div class="swipe-guide-zone">0.3</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">⬅️</div>
+          <div class="swipe-guide-action">Swipe Left</div>
+          <div class="swipe-guide-zone">0.4</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">🔄</div>
+          <div class="swipe-guide-action">Circle</div>
+          <div class="swipe-guide-zone">0.5</div>
+        </div>
+      </div>
+    </div>
 
-		function toggleTagFilter(tag, button) {
-			if (activeTagFilters.includes(tag)) {
-				activeTagFilters = activeTagFilters.filter(t => t !== tag);
-				button.classList.remove('active');
-			} else {
-				activeTagFilters.push(tag);
-				button.classList.add('active');
-			}
-			renderResources();
-		}
+    <!-- 3. REVIEW & EDIT SCREEN -->
+    <div id="reviewScreen" class="review-screen hidden">
+      <div class="score-banner">
+        <!-- Skills Performed Adjuster -->
+        <div class="score-box">
+          <span class="score-lbl">Skills</span>
+          <div class="value-controls-group">
+            <button class="btn-step" onclick="adjustSkillsCount(-1)">−</button>
+            <span class="sk-val" id="skillsCountDisplay" style="color:var(--fig-blue);">10</span>
+            <button class="btn-step" onclick="adjustSkillsCount(1)">+</button>
+          </div>
+        </div>
 
-		function clearTagFilters() {
-			activeTagFilters = [];
-			document.querySelectorAll('.tag-filter-btn').forEach(btn => {
-				btn.classList.remove('active');
-			});
-			renderResources();
-		}
+        <!-- Total Deductions Accumulator -->
+        <div class="score-box">
+          <span class="score-lbl">Total Deductions</span>
+          <div class="deduct-val" id="totalDeductDisplay">.0</div>
+        </div>
 
-		function renderResources() {
-			const resourceGrid = document.getElementById('resourceGrid');
-			resourceGrid.innerHTML = '';
+        <!-- Net E-Score Calculation -->
+        <div class="score-box">
+          <span class="score-lbl">Net E-Score</span>
+          <div class="score-val" id="netScoreDisplay">1.0</div>
+        </div>
+      </div>
 
-			// Filter resources
-			let filteredResources = resourceData;
-			if (activeTagFilters.length > 0) {
-				filteredResources = resourceData.filter(resource => 
-					activeTagFilters.some(tag => resource.tags.includes(tag))
-				);
-			}
+      <div class="review-list" id="reviewList">
+        <!-- 11 Squeezed Rows generated dynamically -->
+      </div>
 
-			// Sort: unwatched first, then watched
-			const watchedStatus = JSON.parse(localStorage.getItem('watchedResources')) || {};
-			filteredResources.sort((a, b) => {
-				const aWatched = watchedStatus[a.id] || false;
-				const bWatched = watchedStatus[b.id] || false;
-				return aWatched - bWatched;
-			});
+      <button class="btn-primary" onclick="resetToSetup()">Confirm & Next Routine</button>
+    </div>
 
-			// Render resources
-			filteredResources.forEach(resource => {
-				const resourceCard = createResourceCard(resource, watchedStatus[resource.id] || false);
-				resourceGrid.appendChild(resourceCard);
-			});
+  </div>
+</div>
 
-			if (filteredResources.length === 0) {
-				resourceGrid.innerHTML = '<p class="no-resources">No resources match the selected filters.</p>';
-			}
-		}
+<script>
+  // Presets & FIG Landing Scale
+  const PRESETS = {
+    fig:     [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
+    coarse:  [0.0, 0.1, 0.2, 0.3, 0.5, 0.5],
+    synchro: [0.00, 0.05, 0.10, 0.15, 0.20, 0.30],
+    flipped: [0.1, 0.0, 0.3, 0.2, 0.5, 0.4]
+  };
 
-		function createResourceCard(resource, isWatched) {
-			const card = document.createElement('div');
-			card.className = 'resource-card';
-			if (isWatched) card.classList.add('watched');
+  const LANDING_PRESET = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
 
-			const watchIcon = document.createElement('div');
-			watchIcon.className = 'watch-status';
-			watchIcon.innerHTML = isWatched ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>';
-			watchIcon.onclick = () => toggleWatchStatus(resource.id);
+  let currentInterface = 'grid'; // 'grid' or 'swipe'
+  let currentPresetKey = 'fig';
+  let activeRoutineZones = [...PRESETS.fig];
+  let phase = 'setup';
+  let currentSkillIndex = 0;
+  let skillDeductions = new Array(10).fill(0);
+  let landingDeduction = 0;
+  let skillsPerformed = 10;
 
-			const title = document.createElement('h3');
-			title.textContent = resource.title;
+  // DOM Elements
+  const setupScreen  = document.getElementById('setupScreen');
+  const gridScreen   = document.getElementById('gridScreen');
+  const swipeScreen  = document.getElementById('swipeScreen');
+  const reviewScreen = document.getElementById('reviewScreen');
+  const phaseBadge   = document.getElementById('phaseBadge');
+  const skillCounter = document.getElementById('skillCounter');
+  const canvas       = document.getElementById('gestureCanvas');
+  const ctx          = canvas ? canvas.getContext('2d') : null;
 
-			const description = document.createElement('p');
-			description.className = 'resource-description';
-			description.textContent = resource.description;
+  /* ==========================================================================
+     AUDIO SYNTHESIS FEEDBACK
+     ========================================================================== */
+  let audioCtx = null;
 
-			const tagsContainer = document.createElement('div');
-			tagsContainer.className = 'resource-tags';
-			resource.tags.forEach(tag => {
-				const tagSpan = document.createElement('span');
-				tagSpan.className = 'resource-tag';
-				tagSpan.textContent = tag;
-				tagsContainer.appendChild(tagSpan);
-			});
+  function triggerFeedback(type = 'tap') {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(type === 'complete' ? 880 : 520, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.09, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.025);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.025);
+    } catch (e) { /* Catch browser audio restrictions */ }
+  }
 
-			let contentElement;
-			if (resource.type === 'video') {
-				contentElement = document.createElement('div');
-				contentElement.className = 'resource-video';
-				contentElement.innerHTML = `
-					<iframe 
-						src="https://www.youtube.com/embed/${resource.videoId}" 
-						frameborder="0" 
-						allowfullscreen
-						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-					></iframe>
-				`;
-			} else if (resource.type === 'pdf') {
-				contentElement = document.createElement('a');
-				contentElement.className = 'resource-link';
-				contentElement.href = resource.url;
-				contentElement.target = '_blank';
-				contentElement.innerHTML = '<i class="fas fa-file-pdf"></i> Open PDF';
-			} else if (resource.type === 'link') {
-				contentElement = document.createElement('a');
-				contentElement.className = 'resource-link';
-				contentElement.href = resource.url;
-				contentElement.target = '_blank';
-				contentElement.innerHTML = '<i class="fas fa-external-link-alt"></i> Open Link';
-			}
+  // Preset Selection
+  function selectPreset(key, el) {
+    currentPresetKey = key;
+    activeRoutineZones = [...PRESETS[key]];
+    document.getElementById('presetFigCard').classList.remove('selected');
+    document.getElementById('presetFlippedCard').classList.remove('selected');
+    el.classList.add('selected');
+  }
 
-			card.appendChild(watchIcon);
-			card.appendChild(title);
-			card.appendChild(description);
-			card.appendChild(tagsContainer);
-			card.appendChild(contentElement);
+  // Render Grid Values
+  function renderGrid(values) {
+    for (let i = 0; i < 6; i++) {
+      const btn = document.getElementById(`zone${i}`);
+      const val = values[i];
+      btn.querySelector('.val').textContent = typeof val === 'number' ? val.toFixed(1) : val;
+    }
+  }
 
-			return card;
-		}
+  // Update Swipe Screen Feedback
+  function updateSwipeDisplay(recordedVal = 0, lastActionName = '') {
+    const feedbackLabel = document.getElementById('swipeFeedbackLabel');
+    const feedbackVal   = document.getElementById('swipeFeedbackVal');
+    const lastActionEl  = document.getElementById('swipeLastAction');
 
-		function toggleWatchStatus(resourceId) {
-			const watchedStatus = JSON.parse(localStorage.getItem('watchedResources')) || {};
-			watchedStatus[resourceId] = !watchedStatus[resourceId];
-			localStorage.setItem('watchedResources', JSON.stringify(watchedStatus));
-			renderResources();
-		}
+    if (phase === 'routine') {
+      feedbackLabel.textContent = `Skill ${currentSkillIndex + 1} / 10`;
+      feedbackVal.textContent = typeof recordedVal === 'number' ? `-${recordedVal.toFixed(1)}` : recordedVal;
+    } else if (phase === 'landing') {
+      feedbackLabel.textContent = `Landing Deduction`;
+      feedbackVal.textContent = typeof recordedVal === 'number' ? `-${recordedVal.toFixed(1)}` : recordedVal;
+    }
 
-		function copyResourceLink() {
-			const url = window.location.origin + window.location.pathname + '?view=resources';
-			navigator.clipboard.writeText(url).then(() => {
-				// Show a temporary success message
-				const btn = document.querySelector('.share-link-btn');
-				const originalHTML = btn.innerHTML;
-				btn.innerHTML = '<i class="fas fa-check"></i> Link Copied!';
-				btn.style.background = '#28a745';
-				setTimeout(() => {
-					btn.innerHTML = originalHTML;
-					btn.style.background = '';
-				}, 2000);
-			}).catch(err => {
-				// Fallback for older browsers
-				alert('Copy this link: ' + url);
-			});
-		}
-						
-		// Get available videos (released ones)
-		function getAvailableVideos() {
-			const today = new Date().toLocaleDateString('en-CA'); // Get today's date in YYYY-MM-DD format
-			return Object.keys(videoData).filter(videoId => videoData[videoId].releaseDate <= today);
-		}
-		
-		function toggleMode() {
-            const body = document.body;
-            body.classList.toggle('light-mode');
-            body.classList.toggle('dark-mode');
-            const toggleButton = document.querySelector('.toggle-btn');
-            //toggleButton.innerText = body.classList.contains('light-mode') ? 'Dark Mode' : 'Light Mode';
+    if (lastActionName) {
+      lastActionEl.textContent = lastActionName;
+    }
+  }
+
+  // Start Routine
+  function startRoutine(mode) {
+    if (mode) {
+      currentInterface = mode;
+    }
+    phase = 'routine';
+    currentSkillIndex = 0;
+    skillDeductions = new Array(10).fill(0);
+    landingDeduction = 0;
+    skillsPerformed = 10;
+
+    setupScreen.classList.add('hidden');
+    reviewScreen.classList.add('hidden');
+
+    if (currentInterface === 'grid') {
+      gridScreen.classList.remove('hidden');
+      swipeScreen.classList.add('hidden');
+      renderGrid(activeRoutineZones);
+    } else {
+      swipeScreen.classList.remove('hidden');
+      gridScreen.classList.add('hidden');
+      updateSwipeDisplay(0.0, 'Ready for gesture input');
+      setTimeout(initCanvasSize, 50);
+    }
+
+    phaseBadge.textContent = 'Routine';
+    phaseBadge.className = 'phase-badge badge-routine';
+    updateCounter();
+
+    triggerFeedback('transition');
+  }
+
+  function updateCounter() {
+    if (phase === 'routine') {
+      skillCounter.textContent = `Skill ${currentSkillIndex + 1} / 10`;
+    } else if (phase === 'landing') {
+      skillCounter.textContent = `Landing Deduction`;
+    } else if (phase === 'review') {
+      skillCounter.textContent = `Complete`;
+    }
+  }
+
+  // Touch Event Listeners for 2x3 Grid
+  const zoneButtons = document.querySelectorAll('.zone-btn');
+  zoneButtons.forEach((btn, index) => {
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      btn.classList.add('active-touch');
+      handleZoneInput(index);
+    });
+
+    btn.addEventListener('pointerup', () => btn.classList.remove('active-touch'));
+    btn.addEventListener('pointerleave', () => btn.classList.remove('active-touch'));
+  });
+
+  function handleZoneInput(zoneIndex, actionLabel = '') {
+    triggerFeedback('tap');
+
+    const activeSet = (phase === 'landing') ? LANDING_PRESET : activeRoutineZones;
+    const val = activeSet[zoneIndex];
+
+    if (phase === 'routine') {
+      skillDeductions[currentSkillIndex] = val;
+      currentSkillIndex++;
+
+      if (currentSkillIndex >= 10) {
+        phase = 'landing';
+        if (currentInterface === 'grid') {
+          renderGrid(LANDING_PRESET);
+        } else {
+          updateSwipeDisplay(val, actionLabel ? `${actionLabel} (Skill 10)` : '');
         }
-		
-		// Load the selected video and corresponding range data
-        function loadVideo(videoId) {
-            const video = videoData[videoId];
-            const videoPlayer = document.getElementById('videoPlayer');
-            videoPlayer.innerHTML = `<iframe src="${video.src}"
-					frameborder="0"
-					allowfullscreen
-					>
-					</iframe>`;
-			
-			currentVideoId = videoId
-			
-			// Remove 'active' class from all videos
-			document.querySelectorAll('.video-item').forEach(item => {
-				item.classList.remove('active');
-			});
-
-			// Add 'active' class to selected video
-			document.querySelectorAll('.video-item').forEach(item => {
-			if (item.textContent.trim() === formatVideoTitle(videoId)) {
-				item.classList.add('active');
-			}
-			});
-			
-			
-			document.getElementById('videoPlayer').classList.add('fade-in');
-            videoPlayer.classList.add('fade-in');
-            inputContainer.innerHTML = ''; // Clear previous inputs
-            for (let i = 0; i < video.correctAnswers.length; i++) {
-                //const wrapper = document.createElement('div');
-				//wrapper.classList.add('flip-wrapper');
-
-				const input = document.createElement('input');
-                input.type = 'number';
-                input.className = 'input-box';
-                input.id = `input${i+1}`;
-                input.min = video.ranges[i].min;
-                input.max = video.ranges[i].max;
-                input.addEventListener('input', autoTab);
-                input.addEventListener('input', validateInput);
-				if (i === video.correctAnswers.length-1) {
-                    input.addEventListener('keypress', function(event) {
-                        if (event.key === 'Enter') {
-                            event.preventDefault();
-                            document.getElementById('submitButton').click();
-                        }
-                    });
-                }
-                //wrapper.appendChild(input)
-				inputContainer.appendChild(input);
-            }
-			
-			hideResults();
-			// Set focus to the first input field
-				setTimeout(() => {
-					const firstInput = document.getElementById('input1');
-					if (firstInput) firstInput.focus();
-				}, 300); // Small delay ensures elements are fully loaded before focusing
-
+        phaseBadge.textContent = 'Landing';
+        phaseBadge.className = 'phase-badge badge-landing';
+        triggerFeedback('transition');
+      } else {
+        if (currentInterface === 'swipe') {
+          updateSwipeDisplay(val, actionLabel ? `${actionLabel} (Skill ${currentSkillIndex})` : '');
         }
+      }
+      updateCounter();
 
-        // Auto Tab functionality - Move to next input box on enter (if valid)
-        function autoTab(event) {
-            const currentInput = event.target;
-            if (!validateInput(event) || currentInput.value === "") {
-                return; // Don't tab if invalid or empty
-            }
+    } else if (phase === 'landing') {
+      landingDeduction = val;
 
-            const nextInput = currentInput.nextElementSibling;
-            if (nextInput && nextInput.classList.contains('input-box')) {
-                nextInput.focus();
-            }
-        }
+      phase = 'review';
+      gridScreen.classList.add('hidden');
+      swipeScreen.classList.add('hidden');
+      reviewScreen.classList.remove('hidden');
+      phaseBadge.textContent = 'Review';
+      phaseBadge.className = 'phase-badge badge-review';
+      updateCounter();
 
-        // Validate input to ensure it is in the allowed range
-        function validateInput(event) {
-            const currentInput = event.target;
-            let validValues;
+      renderReviewSummary();
+      triggerFeedback('complete');
+    }
+  }
 
-            if (currentInput.id === 'input11') {
-                validValues = validEntries.lastBox;
-            } else {
-                validValues = validEntries.first10;
-            }
+  /* ==========================================================================
+     SWIPE & GESTURE RECOGNITION ENGINE
+     ========================================================================== */
+  let pointerPoints = [];
+  let isPointerDown = false;
 
-            const isValid = validValues.includes(parseInt(currentInput.value));
-            if (isValid) {
-                currentInput.setCustomValidity("");
-            } else {
-                currentInput.setCustomValidity("Invalid value");
-            }
+  function initCanvasSize() {
+    if (!canvas || !swipeScreen) return;
+    canvas.width = swipeScreen.offsetWidth || window.innerWidth;
+    canvas.height = swipeScreen.offsetHeight || window.innerHeight;
+  }
 
-            return isValid;
-        }
+  window.addEventListener('resize', initCanvasSize);
 
-        function hideResults() {
-			document.getElementById('answerTable').style.display = 'none';
-			document.getElementById('result').innerText = '';
-			// Reset the table and result display
-			document.getElementById('answerTableBody').innerHTML = '';
-		}
-		
-		function toggleVideoHistory() {
-			const hiddenVideos = document.getElementById('hiddenVideos');
-			const historyButton = document.getElementById('historyButton');
+  if (swipeScreen) {
+    swipeScreen.addEventListener('pointerdown', (e) => {
+      if (phase !== 'routine' && phase !== 'landing') return;
+      e.preventDefault();
+      try { swipeScreen.setPointerCapture(e.pointerId); } catch(err) {}
+      isPointerDown = true;
+      pointerPoints = [{ x: e.clientX, y: e.clientY, t: Date.now() }];
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.moveTo(e.clientX, e.clientY);
+        ctx.strokeStyle = 'rgba(125, 95, 179, 0.8)';
+        ctx.lineWidth = 6;
+        ctx.lineCap = 'round';
+      }
+    });
 
-			if (hiddenVideos.style.display === "none") {
-				hiddenVideos.style.display = "block";
-				setTimeout(() => hiddenVideos.classList.add('show'), 10);
-				//historyButton.innerText = "Hide All";
-			} else {
-				hiddenVideos.classList.remove('show');
-				setTimeout(() => hiddenVideos.style.display = "none", 500);
-				//historyButton.innerText = "View All";
-			}
-		}
-		
-		
-		// Check answers and show results
-        function checkAnswers() {
-            const video = videoData[currentVideoId]; // Get the currently selected video
-			if (!video) return; // Safety check
-           
-			
-			let allFilled = video.correctAnswers.length>0;
-			
-			// Check if all input fields are filled
-			for (let i = 0; i < video.correctAnswers.length; i++) {
-				const input = document.getElementById(`input${i+1}`);
-				if (!input || input.value.trim() === "") {
-					allFilled = false;
-					break;
-				}
-			}
+    swipeScreen.addEventListener('pointermove', (e) => {
+      if (!isPointerDown) return;
+      e.preventDefault();
+      pointerPoints.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+      if (ctx) {
+        ctx.lineTo(e.clientX, e.clientY);
+        ctx.stroke();
+      }
+    });
 
-			if (!allFilled) {
-				const warning = document.getElementById("warningMessage");
-				warning.classList.add("show"); // Make it visible
+    swipeScreen.addEventListener('pointerup', (e) => {
+      if (!isPointerDown) return;
+      e.preventDefault();
+      isPointerDown = false;
+      try { swipeScreen.releasePointerCapture(e.pointerId); } catch(err) {}
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      processGesturePoints(pointerPoints);
+    });
 
-				// Remove after 5 seconds
-				setTimeout(() => {
-					warning.classList.remove("show");
-				}, 5000);
+    swipeScreen.addEventListener('pointercancel', (e) => {
+      isPointerDown = false;
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+  }
 
-				return;
-			}
-			
-			
-			
-			const userAnswers = [];
-            let correctCount = 0;
+  function processGesturePoints(points) {
+    if (!points || points.length === 0) return;
 
-            // Clear previous answer tables and explanations
-            document.getElementById('answerTableBody').innerHTML = '';
-            const answerTable = document.getElementById('answerTable');
-            answerTable.style.display = 'table'; // Show the answer table
+    const start = points[0];
+    const end = points[points.length - 1];
+    const duration = end.t - start.t;
 
-            // Loop over all inputs and evaluate answers
-            video.correctAnswers.forEach((correctAnswer, index) => {
-                const userAnswer = parseInt(document.getElementById(`input${index + 1}`).value);
-                const input = document.getElementById(`input${index + 1}`);
-                const answerText = document.getElementById(`answer${index + 1}`);
-				let tableText = 'Element'
-                let rowClass = 'incorrect-row';
-				let inputClass = 'default';
-                let explanation = video.explanations[index];
+    let pathLength = 0;
+    let minX = start.x, maxX = start.x, minY = start.y, maxY = start.y;
 
-                if (userAnswer === correctAnswer) {
-                    rowClass = 'correct-row';
-                    correctCount++;
-					inputClass = 'correct';
-                } else if (userAnswer >= video.ranges[index].min && userAnswer <= video.ranges[index].max) {
-                    rowClass = 'close-row';
-					inputClass = 'close';
-                }
-				
-				 // Apply flip animation dynamically
-				//input.classList.add('flip');
-				//input.style.animationDelay = `${(index+1) * 100}ms`;
-				
-				
-				if (index === 10) { tableText='Landing';} else { tableText = 'Element '+(index+1);}
-				
-				// Update the input field's class
-				input.className = `input-box ${inputClass}`;
-				
-                // Add to the answer table
-                const row = document.createElement('tr');
-                row.className = rowClass;
-                row.innerHTML = `<td>${tableText}</td>
-                                 <td>${userAnswer}</td>
-                                 <td>${correctAnswer}</td>
-                                 <td>${explanation}</td>`;
-                document.getElementById('answerTableBody').appendChild(row);
-            });
+    for (let i = 1; i < points.length; i++) {
+      const dx = points[i].x - points[i-1].x;
+      const dy = points[i].y - points[i-1].y;
+      pathLength += Math.sqrt(dx * dx + dy * dy);
+      minX = Math.min(minX, points[i].x);
+      maxX = Math.max(maxX, points[i].x);
+      minY = Math.min(minY, points[i].y);
+      maxY = Math.max(maxY, points[i].y);
+    }
 
-            // Show the result summary
-            // document.getElementById('result').innerText = `You got ${correctCount} out of 11 correct.`;
-        }
-		function restartQuiz() {
-			document.querySelectorAll('.input-box').forEach(input => {
-			input.value = '';
-			input.className = 'input-box';
-			});
-		document.getElementById('result').innerText = '';
-		document.getElementById('answerTable').style.display = 'none';
-		}
+    const netDx = end.x - start.x;
+    const netDy = end.y - start.y;
+    const netDist = Math.sqrt(netDx * netDx + netDy * netDy);
+    const boxWidth = maxX - minX;
+    const boxHeight = maxY - minY;
 
-		function populateHistoryList() {
-			const hiddenVideosContainer = document.getElementById('hiddenVideos');
-			const latestVideoContainer = document.getElementById('latestVideoContainer');
-			hiddenVideosContainer.innerHTML = ""; // Clear existing history list
-			latestVideoContainer.innerHTML = ""; // Clear latest video (prevents duplication)
+    // 1. TAP DETECTION: Small total movement
+    if (pathLength < 30) {
+      handleZoneInput(0, 'Tap -> 0');
+      return;
+    }
 
-			const videoKeysToLoad = getAvailableVideos().reverse(); // Reverse order
-			const latestVideoId = videoKeysToLoad[0]; // Get the latest video
+    // 2. CIRCLE DETECTION: Path is long but start/end are close
+    if (pathLength > 90 && netDist < 70 && boxWidth > 30 && boxHeight > 30) {
+      handleZoneInput(5, 'Circle -> 0.5');
+      return;
+    }
 
-			// Create the latest video item dynamically
-			const latestVideoItem = document.createElement('div');
-			latestVideoItem.className = 'video-item active'; // Mark as active
-			latestVideoItem.onclick = () => loadVideo(latestVideoId);
-			latestVideoItem.innerHTML = `<p>${formatVideoTitle(latestVideoId)}</p>`; // Dynamic title
+    // 3. FLICK / SWIPE DETECTION: Axis classification
+    if (Math.abs(netDy) >= Math.abs(netDx)) {
+      if (netDy < 0) {
+        handleZoneInput(1, 'Flick Up -> 0.1');
+      } else {
+        handleZoneInput(3, 'Flick Down -> 0.2');
+      }
+    } else {
+      if (netDx > 0) {
+        handleZoneInput(2, 'Swipe Right -> 0.3');
+      } else {
+        handleZoneInput(4, 'Swipe Left -> 0.4');
+      }
+    }
+  }
 
-			latestVideoContainer.appendChild(latestVideoItem); // Insert into list
+  // Adjust Skills Performed Count (0 to 10)
+  function adjustSkillsCount(delta) {
+    triggerFeedback('tap');
+    skillsPerformed = Math.min(10, Math.max(0, skillsPerformed + delta));
+    renderReviewSummary();
+  }
 
-			// Populate history list, excluding the latest video
-			videoKeysToLoad.slice(1).forEach(videoId => {
-				const videoItem = document.createElement('div');
-				videoItem.className = 'video-item';
-				videoItem.onclick = () => loadVideo(videoId);
-				videoItem.innerHTML = `<p>${formatVideoTitle(videoId)}</p>`;
-				hiddenVideosContainer.appendChild(videoItem);
-			});
-			
+  // Render Review Screen with Skills Performed & Landing Exclusion Calculation
+  function renderReviewSummary() {
+    document.getElementById('skillsCountDisplay').textContent = skillsPerformed;
 
-		}	
+    const isLandingActive = (skillsPerformed === 10);
 
-		function formatVideoTitle(videoId) {
-			return videoData[videoId].title;
-		}
-		
-		function goHome() {
-			// Hide resource library if it's open
-			const resourceLibrary = document.getElementById('resourceLibrary');
-			const mainContent = document.getElementById('mainContent');
-			
-			if (!resourceLibrary.classList.contains('hidden')) {
-				resourceLibrary.classList.add('hidden');
-				mainContent.style.display = 'block';
-			}
-			
-			// Close video history if it's open
-			const hiddenVideos = document.getElementById('hiddenVideos');
-			if (hiddenVideos.style.display !== 'none') {
-				hiddenVideos.classList.remove('show');
-				hiddenVideos.style.display = 'none';
-			}
-			
-			// Reset quiz answers
-			restartQuiz();
-			
-			// Load the latest video
-			const availableVideos = getAvailableVideos();
-			const latestVideoId = availableVideos[availableVideos.length - 1];
-			loadVideo(latestVideoId);
-			
-			// Update URL to remove any parameters
-			history.pushState({view: 'quiz'}, '', window.location.pathname);
-			
-			// Scroll to top
-			window.scrollTo({ top: 0, behavior: 'smooth' });
-		}
-		
+    // Sum active performed skill deductions (+ landing ONLY if full 10-skill routine)
+    const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
+    const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
+    const totalDeduct = skillDeductSum + (isLandingActive ? landingDeduction : 0);
 
-    </script>
+    const maxBaseScore = skillsPerformed * 1.0;
+    const netScore = Math.max(0, maxBaseScore - totalDeduct);
+
+    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
+    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
+
+    const listContainer = document.getElementById('reviewList');
+    listContainer.innerHTML = '';
+
+    // Render Rows for Skills 1 to 10
+    skillDeductions.forEach((val, i) => {
+      const isPerformed = i < skillsPerformed;
+      const row = document.createElement('div');
+      row.className = `review-row ${isPerformed ? '' : 'disabled-row'}`;
+
+      row.innerHTML = `
+        <span class="sk-lbl">Skill ${i + 1} ${isPerformed ? '' : '<small>(Excluded)</small>'}</span>
+        <div class="value-controls-group">
+          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>` : ''}
+          <span class="sk-val">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
+          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, 1)">+</button>` : ''}
+        </div>
+      `;
+      listContainer.appendChild(row);
+    });
+
+    // Render Row for Landing (Dimmed & Excluded if skillsPerformed < 10)
+    const landingRow = document.createElement('div');
+    landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
+    landingRow.innerHTML = `
+      <span class="sk-lbl">Landing ${isLandingActive ? '' : '<small>(Excluded)</small>'}</span>
+      <div class="value-controls-group">
+        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(-1)">−</button>` : ''}
+        <span class="sk-val">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
+        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(1)">+</button>` : ''}
+      </div>
+    `;
+    listContainer.appendChild(landingRow);
+  }
+
+  // Step Skill Value through Preset Scale or 0.1 Increments
+  function stepSkillValue(index, direction) {
+    triggerFeedback('tap');
+    let currentVal = skillDeductions[index];
+    let sortedPreset = [...new Set(activeRoutineZones)].sort((a,b) => a - b);
+    let matchIdx = sortedPreset.indexOf(currentVal);
+
+    if (matchIdx !== -1) {
+      let newIdx = Math.min(sortedPreset.length - 1, Math.max(0, matchIdx + direction));
+      skillDeductions[index] = sortedPreset[newIdx];
+    } else {
+      let updated = Math.round((currentVal + (direction * 0.1)) * 10) / 10;
+      skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
+    }
+    renderReviewSummary();
+  }
+
+  // Step Landing Value through Discrete FIG Scale: [0.0, 0.1, 0.2, 0.3, 0.5, 1.0]
+  function stepLandingValue(direction) {
+    triggerFeedback('tap');
+    let currentIdx = LANDING_PRESET.indexOf(landingDeduction);
+    if (currentIdx === -1) {
+      currentIdx = LANDING_PRESET.reduce((closest, val, idx) => 
+        Math.abs(val - landingDeduction) < Math.abs(LANDING_PRESET[closest] - landingDeduction) ? idx : closest, 0);
+    }
+
+    let newIdx = Math.min(LANDING_PRESET.length - 1, Math.max(0, currentIdx + direction));
+    landingDeduction = LANDING_PRESET[newIdx];
+
+    renderReviewSummary();
+  }
+
+  function resetToSetup() {
+    phase = 'setup';
+    skillsPerformed = 10;
+    setupScreen.classList.remove('hidden');
+    gridScreen.classList.add('hidden');
+    swipeScreen.classList.add('hidden');
+    reviewScreen.classList.add('hidden');
+    phaseBadge.textContent = 'Setup';
+    phaseBadge.className = 'phase-badge badge-routine';
+    skillCounter.textContent = 'Skill 1 / 10';
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+</script>
 </body>
 </html>
