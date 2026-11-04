@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Trampoline Execution Judge Interface</title>
+<style>
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+user-select: none;
+-webkit-user-select: none;
+touch-action: manipulation;
+}
+
+body, html {
+width: 100%;
+height: 100%;
+background-color: #050505;
+color: #ffffff;
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+overflow: hidden;
+}
+
+/* Screen Wrapper */
+.app-wrapper {
+display: flex;
+flex-direction: column;
+width: 100vw;
+height: 100vh;
+height: 100dvh;
+}
+
+/* Top Status Bar (Thin 6-8% height) */
+.status-bar {
+height: 48px;
+background: #111116;
+border-bottom: 1px solid #22222e;
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 0 16px;
+font-weight: 600;
+font-size: 14px;
+letter-spacing: 0.5px;
+z-index: 10;
+}
+
+.status-title {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.phase-badge {
+padding: 3px 8px;
+border-radius: 4px;
+font-size: 11px;
+text-transform: uppercase;
+font-weight: 700;
+}
+
+.badge-routine { background: #0055ff; color: #fff; }
+.badge-landing { background: #d97706; color: #fff; }
+.badge-review { background: #10b981; color: #fff; }
+
+.btn-header {
+background: #222230;
+border: 1px solid #333344;
+color: #ccc;
+padding: 6px 12px;
+border-radius: 6px;
+font-size: 12px;
+cursor: pointer;
+}
+
+.btn-header:active { background: #333348; }
+
+/* Main Content Canvas */
+.main-content {
+flex: 1;
+position: relative;
+width: 100%;
+height: calc(100% - 48px);
+}
+
+/* 2 COLUMNS x 3 ROWS GRID LAYOUT */
+.grid-container {
+display: grid;
+grid-template-columns: repeat(2, 1fr); /* Exactly 2 Columns */
+grid-template-rows: repeat(3, 1fr); /* Exactly 3 Rows */
+gap: 6px;
+padding: 6px;
+width: 100%;
+height: 100%;
+background: #000000;
+}
+
+.zone-btn {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+background: #14141d;
+border: 2px solid #282838;
+border-radius: 12px;
+color: #ffffff;
+font-size: 2.8rem;
+font-weight: 800;
+cursor: pointer;
+transition: background 0.05s ease, transform 0.05s ease;
+position: relative;
+overflow: hidden;
+}
+
+.zone-btn:active, .zone-btn.active-touch {
+background: #0055ff !important;
+border-color: #6699ff !important;
+transform: scale(0.98);
+}
+
+.landing-mode .zone-btn:active, .landing-mode .zone-btn.active-touch {
+background: #d97706 !important;
+border-color: #fbbf24 !important;
+}
+
+.zone-sub {
+font-size: 0.85rem;
+font-weight: 500;
+color: #8888a0;
+margin-top: 4px;
+text-transform: uppercase;
+letter-spacing: 1px;
+}
+
+/* SETUP SCREEN */
+.setup-screen {
+padding: 24px;
+display: flex;
+flex-direction: column;
+gap: 20px;
+height: 100%;
+overflow-y: auto;
+background: #0a0a0f;
+}
+
+.section-title {
+font-size: 1.1rem;
+font-weight: 700;
+color: #8888a0;
+text-transform: uppercase;
+letter-spacing: 1px;
+}
+
+.preset-group {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 12px;
+}
+
+.preset-card {
+background: #14141f;
+border: 2px solid #222233;
+border-radius: 10px;
+padding: 14px;
+cursor: pointer;
+}
+
+.preset-card.selected {
+border-color: #0055ff;
+background: #0a1838;
+}
+
+.preset-card h4 { font-size: 1rem; margin-bottom: 4px; }
+.preset-card p { font-size: 0.8rem; color: #8888a0; }
+
+.btn-primary {
+background: #0055ff;
+color: white;
+border: none;
+padding: 16px;
+border-radius: 12px;
+font-size: 1.1rem;
+font-weight: 700;
+cursor: pointer;
+text-align: center;
+margin-top: auto;
+}
+
+.btn-primary:active { background: #0044cc; }
+
+/* REVIEW SCREEN */
+.review-screen {
+padding: 16px;
+display: flex;
+flex-direction: column;
+height: 100%;
+background: #0a0a0f;
+overflow-y: auto;
+}
+
+.score-banner {
+background: #141420;
+border: 1px solid #262638;
+border-radius: 12px;
+padding: 16px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 16px;
+}
+
+.score-box { text-align: center; }
+.score-val { font-size: 2rem; font-weight: 800; color: #10b981; }
+.deduct-val { font-size: 2rem; font-weight: 800; color: #ef4444; }
+.score-lbl { font-size: 0.75rem; color: #8888a0; text-transform: uppercase; }
+
+.review-grid {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 8px;
+margin-bottom: 16px;
+}
+
+.review-item {
+background: #12121a;
+border: 1px solid #222230;
+border-radius: 8px;
+padding: 10px 14px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+cursor: pointer;
+}
+
+.review-item.landing-item {
+grid-column: span 2;
+background: #1c1508;
+border-color: #422d08;
+}
+
+.review-item:active { background: #222235; }
+.review-item .sk-lbl { font-size: 0.85rem; color: #8888a0; font-weight: 600; }
+.review-item .sk-val { font-size: 1.2rem; font-weight: 700; color: #ffffff; }
+
+/* MODAL FOR QUICK EDIT */
+.modal-overlay {
+position: fixed;
+top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0,0,0,0.85);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 100;
+padding: 20px;
+}
+
+.modal-card {
+background: #181824;
+border: 1px solid #333348;
+border-radius: 16px;
+padding: 20px;
+width: 100%;
+max-width: 360px;
+text-align: center;
+}
+
+.modal-options {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px;
+margin: 16px 0;
+}
+
+.opt-btn {
+background: #222234;
+border: 1px solid #333348;
+color: white;
+padding: 14px;
+font-size: 1.2rem;
+font-weight: 700;
+border-radius: 8px;
+cursor: pointer;
+}
+
+.opt-btn:active { background: #0055ff; }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="app-wrapper">
+<!-- Status Bar -->
+<div class="status-bar">
+<div class="status-title">
+<span id="phaseBadge" class="phase-badge badge-routine">Routine</span>
+<span id="skillCounter">Skill 1 / 10</span>
+</div>
+<div style="display:flex; gap:8px;">
+<button class="btn-header" onclick="toggleFullscreen()">Fullscreen</button>
+<button class="btn-header" onclick="resetToSetup()">Reset</button>
+</div>
+</div>
+
+<!-- Main Display Canvas -->
+<div class="main-content">
+
+<!-- 1. SETUP / CONFIGURATION SCREEN -->
+<div id="setupScreen" class="setup-screen">
+<div class="section-title">Select Preset Layout</div>
+
+<div class="preset-group">
+<div class="preset-card selected" onclick="selectPreset('fig', this)">
+<h4>FIG Standard</h4>
+<p>0.0, 0.1, 0.2, 0.3, 0.4, 0.5</p>
+</div>
+<div class="preset-card" onclick="selectPreset('coarse', this)">
+<h4>Coarse Scale</h4>
+<p>0.0, 0.1, 0.2, 0.3, 0.5, 0.5</p>
+</div>
+<div class="preset-card" onclick="selectPreset('synchro', this)">
+<h4>Fine Scale (HD)</h4>
+<p>0.00, 0.05, 0.10, 0.15, 0.20, 0.30</p>
+</div>
+<div class="preset-card" onclick="selectPreset('flipped', this)">
+<h4>FIG (Flipped)</h4>
+<p>Right-to-Left orientation</p>
+</div>
+</div>
+
+<div class="section-title" style="margin-top:10px;">Grid Preview (2 Cols x 3 Rows)</div>
+<div style="font-size:0.85rem; color:#8888a0; margin-bottom:-10px;">
+Touch zones cover 95%+ of the screen during active routine entry.
+</div>
+
+<button class="btn-primary" onclick="startRoutine()">Start Routine Judging</button>
+</div>
+
+<!-- 2. ROUTINE & LANDING 2x3 GRID INPUT -->
+<div id="gridScreen" class="grid-container hidden">
+<!-- 2 Columns x 3 Rows = 6 Zones -->
+<div class="zone-btn" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
+<div class="zone-btn" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
+<div class="zone-btn" id="zone2"><span class="val">0.2</span><span class="zone-sub">Zone 3</span></div>
+<div class="zone-btn" id="zone3"><span class="val">0.3</span><span class="zone-sub">Zone 4</span></div>
+<div class="zone-btn" id="zone4"><span class="val">0.4</span><span class="zone-sub">Zone 5</span></div>
+<div class="zone-btn" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
+</div>
+
+<!-- 3. REVIEW & EDIT SCREEN -->
+<div id="reviewScreen" class="review-screen hidden">
+<div class="score-banner">
+<div class="score-box">
+<div class="deduct-val" id="totalDeductDisplay">0.00</div>
+<div class="score-lbl">Total Deduction</div>
+</div>
+<div class="score-box">
+<div class="score-val" id="netScoreDisplay">10.00</div>
+<div class="score-lbl">Execution Score</div>
+</div>
+</div>
+
+<div class="section-title" style="margin-bottom:10px;">Skill Breakdown (Tap to edit)</div>
+
+<div class="review-grid" id="reviewGridList">
+<!-- Generated dynamically -->
+</div>
+
+<button class="btn-primary" onclick="resetToSetup()" style="margin-top:auto;">Confirm & Next Routine</button>
+</div>
+
+</div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" class="modal-overlay hidden">
+<div class="modal-card">
+<h3 id="modalTitle" style="color:#fff; margin-bottom:8px;">Edit Skill 1</h3>
+<p style="font-size:0.85rem; color:#8888a0;">Select revised deduction value:</p>
+
+<div class="modal-options" id="modalOptions">
+<!-- Generated dynamically -->
+</div>
+
+<button class="btn-header" style="width:100%; padding:12px;" onclick="closeModal()">Cancel</button>
+</div>
+</div>
+
+<script>
+// App State
+const PRESETS = {
+fig: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
+coarse: [0.0, 0.1, 0.2, 0.3, 0.5, 0.5],
+synchro: [0.00, 0.05, 0.10, 0.15, 0.20, 0.30],
+flipped: [0.1, 0.0, 0.3, 0.2, 0.5, 0.4]
+};
+
+const LANDING_PRESET = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
+
+let currentPresetKey = 'fig';
+let activeRoutineZones = [...PRESETS.fig];
+let phase = 'setup'; // 'setup' | 'routine' | 'landing' | 'review'
+let currentSkillIndex = 0; // 0 to 9 for skills, 10 for landing
+let skillDeductions = new Array(10).fill(0);
+let landingDeduction = 0;
+let editingTargetIndex = null;
+
+// DOM Elements
+const setupScreen = document.getElementById('setupScreen');
+const gridScreen = document.getElementById('gridScreen');
+const reviewScreen = document.getElementById('reviewScreen');
+const phaseBadge = document.getElementById('phaseBadge');
+const skillCounter = document.getElementById('skillCounter');
+const editModal = document.getElementById('editModal');
+
+// Trigger Haptic Feedback
+function triggerHaptic(type = 'tap') {
+if ('vibrate' in navigator) {
+if (type === 'tap') navigator.vibrate(25);
+if (type === 'transition') navigator.vibrate([40, 30, 40]);
+if (type === 'complete') navigator.vibrate([60, 40, 100]);
+}
+}
+
+// Preset Selection
+function selectPreset(key, el) {
+currentPresetKey = key;
+activeRoutineZones = [...PRESETS[key]];
+document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
+el.classList.add('selected');
+}
+
+// Render Grid Values
+function renderGrid(values) {
+for (let i = 0; i < 6; i++) {
+const btn = document.getElementById(`zone${i}`);
+btn.querySelector('.val').textContent = typeof values[i] === 'number' ? values[i].toFixed(1) : values[i];
+}
+}
+
+// Start Routine
+function startRoutine() {
+phase = 'routine';
+currentSkillIndex = 0;
+skillDeductions = new Array(10).fill(0);
+landingDeduction = 0;
+
+setupScreen.classList.add('hidden');
+reviewScreen.classList.add('hidden');
+gridScreen.classList.remove('hidden');
+gridScreen.classList.remove('landing-mode');
+
+phaseBadge.textContent = 'Routine';
+phaseBadge.className = 'phase-badge badge-routine';
+updateCounter();
+
+renderGrid(activeRoutineZones);
+triggerHaptic('transition');
+}
+
+function updateCounter() {
+if (phase === 'routine') {
+skillCounter.textContent = `Skill ${currentSkillIndex + 1} / 10`;
+} else if (phase === 'landing') {
+skillCounter.textContent = `Landing Deduction`;
+} else if (phase === 'review') {
+skillCounter.textContent = `Complete`;
+}
+}
+
+// High-Speed Touch Handling on 2x3 Grid
+const zoneButtons = document.querySelectorAll('.zone-btn');
+zoneButtons.forEach((btn, index) => {
+// Fast pointerdown event prevents 300ms click delay
+btn.addEventListener('pointerdown', (e) => {
+e.preventDefault();
+btn.classList.add('active-touch');
+handleZoneInput(index);
+});
+
+btn.addEventListener('pointerup', () => btn.classList.remove('active-touch'));
+btn.addEventListener('pointerleave', () => btn.classList.remove('active-touch'));
+});
+
+function handleZoneInput(zoneIndex) {
+triggerHaptic('tap');
+
+if (phase === 'routine') {
+const val = activeRoutineZones[zoneIndex];
+skillDeductions[currentSkillIndex] = val;
+currentSkillIndex++;
+
+if (currentSkillIndex >= 10) {
+// Auto transition to Landing Phase
+phase = 'landing';
+gridScreen.classList.add('landing-mode');
+phaseBadge.textContent = 'Landing';
+phaseBadge.className = 'phase-badge badge-landing';
+renderGrid(LANDING_PRESET);
+triggerHaptic('transition');
+}
+updateCounter();
+
+} else if (phase === 'landing') {
+const val = LANDING_PRESET[zoneIndex];
+landingDeduction = val;
+
+// Auto transition to Review Screen
+phase = 'review';
+gridScreen.classList.add('hidden');
+reviewScreen.classList.remove('hidden');
+phaseBadge.textContent = 'Review';
+phaseBadge.className = 'phase-badge badge-review';
+updateCounter();
+
+renderReviewSummary();
+triggerHaptic('complete');
+}
+}
+
+// Render Review Summary Screen
+function renderReviewSummary() {
+const totalDeduct = skillDeductions.reduce((a, b) => a + b, 0) + landingDeduction;
+const netScore = Math.max(0, 10 - totalDeduct);
+
+document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
+document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
+
+const listContainer = document.getElementById('reviewGridList');
+listContainer.innerHTML = '';
+
+// Skills 1 to 10
+skillDeductions.forEach((val, i) => {
+const item = document.createElement('div');
+item.className = 'review-item';
+item.onclick = () => openEditModal(i);
+item.innerHTML = `
+<span class="sk-lbl">Skill ${i + 1}</span>
+<span class="sk-val">-${val.toFixed(1)}</span>
+`;
+listContainer.appendChild(item);
+});
+
+// Landing Item
+const landingItem = document.createElement('div');
+landingItem.className = 'review-item landing-item';
+landingItem.onclick = () => openEditModal(10);
+landingItem.innerHTML = `
+<span class="sk-lbl" style="color:#f59e0b;">Landing</span>
+<span class="sk-val" style="color:#f59e0b;">-${landingDeduction.toFixed(1)}</span>
+`;
+listContainer.appendChild(landingItem);
+}
+
+// Edit Modal Operations
+function openEditModal(index) {
+editingTargetIndex = index;
+const isLanding = index === 10;
+document.getElementById('modalTitle').textContent = isLanding ? 'Edit Landing' : `Edit Skill ${index + 1}`;
+
+const optionsContainer = document.getElementById('modalOptions');
+optionsContainer.innerHTML = '';
+
+const opts = isLanding ? LANDING_PRESET : activeRoutineZones;
+opts.forEach(val => {
+const btn = document.createElement('button');
+btn.className = 'opt-btn';
+btn.textContent = `-${val.toFixed(1)}`;
+btn.onclick = () => saveEdit(val);
+optionsContainer.appendChild(btn);
+});
+
+editModal.classList.remove('hidden');
+}
+
+function closeModal() {
+editModal.classList.add('hidden');
+editingTargetIndex = null;
+}
+
+function saveEdit(newVal) {
+if (editingTargetIndex === 10) {
+landingDeduction = newVal;
+} else {
+skillDeductions[editingTargetIndex] = newVal;
+}
+closeModal();
+renderReviewSummary();
+triggerHaptic('tap');
+}
+
+function resetToSetup() {
+phase = 'setup';
+setupScreen.classList.remove('hidden');
+gridScreen.classList.add('hidden');
+reviewScreen.classList.add('hidden');
+phaseBadge.textContent = 'Setup';
+phaseBadge.className = 'phase-badge badge-routine';
+skillCounter.textContent = 'Skill 1 / 10';
+}
+
+function toggleFullscreen() {
+if (!document.fullscreenElement) {
+document.documentElement.requestFullscreen().catch(() => {});
+} else {
+document.exitFullscreen().catch(() => {});
+}
+}
+</script>
+</body>
+</html>
