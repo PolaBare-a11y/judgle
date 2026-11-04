@@ -8,20 +8,20 @@
     /* ==========================================================================
        COLOR PALETTE & STYLING CUSTOMIZATION
        World Gymnastics FIG Ribbon Gradient Palette:
+       - FIG Green:  #9bd98b  (0.0 Deduction / Clean execution)
+       - FIG Orange: #d97706  (Max Deduction / High penalty)
        - FIG Blue:   #4495e5  (Primary accent / Active state)
-       - FIG Purple: #7d5fb3  (Borders / Secondary accent)
-       - FIG Pink:   #dc5183  (Landing mode / Highlights)
-       - FIG Green:  #9bd98b  (Execution Net Score / Confirmation)
+       - FIG Purple: #7d5fb3  (Secondary accent / Borders)
+       - FIG Pink:   #dc5183  (Landing phase highlight)
        ========================================================================== */
 
     :root {
-      /* Theme Color Variables */
       --fig-blue:   #4495e5;
       --fig-purple: #7d5fb3;
       --fig-pink:   #dc5183;
       --fig-green:  #9bd98b;
+      --fig-orange: #d97706;
 
-      /* Dark Mode Surfaces */
       --bg-dark:    #0a0a0f;
       --card-bg:    #14141f;
       --border-col: #2c2940;
@@ -126,29 +126,19 @@
       align-items: center;
       justify-content: center;
       background: var(--card-bg);
-      border: 2px solid var(--fig-purple);
+      border: 3px solid var(--fig-purple);
       border-radius: 14px;
       color: var(--text-main);
       font-size: 3rem;
       font-weight: 800;
       cursor: pointer;
-      transition: background 0.05s ease, border-color 0.05s ease, transform 0.05s ease;
+      transition: transform 0.05s ease, filter 0.05s ease;
       position: relative;
     }
 
     .zone-btn:active, .zone-btn.active-touch {
-      background: rgba(68, 149, 229, 0.25) !important;
-      border-color: var(--fig-blue) !important;
-      transform: scale(0.98);
-    }
-
-    .landing-mode .zone-btn {
-      border-color: var(--fig-pink);
-    }
-
-    .landing-mode .zone-btn:active, .landing-mode .zone-btn.active-touch {
-      background: rgba(220, 81, 131, 0.25) !important;
-      border-color: var(--fig-pink) !important;
+      transform: scale(0.97);
+      filter: brightness(1.25);
     }
 
     .zone-sub {
@@ -218,29 +208,43 @@
 
     /* REVIEW SCREEN: ZERO-SCROLL SINGLE-PAGE DYNAMIC SQUEEZE LAYOUT */
     .review-screen {
-      padding: 10px 14px;
+      padding: 8px 12px;
       display: flex;
       flex-direction: column;
       height: 100%;
       background: var(--bg-dark);
-      overflow: hidden; /* No scrolling */
+      overflow: hidden;
     }
 
-    .score-banner {
+    .review-header-bar {
       background: var(--card-bg);
       border: 1px solid var(--border-col);
       border-radius: 10px;
-      padding: 8px 16px;
+      padding: 8px 12px;
       display: flex;
-      justify-content: space-around;
-      align-items: center;
+      flex-direction: column;
+      gap: 6px;
       flex-shrink: 0;
       margin-bottom: 6px;
     }
 
+    .skills-count-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-col);
+    }
+
+    .score-banner {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
     .score-box { text-align: center; }
-    .score-val { font-size: 1.8rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
-    .deduct-val { font-size: 1.8rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
+    .score-val { font-size: 1.6rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
+    .deduct-val { font-size: 1.6rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
     .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* Dynamic flex-fill container for 11 rows */
@@ -248,8 +252,8 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 3px;
-      min-height: 0; /* Allows rows to shrink dynamically */
+      gap: 2px;
+      min-height: 0;
       margin-bottom: 6px;
     }
 
@@ -260,10 +264,15 @@
       background: var(--card-bg);
       border: 1px solid var(--border-col);
       border-radius: 6px;
-      padding: 0 12px;
+      padding: 0 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    .review-row.disabled-row {
+      opacity: 0.35;
+      background: #0d0d14;
     }
 
     .review-row.landing-row {
@@ -272,7 +281,7 @@
     }
 
     .sk-lbl {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--text-sub);
       font-weight: 600;
     }
@@ -285,14 +294,14 @@
     .value-controls-group {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .sk-val {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       color: var(--text-main);
-      min-width: 48px;
+      min-width: 44px;
       text-align: center;
     }
 
@@ -301,13 +310,13 @@
     }
 
     .btn-step {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 6px;
       background: #1e1c2e;
       border: 1px solid var(--fig-purple);
       color: var(--text-main);
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -385,16 +394,33 @@
       <div class="zone-btn" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
     </div>
 
-    <!-- 3. REVIEW & EDIT SCREEN (ONE-PAGE NO-SCROLL LAYOUT) -->
+    <!-- 3. REVIEW & EDIT SCREEN (WITH SKILLS COUNT ADJUSTER) -->
     <div id="reviewScreen" class="review-screen hidden">
-      <div class="score-banner">
-        <div class="score-box">
-          <div class="deduct-val" id="totalDeductDisplay">0.00</div>
-          <div class="score-lbl">Total Deduction</div>
+      <div class="review-header-bar">
+        <!-- Skills Performed Adjuster -->
+        <div class="skills-count-row">
+          <span class="score-lbl">Skills Performed</span>
+          <div class="value-controls-group">
+            <button class="btn-step" onclick="adjustSkillsCount(-1)">−</button>
+            <span class="sk-val" id="skillsCountDisplay">10</span>
+            <button class="btn-step" onclick="adjustSkillsCount(1)">+</button>
+          </div>
         </div>
-        <div class="score-box">
-          <div class="score-val" id="netScoreDisplay">10.00</div>
-          <div class="score-lbl">Execution Score</div>
+
+        <!-- Scores Summary -->
+        <div class="score-banner">
+          <div class="score-box">
+            <div class="score-lbl">Max Base</div>
+            <div class="sk-val" id="maxBaseDisplay" style="color:var(--fig-blue);">10.00</div>
+          </div>
+          <div class="score-box">
+            <div class="score-lbl">Total Deduction</div>
+            <div class="deduct-val" id="totalDeductDisplay">0.00</div>
+          </div>
+          <div class="score-box">
+            <div class="score-lbl">Net E-Score</div>
+            <div class="score-val" id="netScoreDisplay">10.00</div>
+          </div>
         </div>
       </div>
 
@@ -417,7 +443,6 @@
     flipped: [0.1, 0.0, 0.3, 0.2, 0.5, 0.4]
   };
 
-  // Discrete FIG Landing Scale Values
   const LANDING_PRESET = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
 
   let currentPresetKey = 'fig';
@@ -426,6 +451,7 @@
   let currentSkillIndex = 0;
   let skillDeductions = new Array(10).fill(0);
   let landingDeduction = 0;
+  let skillsPerformed = 10; // Default 10 skills
 
   // DOM Elements
   const setupScreen  = document.getElementById('setupScreen');
@@ -435,12 +461,26 @@
   const skillCounter = document.getElementById('skillCounter');
 
   /* ==========================================================================
+     COLOR GRADIENT HELPER: FIG Green (#9bd98b) -> FIG Orange (#d97706)
+     ========================================================================== */
+  function getGradientColor(val, maxVal) {
+    if (maxVal <= 0) return 'rgb(155, 217, 139)';
+    const ratio = Math.min(1, Math.max(0, val / maxVal));
+
+    // RGB Interpolation: Green (155, 217, 139) -> Orange (217, 119, 6)
+    const r = Math.round(155 + (217 - 155) * ratio);
+    const g = Math.round(217 + (119 - 217) * ratio);
+    const b = Math.round(139 + (6 - 139) * ratio);
+
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  /* ==========================================================================
      AUDIO SYNTHESIS FEEDBACK
      ========================================================================== */
   let audioCtx = null;
 
   function triggerFeedback(type = 'tap') {
-    // Web Audio Micro-Tick Synthesis
     try {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -469,11 +509,20 @@
     el.classList.add('selected');
   }
 
-  // Render Grid Display Values
+  // Render Grid Display Values with Color Gradient
   function renderGrid(values) {
+    const numericVals = values.filter(v => typeof v === 'number');
+    const maxVal = phase === 'landing' ? 1.0 : (Math.max(...numericVals) || 0.5);
+
     for (let i = 0; i < 6; i++) {
       const btn = document.getElementById(`zone${i}`);
-      btn.querySelector('.val').textContent = typeof values[i] === 'number' ? values[i].toFixed(1) : values[i];
+      const val = values[i];
+      btn.querySelector('.val').textContent = typeof val === 'number' ? val.toFixed(1) : val;
+
+      const color = getGradientColor(val, maxVal);
+      btn.style.borderColor = color;
+      btn.style.color = color;
+      btn.style.background = `rgba(${color.replace('rgb(','').replace(')','')}, 0.12)`;
     }
   }
 
@@ -483,6 +532,7 @@
     currentSkillIndex = 0;
     skillDeductions = new Array(10).fill(0);
     landingDeduction = 0;
+    skillsPerformed = 10;
 
     setupScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
@@ -554,11 +604,25 @@
     }
   }
 
-  // Render Review Screen with Dynamic Squeezed Rows and Grouped Controls
-  function renderReviewSummary() {
-    const totalDeduct = skillDeductions.reduce((a, b) => a + b, 0) + landingDeduction;
-    const netScore = Math.max(0, 10 - totalDeduct);
+  // Adjust Skills Performed Count (0 to 10)
+  function adjustSkillsCount(delta) {
+    triggerFeedback('tap');
+    skillsPerformed = Math.min(10, Math.max(0, skillsPerformed + delta));
+    renderReviewSummary();
+  }
 
+  // Render Review Screen with Skills Performed Calculation
+  function renderReviewSummary() {
+    document.getElementById('skillsCountDisplay').textContent = skillsPerformed;
+
+    // Calculate sum of only active performed skills + landing
+    const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
+    const totalDeduct = activeSkillDeductions.reduce((a, b) => a + b, 0) + landingDeduction;
+
+    const maxBaseScore = skillsPerformed * 1.0;
+    const netScore = Math.max(0, maxBaseScore - totalDeduct);
+
+    document.getElementById('maxBaseDisplay').textContent = maxBaseScore.toFixed(2);
     document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
     document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
 
@@ -567,14 +631,16 @@
 
     // Render Rows for Skills 1 to 10
     skillDeductions.forEach((val, i) => {
+      const isPerformed = i < skillsPerformed;
       const row = document.createElement('div');
-      row.className = 'review-row';
+      row.className = `review-row ${isPerformed ? '' : 'disabled-row'}`;
+
       row.innerHTML = `
-        <span class="sk-lbl">Skill ${i + 1}</span>
+        <span class="sk-lbl">Skill ${i + 1} ${isPerformed ? '' : '<small>(Excluded)</small>'}</span>
         <div class="value-controls-group">
-          <button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>
-          <span class="sk-val">-${val.toFixed(1)}</span>
-          <button class="btn-step" onclick="stepSkillValue(${i}, 1)">+</button>
+          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>` : ''}
+          <span class="sk-val">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
+          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, 1)">+</button>` : ''}
         </div>
       `;
       listContainer.appendChild(row);
@@ -598,7 +664,6 @@
   function stepSkillValue(index, direction) {
     triggerFeedback('tap');
     let currentVal = skillDeductions[index];
-    // Find step in active preset or adjust by 0.1 (clamped 0.0 - 0.5)
     let sortedPreset = [...new Set(activeRoutineZones)].sort((a,b) => a - b);
     let matchIdx = sortedPreset.indexOf(currentVal);
 
@@ -617,7 +682,6 @@
     triggerFeedback('tap');
     let currentIdx = LANDING_PRESET.indexOf(landingDeduction);
     if (currentIdx === -1) {
-      // Find closest value in LANDING_PRESET
       currentIdx = LANDING_PRESET.reduce((closest, val, idx) => 
         Math.abs(val - landingDeduction) < Math.abs(LANDING_PRESET[closest] - landingDeduction) ? idx : closest, 0);
     }
@@ -630,6 +694,7 @@
 
   function resetToSetup() {
     phase = 'setup';
+    skillsPerformed = 10;
     setupScreen.classList.remove('hidden');
     gridScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
