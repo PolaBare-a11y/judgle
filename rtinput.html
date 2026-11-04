@@ -853,32 +853,48 @@
     <!-- 1. SETUP / CONFIGURATION SCREEN (THREE SECTIONS) -->
     <div id="setupScreen" class="setup-screen">
 
-      <!-- SECTION 1: GRID INTERFACE & PRESETS -->
+ <!-- SECTION 0: NUMBER RECOGNITION INTERFACE -->
       <div class="setup-section-card">
-        <div class="section-title">
-          <svg class="section-title-icon" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+        <div class="section-title" style="color:var(--fig-green);">
+          <svg class="section-title-icon" style="stroke:var(--fig-green);" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+            <path d="M2 2l7.58 7.58"></path>
+            <circle cx="11" cy="11" r="2"></circle>
           </svg>
-          Grid Interface
+          Number Recognition
         </div>
-        <div class="section-desc">Traditional 2x3 on-screen touch zones spanning 95%+ of the display during live judging.</div>
+        <div class="section-desc">Unistroke handwriting recognition ($1 Algorithm). Draw digits directly on screen per skill element.</div>
 
-        <div class="section-subtitle">Select E-Judge Preset</div>
-        <div class="preset-group">
-          <div class="preset-card selected" id="presetFigCard" onclick="selectPreset('fig', this)">
-            <h4>FIG Standard</h4>
-            <p>0.0, 0.1, 0.2, 0.3, 0.4, 0.5</p>
+        <div class="section-subtitle">Recognized Strokes</div>
+        <div class="num-guide-grid">
+          <div class="num-guide-card">
+            <div class="num-guide-digit">0</div>
+            <div class="num-guide-val">-0.0 Deduct</div>
           </div>
-          <div class="preset-card" id="presetFlippedCard" onclick="selectPreset('flipped', this)">
-            <h4>FIG (Flipped)</h4>
-            <p>Right-to-Left orientation</p>
+          <div class="num-guide-card">
+            <div class="num-guide-digit">1</div>
+            <div class="num-guide-val">-0.1 Deduct</div>
+          </div>
+          <div class="num-guide-card">
+            <div class="num-guide-digit">2</div>
+            <div class="num-guide-val">-0.2 Deduct</div>
+          </div>
+          <div class="num-guide-card">
+            <div class="num-guide-digit">3</div>
+            <div class="num-guide-val">-0.3 Deduct</div>
+          </div>
+          <div class="num-guide-card">
+            <div class="num-guide-digit">4</div>
+            <div class="num-guide-val">-0.4 Deduct</div>
+          </div>
+          <div class="num-guide-card">
+            <div class="num-guide-digit">5</div>
+            <div class="num-guide-val">-0.5 Deduct</div>
           </div>
         </div>
 
-        <button class="btn-primary" onclick="startRoutine('grid')" style="width:100%; margin-top:4px;">Start Grid Judging</button>
+        <button class="btn-primary btn-recognizer-start" onclick="startRoutine('recognizer')" style="width:100%; margin-top:4px;">Start Number Recognition Judging</button>
       </div>
 
       <!-- SECTION 2: SWIPE INTERFACE & DEDUCTION GUIDE -->
@@ -958,49 +974,33 @@
         <button class="btn-primary btn-swipe-start" onclick="startRoutine('swipe')" style="width:100%; margin-top:4px;">Start Swipe Judging</button>
       </div>
 
-      <!-- SECTION 3: NUMBER RECOGNITION INTERFACE -->
+      <!-- SECTION 1: GRID INTERFACE & PRESETS -->
       <div class="setup-section-card">
-        <div class="section-title" style="color:var(--fig-green);">
-          <svg class="section-title-icon" style="stroke:var(--fig-green);" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
-            <path d="M2 2l7.58 7.58"></path>
-            <circle cx="11" cy="11" r="2"></circle>
+        <div class="section-title">
+          <svg class="section-title-icon" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
           </svg>
-          Number Recognition
+          Grid Interface
         </div>
-        <div class="section-desc">Unistroke handwriting recognition ($1 Algorithm). Draw digits directly on screen per skill element.</div>
+        <div class="section-desc">Traditional 2x3 on-screen touch zones spanning 95%+ of the display during live judging.</div>
 
-        <div class="section-subtitle">Recognized Strokes</div>
-        <div class="num-guide-grid">
-          <div class="num-guide-card">
-            <div class="num-guide-digit">0</div>
-            <div class="num-guide-val">-0.0 Deduct</div>
+        <div class="section-subtitle">Select E-Judge Preset</div>
+        <div class="preset-group">
+          <div class="preset-card selected" id="presetFigCard" onclick="selectPreset('fig', this)">
+            <h4>FIG Standard</h4>
+            <p>0.0, 0.1, 0.2, 0.3, 0.4, 0.5</p>
           </div>
-          <div class="num-guide-card">
-            <div class="num-guide-digit">1</div>
-            <div class="num-guide-val">-0.1 Deduct</div>
-          </div>
-          <div class="num-guide-card">
-            <div class="num-guide-digit">2</div>
-            <div class="num-guide-val">-0.2 Deduct</div>
-          </div>
-          <div class="num-guide-card">
-            <div class="num-guide-digit">3</div>
-            <div class="num-guide-val">-0.3 Deduct</div>
-          </div>
-          <div class="num-guide-card">
-            <div class="num-guide-digit">4</div>
-            <div class="num-guide-val">-0.4 Deduct</div>
-          </div>
-          <div class="num-guide-card">
-            <div class="num-guide-digit">5</div>
-            <div class="num-guide-val">-0.5 Deduct</div>
+          <div class="preset-card" id="presetFlippedCard" onclick="selectPreset('flipped', this)">
+            <h4>FIG (Flipped)</h4>
+            <p>Right-to-Left orientation</p>
           </div>
         </div>
 
-        <button class="btn-primary btn-recognizer-start" onclick="startRoutine('recognizer')" style="width:100%; margin-top:4px;">Start Number Recognition Judging</button>
-      </div>
+        <button class="btn-primary" onclick="startRoutine('grid')" style="width:100%; margin-top:4px;">Start Grid Judging</button>
+      </div>     
 
       <!-- FOOTNOTE ON STARTING PAGE -->
       <div class="setup-footnote">
