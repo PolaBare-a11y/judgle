@@ -5,6 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Trampoline Execution Judge Interface</title>
 <style>
+/* ==========================================================================
+COLOR PALETTE & STYLING CUSTOMIZATION
+World Gymnastics FIG Ribbon Gradient Palette:
+- FIG Blue: #4495e5 (Primary accent / Active state)
+- FIG Purple: #7d5fb3 (Borders / Secondary accent)
+- FIG Pink: #dc5183 (Landing mode / Highlights)
+- FIG Green: #9bd98b (Execution Net Score / Confirmation)
+========================================================================== */
+
+:root {
+/* Update these hex values to customize theme colors throughout the app */
+--fig-blue: #4495e5;
+--fig-purple: #7d5fb3;
+--fig-pink: #dc5183;
+--fig-green: #9bd98b;
+
+/* Dark Mode Surfaces */
+--bg-dark: #0a0a0f;
+--card-bg: #14141f;
+--border-col: #2c2940; /* Subtle purple-tinted dark border */
+--text-main: #ffffff;
+--text-sub: #8a8a9e;
+}
+
 * {
 box-sizing: border-box;
 margin: 0;
@@ -17,8 +41,8 @@ touch-action: manipulation;
 body, html {
 width: 100%;
 height: 100%;
-background-color: #050505;
-color: #ffffff;
+background-color: var(--bg-dark);
+color: var(--text-main);
 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 overflow: hidden;
 }
@@ -32,18 +56,19 @@ height: 100vh;
 height: 100dvh;
 }
 
-/* Top Status Bar (Thin 6-8% height) */
+/* ==========================================================================
+TOP STATUS BAR (CUSTOMIZE HEADER COLORS HERE)
+========================================================================== */
 .status-bar {
 height: 48px;
-background: #111116;
-border-bottom: 1px solid #22222e;
+background: #111118;
+border-bottom: 1px solid var(--border-col);
 display: flex;
 align-items: center;
 justify-content: space-between;
 padding: 0 16px;
 font-weight: 600;
 font-size: 14px;
-letter-spacing: 0.5px;
 z-index: 10;
 }
 
@@ -61,13 +86,14 @@ text-transform: uppercase;
 font-weight: 700;
 }
 
-.badge-routine { background: #0055ff; color: #fff; }
-.badge-landing { background: #d97706; color: #fff; }
-.badge-review { background: #10b981; color: #fff; }
+/* Phase Badge Colors */
+.badge-routine { background: var(--fig-blue); color: #fff; }
+.badge-landing { background: var(--fig-pink); color: #fff; }
+.badge-review { background: var(--fig-green); color: #111; }
 
 .btn-header {
-background: #222230;
-border: 1px solid #333344;
+background: #1d1b2a;
+border: 1px solid var(--border-col);
 color: #ccc;
 padding: 6px 12px;
 border-radius: 6px;
@@ -75,9 +101,9 @@ font-size: 12px;
 cursor: pointer;
 }
 
-.btn-header:active { background: #333348; }
+.btn-header:active { background: var(--fig-purple); color: #fff; }
 
-/* Main Content Canvas */
+/* Main Content Area */
 .main-content {
 flex: 1;
 position: relative;
@@ -85,13 +111,15 @@ width: 100%;
 height: calc(100% - 48px);
 }
 
-/* 2 COLUMNS x 3 ROWS GRID LAYOUT */
+/* ==========================================================================
+2 COLUMNS x 3 ROWS GRID LAYOUT (CUSTOMIZE BUTTON BORDERS & ACTIVE STATES)
+========================================================================== */
 .grid-container {
 display: grid;
-grid-template-columns: repeat(2, 1fr); /* Exactly 2 Columns */
-grid-template-rows: repeat(3, 1fr); /* Exactly 3 Rows */
-gap: 6px;
-padding: 6px;
+grid-template-columns: repeat(2, 1fr); /* 2 Columns */
+grid-template-rows: repeat(3, 1fr); /* 3 Rows */
+gap: 8px;
+padding: 8px;
 width: 100%;
 height: 100%;
 background: #000000;
@@ -102,39 +130,45 @@ display: flex;
 flex-direction: column;
 align-items: center;
 justify-content: center;
-background: #14141d;
-border: 2px solid #282838;
-border-radius: 12px;
-color: #ffffff;
-font-size: 2.8rem;
+background: var(--card-bg);
+border: 2px solid var(--fig-purple); /* Soft FIG Purple Border */
+border-radius: 14px;
+color: var(--text-main);
+font-size: 3rem;
 font-weight: 800;
 cursor: pointer;
-transition: background 0.05s ease, transform 0.05s ease;
+transition: background 0.05s ease, border-color 0.05s ease, transform 0.05s ease;
 position: relative;
-overflow: hidden;
 }
 
+/* Touch / Active Feedback State */
 .zone-btn:active, .zone-btn.active-touch {
-background: #0055ff !important;
-border-color: #6699ff !important;
+background: rgba(68, 149, 229, 0.25) !important;
+border-color: var(--fig-blue) !important;
 transform: scale(0.98);
 }
 
+.landing-mode .zone-btn {
+border-color: var(--fig-pink);
+}
+
 .landing-mode .zone-btn:active, .landing-mode .zone-btn.active-touch {
-background: #d97706 !important;
-border-color: #fbbf24 !important;
+background: rgba(220, 81, 131, 0.25) !important;
+border-color: var(--fig-pink) !important;
 }
 
 .zone-sub {
 font-size: 0.85rem;
-font-weight: 500;
-color: #8888a0;
+font-weight: 600;
+color: var(--text-sub);
 margin-top: 4px;
 text-transform: uppercase;
 letter-spacing: 1px;
 }
 
-/* SETUP SCREEN */
+/* ==========================================================================
+SETUP SCREEN
+========================================================================== */
 .setup-screen {
 padding: 24px;
 display: flex;
@@ -142,13 +176,13 @@ flex-direction: column;
 gap: 20px;
 height: 100%;
 overflow-y: auto;
-background: #0a0a0f;
+background: var(--bg-dark);
 }
 
 .section-title {
-font-size: 1.1rem;
+font-size: 1rem;
 font-weight: 700;
-color: #8888a0;
+color: var(--text-sub);
 text-transform: uppercase;
 letter-spacing: 1px;
 }
@@ -160,23 +194,23 @@ gap: 12px;
 }
 
 .preset-card {
-background: #14141f;
-border: 2px solid #222233;
-border-radius: 10px;
+background: var(--card-bg);
+border: 2px solid var(--border-col);
+border-radius: 12px;
 padding: 14px;
 cursor: pointer;
 }
 
 .preset-card.selected {
-border-color: #0055ff;
-background: #0a1838;
+border-color: var(--fig-blue);
+background: rgba(68, 149, 229, 0.12);
 }
 
-.preset-card h4 { font-size: 1rem; margin-bottom: 4px; }
-.preset-card p { font-size: 0.8rem; color: #8888a0; }
+.preset-card h4 { font-size: 1rem; margin-bottom: 4px; color: var(--text-main); }
+.preset-card p { font-size: 0.8rem; color: var(--text-sub); }
 
 .btn-primary {
-background: #0055ff;
+background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple));
 color: white;
 border: none;
 padding: 16px;
@@ -188,103 +222,109 @@ text-align: center;
 margin-top: auto;
 }
 
-.btn-primary:active { background: #0044cc; }
+.btn-primary:active { opacity: 0.9; transform: scale(0.99); }
 
-/* REVIEW SCREEN */
+/* ==========================================================================
+ROUTINE REVIEW SCREEN (SINGLE ROW PER SKILL WITH +/- CONTROLS)
+========================================================================== */
 .review-screen {
 padding: 16px;
 display: flex;
 flex-direction: column;
 height: 100%;
-background: #0a0a0f;
+background: var(--bg-dark);
 overflow-y: auto;
 }
 
 .score-banner {
-background: #141420;
-border: 1px solid #262638;
+background: var(--card-bg);
+border: 1px solid var(--border-col);
 border-radius: 12px;
 padding: 16px;
 display: flex;
-justify-content: space-between;
+justify-content: space-around;
 align-items: center;
 margin-bottom: 16px;
 }
 
 .score-box { text-align: center; }
-.score-val { font-size: 2rem; font-weight: 800; color: #10b981; }
-.deduct-val { font-size: 2rem; font-weight: 800; color: #ef4444; }
-.score-lbl { font-size: 0.75rem; color: #8888a0; text-transform: uppercase; }
+.score-val { font-size: 2.2rem; font-weight: 800; color: var(--fig-green); }
+.deduct-val { font-size: 2.2rem; font-weight: 800; color: var(--fig-pink); }
+.score-lbl { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
 
-.review-grid {
-display: grid;
-grid-template-columns: repeat(2, 1fr);
+.review-list {
+display: flex;
+flex-direction: column;
 gap: 8px;
 margin-bottom: 16px;
 }
 
-.review-item {
-background: #12121a;
-border: 1px solid #222230;
-border-radius: 8px;
-padding: 10px 14px;
+/* Single Row Format for Each Skill */
+.review-row {
+background: var(--card-bg);
+border: 1px solid var(--border-col);
+border-radius: 10px;
+padding: 10px 16px;
 display: flex;
 justify-content: space-between;
 align-items: center;
-cursor: pointer;
 }
 
-.review-item.landing-item {
-grid-column: span 2;
-background: #1c1508;
-border-color: #422d08;
+.review-row.landing-row {
+border-color: var(--fig-pink);
+background: rgba(220, 81, 131, 0.08);
 }
 
-.review-item:active { background: #222235; }
-.review-item .sk-lbl { font-size: 0.85rem; color: #8888a0; font-weight: 600; }
-.review-item .sk-val { font-size: 1.2rem; font-weight: 700; color: #ffffff; }
+.row-info {
+display: flex;
+align-items: center;
+gap: 16px;
+}
 
-/* MODAL FOR QUICK EDIT */
-.modal-overlay {
-position: fixed;
-top: 0; left: 0; right: 0; bottom: 0;
-background: rgba(0,0,0,0.85);
+.sk-lbl {
+font-size: 0.95rem;
+color: var(--text-sub);
+font-weight: 600;
+width: 70px;
+}
+
+.sk-val {
+font-size: 1.3rem;
+font-weight: 700;
+color: var(--text-main);
+min-width: 50px;
+}
+
+.landing-row .sk-lbl, .landing-row .sk-val {
+color: var(--fig-pink);
+}
+
+/* Inline +/- Step Buttons */
+.row-controls {
+display: flex;
+gap: 8px;
+}
+
+.btn-step {
+width: 44px;
+height: 44px;
+border-radius: 8px;
+background: #1e1c2e;
+border: 1px solid var(--fig-purple);
+color: var(--text-main);
+font-size: 1.4rem;
+font-weight: 700;
 display: flex;
 align-items: center;
 justify-content: center;
-z-index: 100;
-padding: 20px;
-}
-
-.modal-card {
-background: #181824;
-border: 1px solid #333348;
-border-radius: 16px;
-padding: 20px;
-width: 100%;
-max-width: 360px;
-text-align: center;
-}
-
-.modal-options {
-display: grid;
-grid-template-columns: repeat(3, 1fr);
-gap: 10px;
-margin: 16px 0;
-}
-
-.opt-btn {
-background: #222234;
-border: 1px solid #333348;
-color: white;
-padding: 14px;
-font-size: 1.2rem;
-font-weight: 700;
-border-radius: 8px;
 cursor: pointer;
 }
 
-.opt-btn:active { background: #0055ff; }
+.btn-step:active {
+background: var(--fig-blue);
+border-color: var(--fig-blue);
+color: #fff;
+}
 
 .hidden { display: none !important; }
 </style>
@@ -292,7 +332,7 @@ cursor: pointer;
 <body>
 
 <div class="app-wrapper">
-<!-- Status Bar -->
+<!-- Top Status Bar -->
 <div class="status-bar">
 <div class="status-title">
 <span id="phaseBadge" class="phase-badge badge-routine">Routine</span>
@@ -304,19 +344,18 @@ cursor: pointer;
 </div>
 </div>
 
-<!-- Main Display Canvas -->
+<!-- Main Canvas -->
 <div class="main-content">
 
 <!-- 1. SETUP / CONFIGURATION SCREEN -->
 <div id="setupScreen" class="setup-screen">
-<div class="section-title">Select Preset Layout</div>
+<div class="section-title">Select Preset Scale</div>
 
 <div class="preset-group">
 <div class="preset-card selected" onclick="selectPreset('fig', this)">
 <h4>FIG Standard</h4>
 <p>0.0, 0.1, 0.2, 0.3, 0.4, 0.5</p>
 </div>
-<!--
 <div class="preset-card" onclick="selectPreset('coarse', this)">
 <h4>Coarse Scale</h4>
 <p>0.0, 0.1, 0.2, 0.3, 0.5, 0.5</p>
@@ -324,8 +363,7 @@ cursor: pointer;
 <div class="preset-card" onclick="selectPreset('synchro', this)">
 <h4>Fine Scale (HD)</h4>
 <p>0.00, 0.05, 0.10, 0.15, 0.20, 0.30</p>
-</div> 
--->
+</div>
 <div class="preset-card" onclick="selectPreset('flipped', this)">
 <h4>FIG (Flipped)</h4>
 <p>Right-to-Left orientation</p>
@@ -333,8 +371,8 @@ cursor: pointer;
 </div>
 
 <div class="section-title" style="margin-top:10px;">Grid Preview (2 Cols x 3 Rows)</div>
-<div style="font-size:0.85rem; color:#8888a0; margin-bottom:-10px;">
-Touch zones cover 95%+ of the screen during active routine entry.
+<div style="font-size:0.85rem; color:var(--text-sub); margin-bottom:-10px;">
+Touch zones span 95%+ of the screen during live judging.
 </div>
 
 <button class="btn-primary" onclick="startRoutine()">Start Routine Judging</button>
@@ -351,7 +389,7 @@ Touch zones cover 95%+ of the screen during active routine entry.
 <div class="zone-btn" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
 </div>
 
-<!-- 3. REVIEW & EDIT SCREEN -->
+<!-- 3. REVIEW & EDIT SCREEN (ONE ROW PER SKILL WITH +/- BUTTONS) -->
 <div id="reviewScreen" class="review-screen hidden">
 <div class="score-banner">
 <div class="score-box">
@@ -364,10 +402,10 @@ Touch zones cover 95%+ of the screen during active routine entry.
 </div>
 </div>
 
-<div class="section-title" style="margin-bottom:10px;">Skill Breakdown (Tap to edit)</div>
+<div class="section-title" style="margin-bottom:10px;">Skill Breakdown</div>
 
-<div class="review-grid" id="reviewGridList">
-<!-- Generated dynamically -->
+<div class="review-list" id="reviewList">
+<!-- Rows generated dynamically -->
 </div>
 
 <button class="btn-primary" onclick="resetToSetup()" style="margin-top:auto;">Confirm & Next Routine</button>
@@ -376,22 +414,8 @@ Touch zones cover 95%+ of the screen during active routine entry.
 </div>
 </div>
 
-<!-- EDIT MODAL -->
-<div id="editModal" class="modal-overlay hidden">
-<div class="modal-card">
-<h3 id="modalTitle" style="color:#fff; margin-bottom:8px;">Edit Skill 1</h3>
-<p style="font-size:0.85rem; color:#8888a0;">Select revised deduction value:</p>
-
-<div class="modal-options" id="modalOptions">
-<!-- Generated dynamically -->
-</div>
-
-<button class="btn-header" style="width:100%; padding:12px;" onclick="closeModal()">Cancel</button>
-</div>
-</div>
-
 <script>
-// App State
+// Presets Configuration
 const PRESETS = {
 fig: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
 coarse: [0.0, 0.1, 0.2, 0.3, 0.5, 0.5],
@@ -407,7 +431,6 @@ let phase = 'setup'; // 'setup' | 'routine' | 'landing' | 'review'
 let currentSkillIndex = 0; // 0 to 9 for skills, 10 for landing
 let skillDeductions = new Array(10).fill(0);
 let landingDeduction = 0;
-let editingTargetIndex = null;
 
 // DOM Elements
 const setupScreen = document.getElementById('setupScreen');
@@ -415,15 +438,41 @@ const gridScreen = document.getElementById('gridScreen');
 const reviewScreen = document.getElementById('reviewScreen');
 const phaseBadge = document.getElementById('phaseBadge');
 const skillCounter = document.getElementById('skillCounter');
-const editModal = document.getElementById('editModal');
 
-// Trigger Haptic Feedback
-function triggerHaptic(type = 'tap') {
+/* ==========================================================================
+HAPTIC & AUDIO SYNTHESIS FEEDBACK (FIX FOR MOBILE CHROME & iOS)
+========================================================================== */
+let audioCtx = null;
+
+function triggerFeedback(type = 'tap') {
+// 1. Physical Hardware Vibration (Android Chrome / Android Browsers)
 if ('vibrate' in navigator) {
-if (type === 'tap') navigator.vibrate(25);
-if (type === 'transition') navigator.vibrate([40, 30, 40]);
-if (type === 'complete') navigator.vibrate([60, 40, 100]);
+try {
+if (type === 'tap') navigator.vibrate(20);
+if (type === 'transition') navigator.vibrate([35, 20, 35]);
+if (type === 'complete') navigator.vibrate([50, 30, 80]);
+} catch (e) { /* Ignore restriction */ }
 }
+
+// 2. Web Audio Micro-Tick Fallback (iOS Safari / iOS Chrome)
+try {
+if (!audioCtx) {
+audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+if (audioCtx.state === 'suspended') {
+audioCtx.resume();
+}
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+osc.type = 'sine';
+osc.frequency.setValueAtTime(type === 'complete' ? 800 : 440, audioCtx.currentTime);
+gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+osc.start();
+osc.stop(audioCtx.currentTime + 0.03);
+} catch (e) { /* Audio fallback silent failure catch */ }
 }
 
 // Preset Selection
@@ -434,7 +483,7 @@ document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selec
 el.classList.add('selected');
 }
 
-// Render Grid Values
+// Render Grid Display Values
 function renderGrid(values) {
 for (let i = 0; i < 6; i++) {
 const btn = document.getElementById(`zone${i}`);
@@ -459,7 +508,7 @@ phaseBadge.className = 'phase-badge badge-routine';
 updateCounter();
 
 renderGrid(activeRoutineZones);
-triggerHaptic('transition');
+triggerFeedback('transition');
 }
 
 function updateCounter() {
@@ -472,10 +521,9 @@ skillCounter.textContent = `Complete`;
 }
 }
 
-// High-Speed Touch Handling on 2x3 Grid
+// Touch Event Listeners for 2x3 Grid
 const zoneButtons = document.querySelectorAll('.zone-btn');
 zoneButtons.forEach((btn, index) => {
-// Fast pointerdown event prevents 300ms click delay
 btn.addEventListener('pointerdown', (e) => {
 e.preventDefault();
 btn.classList.add('active-touch');
@@ -487,7 +535,7 @@ btn.addEventListener('pointerleave', () => btn.classList.remove('active-touch'))
 });
 
 function handleZoneInput(zoneIndex) {
-triggerHaptic('tap');
+triggerFeedback('tap');
 
 if (phase === 'routine') {
 const val = activeRoutineZones[zoneIndex];
@@ -501,7 +549,7 @@ gridScreen.classList.add('landing-mode');
 phaseBadge.textContent = 'Landing';
 phaseBadge.className = 'phase-badge badge-landing';
 renderGrid(LANDING_PRESET);
-triggerHaptic('transition');
+triggerFeedback('transition');
 }
 updateCounter();
 
@@ -518,11 +566,11 @@ phaseBadge.className = 'phase-badge badge-review';
 updateCounter();
 
 renderReviewSummary();
-triggerHaptic('complete');
+triggerFeedback('complete');
 }
 }
 
-// Render Review Summary Screen
+// Render Review Screen with Individual Skill Rows and +/- Step Buttons
 function renderReviewSummary() {
 const totalDeduct = skillDeductions.reduce((a, b) => a + b, 0) + landingDeduction;
 const netScore = Math.max(0, 10 - totalDeduct);
@@ -530,67 +578,57 @@ const netScore = Math.max(0, 10 - totalDeduct);
 document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
 document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
 
-const listContainer = document.getElementById('reviewGridList');
+const listContainer = document.getElementById('reviewList');
 listContainer.innerHTML = '';
 
-// Skills 1 to 10
+// Render Rows for Skills 1 to 10
 skillDeductions.forEach((val, i) => {
-const item = document.createElement('div');
-item.className = 'review-item';
-item.onclick = () => openEditModal(i);
-item.innerHTML = `
+const row = document.createElement('div');
+row.className = 'review-row';
+row.innerHTML = `
+<div class="row-info">
 <span class="sk-lbl">Skill ${i + 1}</span>
 <span class="sk-val">-${val.toFixed(1)}</span>
+</div>
+<div class="row-controls">
+<button class="btn-step" onclick="adjustValue(${i}, -0.1)">−</button>
+<button class="btn-step" onclick="adjustValue(${i}, 0.1)">+</button>
+</div>
 `;
-listContainer.appendChild(item);
+listContainer.appendChild(row);
 });
 
-// Landing Item
-const landingItem = document.createElement('div');
-landingItem.className = 'review-item landing-item';
-landingItem.onclick = () => openEditModal(10);
-landingItem.innerHTML = `
-<span class="sk-lbl" style="color:#f59e0b;">Landing</span>
-<span class="sk-val" style="color:#f59e0b;">-${landingDeduction.toFixed(1)}</span>
+// Render Row for Landing
+const landingRow = document.createElement('div');
+landingRow.className = 'review-row landing-row';
+landingRow.innerHTML = `
+<div class="row-info">
+<span class="sk-lbl">Landing</span>
+<span class="sk-val">-${landingDeduction.toFixed(1)}</span>
+</div>
+<div class="row-controls">
+<button class="btn-step" onclick="adjustValue(10, -0.1)">−</button>
+<button class="btn-step" onclick="adjustValue(10, 0.1)">+</button>
+</div>
 `;
-listContainer.appendChild(landingItem);
+listContainer.appendChild(landingRow);
 }
 
-// Edit Modal Operations
-function openEditModal(index) {
-editingTargetIndex = index;
-const isLanding = index === 10;
-document.getElementById('modalTitle').textContent = isLanding ? 'Edit Landing' : `Edit Skill ${index + 1}`;
+// Adjust Individual Skill / Landing Deduction via +/- Buttons
+function adjustValue(index, delta) {
+triggerFeedback('tap');
 
-const optionsContainer = document.getElementById('modalOptions');
-optionsContainer.innerHTML = '';
-
-const opts = isLanding ? LANDING_PRESET : activeRoutineZones;
-opts.forEach(val => {
-const btn = document.createElement('button');
-btn.className = 'opt-btn';
-btn.textContent = `-${val.toFixed(1)}`;
-btn.onclick = () => saveEdit(val);
-optionsContainer.appendChild(btn);
-});
-
-editModal.classList.remove('hidden');
-}
-
-function closeModal() {
-editModal.classList.add('hidden');
-editingTargetIndex = null;
-}
-
-function saveEdit(newVal) {
-if (editingTargetIndex === 10) {
-landingDeduction = newVal;
+if (index === 10) {
+// Landing adjustment (0.0 to 1.0 range)
+let updated = Math.round((landingDeduction + delta) * 10) / 10;
+landingDeduction = Math.min(1.0, Math.max(0.0, updated));
 } else {
-skillDeductions[editingTargetIndex] = newVal;
+// Skill adjustment (0.0 to 0.5 range)
+let updated = Math.round((skillDeductions[index] + delta) * 10) / 10;
+skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
 }
-closeModal();
+
 renderReviewSummary();
-triggerHaptic('tap');
 }
 
 function resetToSetup() {
