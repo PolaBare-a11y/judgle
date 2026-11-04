@@ -25,7 +25,7 @@
       --text-sub:   #8a8a9e;
 
       /* ==========================================================================
-         2x3 GRID ROW BANDING COLORS (ADJUST ZONE ROW COLORS HERE)
+         2x3 GRID ROW BANDING COLORS
          ========================================================================== */
       /* Top Band (Row 1: Zone 1 & 2 - Clean / Low Deductions) */
       --band-top-color: #9bd98b;
@@ -293,11 +293,17 @@
     .review-row.disabled-row {
       opacity: 0.35;
       background: #0d0d14;
+      border-color: #1a1a26;
     }
 
     .review-row.landing-row {
       border-color: var(--fig-pink);
       background: rgba(220, 81, 131, 0.08);
+    }
+
+    .landing-row.disabled-row {
+      border-color: #2c2430;
+      background: #0d0a12;
     }
 
     .sk-lbl {
@@ -308,6 +314,10 @@
 
     .landing-row .sk-lbl {
       color: var(--fig-pink);
+    }
+
+    .disabled-row .sk-lbl {
+      color: #555566;
     }
 
     /* Value and +/- controls grouped tightly together */
@@ -327,6 +337,10 @@
 
     .landing-row .sk-val {
       color: var(--fig-pink);
+    }
+
+    .disabled-row .sk-val {
+      color: #555566;
     }
 
     .btn-step {
@@ -374,13 +388,14 @@
 
     <!-- 1. SETUP / CONFIGURATION SCREEN -->
     <div id="setupScreen" class="setup-screen">
-      <div class="section-title">Select Preset Scale</div>
+      <div class="section-title">Select E-Judge Preset</div>
       
       <div class="preset-group">
         <div class="preset-card selected" onclick="selectPreset('fig', this)">
           <h4>FIG Standard</h4>
           <p>0.0, 0.1, 0.2, 0.3, 0.4, 0.5</p>
         </div>
+        <!--
         <div class="preset-card" onclick="selectPreset('coarse', this)">
           <h4>Coarse Scale</h4>
           <p>0.0, 0.1, 0.2, 0.3, 0.5, 0.5</p>
@@ -389,13 +404,14 @@
           <h4>Fine Scale (HD)</h4>
           <p>0.00, 0.05, 0.10, 0.15, 0.20, 0.30</p>
         </div>
+        -->
         <div class="preset-card" onclick="selectPreset('flipped', this)">
           <h4>FIG (Flipped)</h4>
           <p>Right-to-Left orientation</p>
         </div>
       </div>
 
-      <div class="section-title" style="margin-top:6px;">Grid Preview (2 Cols x 3 Rows)</div>
+      <div class="section-title" style="margin-top:6px;">Interface - Grid Preview (2 Cols x 3 Rows)</div>
       <div style="font-size:0.8rem; color:var(--text-sub);">
         Touch zones span 95%+ of the screen during live judging.
       </div>
@@ -431,7 +447,7 @@
           </div>
         </div>
 
-        <!-- Total Deductions Accumulator (Starts at 0.0) -->
+        <!-- Total Deductions Accumulator -->
         <div class="score-box">
           <span class="score-lbl">Total Deductions</span>
           <div class="deduct-val" id="totalDeductDisplay">0.00</div>
@@ -608,13 +624,16 @@
     renderReviewSummary();
   }
 
-  // Render Review Screen with Skills Performed Calculation
+  // Render Review Screen with Skills Performed & Landing Exclusion Calculation
   function renderReviewSummary() {
     document.getElementById('skillsCountDisplay').textContent = skillsPerformed;
 
-    // Sum active performed skill deductions + landing
+    const isLandingActive = (skillsPerformed === 10);
+
+    // Sum active performed skill deductions (+ landing ONLY if full 10-skill routine)
     const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
-    const totalDeduct = activeSkillDeductions.reduce((a, b) => a + b, 0) + landingDeduction;
+    const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
+    const totalDeduct = skillDeductSum + (isLandingActive ? landingDeduction : 0);
 
     const maxBaseScore = skillsPerformed * 1.0;
     const netScore = Math.max(0, maxBaseScore - totalDeduct);
@@ -642,15 +661,15 @@
       listContainer.appendChild(row);
     });
 
-    // Render Row for Landing
+    // Render Row for Landing (Dimmed & Excluded if skillsPerformed < 10)
     const landingRow = document.createElement('div');
-    landingRow.className = 'review-row landing-row';
+    landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
     landingRow.innerHTML = `
-      <span class="sk-lbl">Landing</span>
+      <span class="sk-lbl">Landing ${isLandingActive ? '' : '<small>(Excluded)</small>'}</span>
       <div class="value-controls-group">
-        <button class="btn-step" onclick="stepLandingValue(-1)">−</button>
-        <span class="sk-val">-${landingDeduction.toFixed(1)}</span>
-        <button class="btn-step" onclick="stepLandingValue(1)">+</button>
+        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(-1)">−</button>` : ''}
+        <span class="sk-val">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
+        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(1)">+</button>` : ''}
       </div>
     `;
     listContainer.appendChild(landingRow);
