@@ -321,7 +321,85 @@
       z-index: 5;
     }
 
-    /* SETUP SCREEN - TWO SECTIONS LAYOUT */
+    /* NUMBER RECOGNITION INTERFACE SCREEN */
+    .recognizer-container {
+      width: 100%;
+      height: 100%;
+      background: #08080d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      position: relative;
+      touch-action: none;
+    }
+
+    .recognizer-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 4;
+      cursor: crosshair;
+    }
+
+    .recognizer-bg-guide {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+      opacity: 0.12;
+      z-index: 1;
+    }
+
+    .recognizer-bg-guide span {
+      font-size: 10rem;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--fig-green);
+    }
+
+    .recognizer-instructions {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .quick-override-bar {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+      max-width: 420px;
+      z-index: 6;
+      margin-bottom: 12px;
+      pointer-events: auto;
+    }
+
+    .quick-btn {
+      flex: 1;
+      padding: 10px 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      color: var(--text-main);
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .quick-btn:active {
+      background: var(--fig-blue);
+      color: #fff;
+    }
+
+    /* SETUP SCREEN - THREE SECTIONS LAYOUT */
     .setup-screen {
       padding: 16px;
       display: flex;
@@ -420,10 +498,10 @@
       height: 90px;
       border-radius: 50%;
       background: conic-gradient(
-        from 0deg,
-        var(--band-top-color) 0deg 45deg,
-        var(--band-mid-color) 45deg 225deg,
-        var(--band-bot-color) 225deg 315deg,
+        from 0deg, 
+        var(--band-top-color) 0deg 45deg, 
+        var(--band-mid-color) 45deg 225deg, 
+        var(--band-bot-color) 225deg 315deg, 
         var(--band-top-color) 315deg 360deg
       );
       padding: 3px;
@@ -502,6 +580,33 @@
       pointer-events: auto;
     }
 
+    /* NUMBER RECOGNITION GUIDE CARDS */
+    .num-guide-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+
+    .num-guide-card {
+      background: #1a1926;
+      border: 1px solid var(--border-col);
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .num-guide-digit {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--fig-green);
+    }
+
+    .num-guide-val {
+      font-size: 0.7rem;
+      color: var(--text-sub);
+    }
+
     /* STARTING PAGE FOOTNOTE */
     .setup-footnote {
       margin-top: auto;
@@ -547,6 +652,11 @@
       background: linear-gradient(135deg, var(--fig-purple), var(--fig-pink));
     }
 
+    .btn-recognizer-start {
+      background: linear-gradient(135deg, var(--fig-green), var(--fig-blue));
+      color: #111;
+    }
+
     .btn-primary:active { opacity: 0.9; transform: scale(0.99); }
 
     /* REVIEW SCREEN */
@@ -572,8 +682,8 @@
       margin-bottom: 6px;
     }
 
-    .score-box {
-      text-align: center;
+    .score-box { 
+      text-align: center; 
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -588,15 +698,16 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
       min-height: 0;
       margin-bottom: 6px;
+      overflow-y: auto;
     }
 
     /* Single Row Format */
     .review-row {
       flex: 1;
-      min-height: 0;
+      min-height: 38px;
       background: var(--card-bg);
       border: 1px solid var(--border-col);
       border-radius: 6px;
@@ -604,6 +715,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 8px;
     }
 
     .review-row.disabled-row {
@@ -626,6 +738,8 @@
       font-size: 0.8rem;
       color: var(--text-sub);
       font-weight: 600;
+      width: 80px;
+      flex-shrink: 0;
     }
 
     .landing-row .sk-lbl {
@@ -634,6 +748,32 @@
 
     .disabled-row .sk-lbl {
       color: #555566;
+    }
+
+    /* Thumbnail Box for Stroke Drawing */
+    .review-thumb-box {
+      width: 38px;
+      height: 32px;
+      background: #0a0a10;
+      border: 1px solid var(--border-col);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .review-thumb-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .review-thumb-empty {
+      font-size: 0.6rem;
+      color: #444;
+      text-transform: uppercase;
     }
 
     /* Value and +/- controls grouped tightly together */
@@ -710,10 +850,10 @@
   <!-- Main Canvas -->
   <div class="main-content">
 
-    <!-- 1. SETUP / CONFIGURATION SCREEN (TWO SECTIONS) -->
+    <!-- 1. SETUP / CONFIGURATION SCREEN (THREE SECTIONS) -->
     <div id="setupScreen" class="setup-screen">
 
-      <!-- TOP SECTION: GRID INTERFACE & PRESETS -->
+      <!-- SECTION 1: GRID INTERFACE & PRESETS -->
       <div class="setup-section-card">
         <div class="section-title">
           <svg class="section-title-icon" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -741,7 +881,7 @@
         <button class="btn-primary" onclick="startRoutine('grid')" style="width:100%; margin-top:4px;">Start Grid Judging</button>
       </div>
 
-      <!-- BOTTOM SECTION: SWIPE INTERFACE & DEDUCTION GUIDE -->
+      <!-- SECTION 2: SWIPE INTERFACE & DEDUCTION GUIDE -->
       <div class="setup-section-card">
         <div class="section-title" style="color:var(--fig-pink);">
           <svg class="section-title-icon" style="stroke:var(--fig-pink);" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -756,7 +896,7 @@
 
         <div class="section-subtitle">Gesture Guide</div>
         <div class="swipe-setup-content">
-         
+          
           <!-- Visual Compass Dial + Red Refresh Circle Guide Column -->
           <div class="visual-guide-column">
             <div class="visual-compass-wrapper">
@@ -784,38 +924,82 @@
             <div class="swipe-guide-card">
               <div class="swipe-guide-icon">👆</div>
               <div class="swipe-guide-action">Tap</div>
-              <div class="swipe-guide-zone">0</div>
+              <div class="swipe-guide-zone">Zone 1 (0.0)</div>
             </div>
             <div class="swipe-guide-card">
               <div class="swipe-guide-icon">⬆️</div>
               <div class="swipe-guide-action">Flick Up</div>
-              <div class="swipe-guide-zone">0.1</div>
+              <div class="swipe-guide-zone">Zone 2 (0.1)</div>
             </div>
             <div class="swipe-guide-card">
               <div class="swipe-guide-icon">➡️</div>
               <div class="swipe-guide-action">Swipe Right</div>
-              <div class="swipe-guide-zone">0.2</div>
+              <div class="swipe-guide-zone">Zone 3 (0.2)</div>
             </div>
             <div class="swipe-guide-card">
               <div class="swipe-guide-icon">⬇️</div>
               <div class="swipe-guide-action">Flick Down</div>
-              <div class="swipe-guide-zone">0.3</div>
+              <div class="swipe-guide-zone">Zone 4 (0.3)</div>
             </div>
             <div class="swipe-guide-card">
               <div class="swipe-guide-icon">⬅️</div>
               <div class="swipe-guide-action">Swipe Left</div>
-              <div class="swipe-guide-zone">0.4</div>
+              <div class="swipe-guide-zone">Zone 5 (0.4)</div>
             </div>
             <div class="swipe-guide-card">
-              <div class="swipe-guide-icon">🔃</div>
+              <div class="swipe-guide-icon">🔄</div>
               <div class="swipe-guide-action">Circle</div>
-              <div class="swipe-guide-zone">0.5</div>
+              <div class="swipe-guide-zone">Zone 6 (0.5)</div>
             </div>
           </div>
 
         </div>
 
         <button class="btn-primary btn-swipe-start" onclick="startRoutine('swipe')" style="width:100%; margin-top:4px;">Start Swipe Judging</button>
+      </div>
+
+      <!-- SECTION 3: NUMBER RECOGNITION INTERFACE -->
+      <div class="setup-section-card">
+        <div class="section-title" style="color:var(--fig-green);">
+          <svg class="section-title-icon" style="stroke:var(--fig-green);" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+            <path d="M2 2l7.58 7.58"></path>
+            <circle cx="11" cy="11" r="2"></circle>
+          </svg>
+          Number Recognition
+        </div>
+        <div class="section-desc">Unistroke handwriting recognition ($1 Algorithm). Draw digits directly on screen per skill element.</div>
+
+        <div class="section-subtitle">Recognized Strokes</div>
+        <div class="num-guide-grid">
+          <div class="num-guide-card">
+            <div class="num-guide-digit">0</div>
+            <div class="num-guide-val">-0.0 Deduct</div>
+          </div>
+          <div class="num-guide-card">
+            <div class="num-guide-digit">1</div>
+            <div class="num-guide-val">-0.1 Deduct</div>
+          </div>
+          <div class="num-guide-card">
+            <div class="num-guide-digit">2</div>
+            <div class="num-guide-val">-0.2 Deduct</div>
+          </div>
+          <div class="num-guide-card">
+            <div class="num-guide-digit">3</div>
+            <div class="num-guide-val">-0.3 Deduct</div>
+          </div>
+          <div class="num-guide-card">
+            <div class="num-guide-digit">4</div>
+            <div class="num-guide-val">-0.4 Deduct</div>
+          </div>
+          <div class="num-guide-card">
+            <div class="num-guide-digit">5</div>
+            <div class="num-guide-val">-0.5 Deduct</div>
+          </div>
+        </div>
+
+        <button class="btn-primary btn-recognizer-start" onclick="startRoutine('recognizer')" style="width:100%; margin-top:4px;">Start Number Recognition Judging</button>
       </div>
 
       <!-- FOOTNOTE ON STARTING PAGE -->
@@ -829,16 +1013,16 @@
     <!-- 2A. ROUTINE & LANDING 2x3 GRID INPUT WITH ROW BANDING -->
     <div id="gridScreen" class="grid-container hidden">
       <!-- Top Row Band (FIG Green) -->
-      <div class="zone-btn zone-row-top" id="zone0"><span class="val">0.0</span></div><!--<span class="zone-sub">Zone 1</span></div>-->
-      <div class="zone-btn zone-row-top" id="zone1"><span class="val">0.1</span></div><!--<span class="zone-sub">Zone 2</span></div>-->
-     
+      <div class="zone-btn zone-row-top" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
+      <div class="zone-btn zone-row-top" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
+      
       <!-- Middle Row Band (FIG Blue) -->
-      <div class="zone-btn zone-row-mid" id="zone2"><span class="val">0.2</span></div><!--<span class="zone-sub">Zone 3</span></div>-->
-      <div class="zone-btn zone-row-mid" id="zone3"><span class="val">0.3</span></div><!--<span class="zone-sub">Zone 4</span></div>-->
-     
+      <div class="zone-btn zone-row-mid" id="zone2"><span class="val">0.2</span><span class="zone-sub">Zone 3</span></div>
+      <div class="zone-btn zone-row-mid" id="zone3"><span class="val">0.3</span><span class="zone-sub">Zone 4</span></div>
+      
       <!-- Bottom Row Band (Soft FIG Orange) -->
-      <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span></div><!--<span class="zone-sub">Zone 5</span></div>-->
-      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span></div><!--<span class="zone-sub">Zone 6</span></div>-->
+      <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span><span class="zone-sub">Zone 5</span></div>
+      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
     </div>
 
     <!-- 2B. SWIPE / GESTURE INPUT INTERFACE -->
@@ -868,7 +1052,7 @@
           <div class="compass-item compass-center">
             <span class="compass-icon">👆</span>
             <span>0.0</span>
-            <div style="font-size:0.6rem; color:var(--fig-purple); margin-top:2px;">🔃 0.5</div>
+            <div style="font-size:0.6rem; color:var(--fig-purple); margin-top:2px;">🔄 0.5</div>
           </div>
         </div>
       </div>
@@ -883,33 +1067,58 @@
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">👆</div>
           <div class="swipe-guide-action">Tap</div>
-          <div class="swipe-guide-zone">0</div>
+          <div class="swipe-guide-zone">Zone 1</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">⬆️</div>
           <div class="swipe-guide-action">Flick Up</div>
-          <div class="swipe-guide-zone">0.1</div>
+          <div class="swipe-guide-zone">Zone 2</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">➡️</div>
           <div class="swipe-guide-action">Swipe Right</div>
-          <div class="swipe-guide-zone">0.2</div>
+          <div class="swipe-guide-zone">Zone 3</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">⬇️</div>
           <div class="swipe-guide-action">Flick Down</div>
-          <div class="swipe-guide-zone">0.3</div>
+          <div class="swipe-guide-zone">Zone 4</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">⬅️</div>
           <div class="swipe-guide-action">Swipe Left</div>
-          <div class="swipe-guide-zone">0.4</div>
+          <div class="swipe-guide-zone">Zone 5</div>
         </div>
         <div class="swipe-guide-card">
-          <div class="swipe-guide-icon">🔃</div>
+          <div class="swipe-guide-icon">🔄</div>
           <div class="swipe-guide-action">Circle</div>
-          <div class="swipe-guide-zone">0.5</div>
+          <div class="swipe-guide-zone">Zone 6</div>
         </div>
+      </div>
+    </div>
+
+    <!-- 2C. NUMBER RECOGNITION INTERFACE -->
+    <div id="recognizerScreen" class="recognizer-container hidden">
+      <canvas id="recognizerCanvas" class="recognizer-canvas"></canvas>
+
+      <div class="recognizer-bg-guide">
+        <span id="recBgDigit">✍️</span>
+        <div class="recognizer-instructions">Draw digit on canvas (0..5)</div>
+      </div>
+
+      <div class="swipe-feedback-area">
+        <div class="swipe-feedback-label" id="recFeedbackLabel">Skill 1 / 10</div>
+        <div class="swipe-feedback-val" id="recFeedbackVal">0.0</div>
+        <div class="swipe-last-action" id="recLastAction" style="color:var(--fig-green);">Draw number stroke</div>
+      </div>
+
+      <div class="quick-override-bar">
+        <button class="quick-btn" onclick="quickSelectRecognized(0.0)">0.0</button>
+        <button class="quick-btn" onclick="quickSelectRecognized(0.1)">0.1</button>
+        <button class="quick-btn" onclick="quickSelectRecognized(0.2)">0.2</button>
+        <button class="quick-btn" onclick="quickSelectRecognized(0.3)">0.3</button>
+        <button class="quick-btn" onclick="quickSelectRecognized(0.4)">0.4</button>
+        <button class="quick-btn" onclick="quickSelectRecognized(0.5)">0.5</button>
       </div>
     </div>
 
@@ -929,18 +1138,18 @@
         <!-- Total Deductions Accumulator -->
         <div class="score-box">
           <span class="score-lbl">Total Deductions</span>
-          <div class="deduct-val" id="totalDeductDisplay">0.0</div>
+          <div class="deduct-val" id="totalDeductDisplay">0.00</div>
         </div>
 
         <!-- Net E-Score Calculation -->
         <div class="score-box">
           <span class="score-lbl">Net E-Score</span>
-          <div class="score-val" id="netScoreDisplay">10.0</div>
+          <div class="score-val" id="netScoreDisplay">10.00</div>
         </div>
       </div>
 
       <div class="review-list" id="reviewList">
-        <!-- 11 Squeezed Rows generated dynamically -->
+        <!-- 11 Squeezed Rows generated dynamically with drawing thumbnails -->
       </div>
 
       <!-- BOTTOM ACTION BUTTONS BAR -->
@@ -954,6 +1163,202 @@
 </div>
 
 <script>
+  /* ==========================================================================
+     $1 UNISTROKE RECOGNIZER CLASS IMPLEMENTATION
+     ========================================================================== */
+  function Point(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  class DollarRecognizer {
+    constructor() {
+      this.Unistrokes = [];
+      this.NumPoints = 64;
+      this.SquareSize = 250.0;
+      this.HalfDiagonal = 0.5 * Math.sqrt(250.0 * 250.0 + 250.0 * 250.0);
+      this.AngleRange = Math.PI / 4.0;
+      this.AnglePrecision = Math.PI / 90.0;
+      this.Phi = 0.5 * (-1.0 + Math.sqrt(5.0));
+
+      this.initTemplates();
+    }
+
+    addTemplate(name, points) {
+      let pts = this.Resample(points, this.NumPoints);
+      let radians = this.IndicativeAngle(pts);
+      pts = this.RotateBy(pts, -radians);
+      pts = this.ScaleTo(pts, this.SquareSize);
+      pts = this.TranslateTo(pts, new Point(0, 0));
+      this.Unistrokes.push({ Name: name, Points: pts });
+    }
+
+    initTemplates() {
+      // 0: Oval / Circle
+      let pts0 = [];
+      for (let i = 0; i <= 32; i++) {
+        let a = (i / 32) * Math.PI * 2;
+        pts0.push(new Point(100 + 50 * Math.cos(a), 100 + 70 * Math.sin(a)));
+      }
+      this.addTemplate("0", pts0);
+
+      // 1: Straight vertical down stroke
+      let pts1 = [new Point(100, 20), new Point(100, 180)];
+      this.addTemplate("1", pts1);
+
+      // 2: Curve top, diagonal down left, straight right
+      let pts2 = [];
+      for (let i = 0; i <= 10; i++) {
+        let a = Math.PI - (i / 10) * Math.PI;
+        pts2.push(new Point(100 + 40 * Math.cos(a), 50 - 30 * Math.sin(a)));
+      }
+      pts2.push(new Point(60, 160));
+      pts2.push(new Point(140, 160));
+      this.addTemplate("2", pts2);
+
+      // 3: Two right-facing bumps
+      let pts3 = [];
+      for (let i = 0; i <= 10; i++) {
+        let a = -Math.PI / 2 + (i / 10) * Math.PI;
+        pts3.push(new Point(100 + 35 * Math.cos(a), 50 + 35 * Math.sin(a)));
+      }
+      for (let i = 0; i <= 10; i++) {
+        let a = -Math.PI / 2 + (i / 10) * Math.PI;
+        pts3.push(new Point(100 + 40 * Math.cos(a), 125 + 40 * Math.sin(a)));
+      }
+      this.addTemplate("3", pts3);
+
+      // 4: Unistroke 4 (Diagonal down-left, horizontal right, vertical down)
+      let pts4 = [new Point(120, 20), new Point(50, 110), new Point(150, 110), new Point(120, 180)];
+      this.addTemplate("4", pts4);
+
+      // 5: Unistroke 5 (Top left, down, curve around bottom right)
+      let pts5 = [new Point(140, 30), new Point(70, 30), new Point(65, 90)];
+      for (let i = 0; i <= 10; i++) {
+        let a = -Math.PI / 2 + (i / 10) * Math.PI;
+        pts5.push(new Point(100 + 45 * Math.cos(a), 135 + 45 * Math.sin(a)));
+      }
+      this.addTemplate("5", pts5);
+    }
+
+    Recognize(points) {
+      if (points.length < 3) return { Name: "0", Score: 0.0 };
+      let pts = this.Resample(points, this.NumPoints);
+      let radians = this.IndicativeAngle(pts);
+      pts = this.RotateBy(pts, -radians);
+      pts = this.ScaleTo(pts, this.SquareSize);
+      pts = this.TranslateTo(pts, new Point(0, 0));
+
+      let bestDistance = Infinity;
+      let bestMatch = null;
+
+      for (let i = 0; i < this.Unistrokes.length; i++) {
+        let d = this.DistanceAtBestAngle(pts, this.Unistrokes[i], -this.AngleRange, this.AngleRange, this.AnglePrecision);
+        if (d < bestDistance) {
+          bestDistance = d;
+          bestMatch = this.Unistrokes[i];
+        }
+      }
+      let score = 1.0 - (bestDistance / this.HalfDiagonal);
+      return { Name: bestMatch ? bestMatch.Name : "0", Score: score };
+    }
+
+    Resample(points, n) {
+      let I = this.PathLength(points) / (n - 1);
+      let D = 0.0;
+      let newPoints = [points[0]];
+      let pts = points.slice();
+      for (let i = 1; i < pts.length; i++) {
+        let d = this.Distance(pts[i - 1], pts[i]);
+        if ((D + d) >= I) {
+          let qx = pts[i - 1].x + ((I - D) / d) * (pts[i].x - pts[i - 1].x);
+          let qy = pts[i - 1].y + ((I - D) / d) * (pts[i].y - pts[i - 1].y);
+          let q = new Point(qx, qy);
+          newPoints.push(q);
+          pts.splice(i, 0, q);
+          D = 0.0;
+        } else D += d;
+      }
+      if (newPoints.length == n - 1) newPoints.push(pts[pts.length - 1]);
+      return newPoints;
+    }
+
+    PathLength(points) {
+      let d = 0.0;
+      for (let i = 1; i < points.length; i++) d += this.Distance(points[i - 1], points[i]);
+      return d;
+    }
+
+    Distance(p1, p2) {
+      let dx = p2.x - p1.x, dy = p2.y - p1.y;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    IndicativeAngle(points) {
+      let c = this.Centroid(points);
+      return Math.atan2(c.y - points[0].y, c.x - points[0].x);
+    }
+
+    Centroid(points) {
+      let x = 0.0, y = 0.0;
+      for (let p of points) { x += p.x; y += p.y; }
+      return new Point(x / points.length, y / points.length);
+    }
+
+    RotateBy(points, radians) {
+      let c = this.Centroid(points);
+      let cos = Math.cos(radians), sin = Math.sin(radians);
+      return points.map(p => new Point(
+        (p.x - c.x) * cos - (p.y - c.y) * sin + c.x,
+        (p.x - c.x) * sin + (p.y - c.y) * cos + c.y
+      ));
+    }
+
+    ScaleTo(points, size) {
+      let B = this.BoundingBox(points);
+      return points.map(p => new Point(p.x * (size / (B.Width || 1)), p.y * (size / (B.Height || 1))));
+    }
+
+    BoundingBox(points) {
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (let p of points) {
+        minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+        minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+      }
+      return { Width: maxX - minX, Height: maxY - minY };
+    }
+
+    TranslateTo(points, pt) {
+      let c = this.Centroid(points);
+      return points.map(p => new Point(p.x + pt.x - c.x, p.y + pt.y - c.y));
+    }
+
+    DistanceAtBestAngle(points, T, a, b, threshold) {
+      let x1 = this.Phi * a + (1.0 - this.Phi) * b;
+      let f1 = this.DistanceAtAngle(points, T, x1);
+      let x2 = (1.0 - this.Phi) * a + this.Phi * b;
+      let f2 = this.DistanceAtAngle(points, T, x2);
+      while (Math.abs(b - a) > threshold) {
+        if (f1 < f2) { b = x2; x2 = x1; f2 = f1; x1 = this.Phi * a + (1.0 - this.Phi) * b; f1 = this.DistanceAtAngle(points, T, x1); }
+        else { a = x1; x1 = x2; f1 = f2; x2 = (1.0 - this.Phi) * a + this.Phi * b; f2 = this.DistanceAtAngle(points, T, x2); }
+      }
+      return Math.min(f1, f2);
+    }
+
+    DistanceAtAngle(points, T, radians) {
+      let newPoints = this.RotateBy(points, radians);
+      return this.PathDistance(newPoints, T.Points);
+    }
+
+    PathDistance(pts1, pts2) {
+      let d = 0.0;
+      for (let i = 0; i < pts1.length; i++) d += this.Distance(pts1[i], pts2[i]);
+      return d / pts1.length;
+    }
+  }
+
+  const dollarRecognizer = new DollarRecognizer();
+
   // Presets & FIG Landing Scale
   const PRESETS = {
     fig:     [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
@@ -964,24 +1369,31 @@
 
   const LANDING_PRESET = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
 
-  let currentInterface = 'grid'; // 'grid' or 'swipe'
+  let currentInterface = 'grid'; // 'grid', 'swipe', or 'recognizer'
   let currentPresetKey = 'fig';
   let activeRoutineZones = [...PRESETS.fig];
   let phase = 'setup';
   let currentSkillIndex = 0;
   let skillDeductions = new Array(10).fill(0);
+  let skillThumbnails = new Array(10).fill(null);
   let landingDeduction = 0;
+  let landingThumbnail = null;
   let skillsPerformed = 10;
 
   // DOM Elements
-  const setupScreen  = document.getElementById('setupScreen');
-  const gridScreen   = document.getElementById('gridScreen');
-  const swipeScreen  = document.getElementById('swipeScreen');
-  const reviewScreen = document.getElementById('reviewScreen');
-  const phaseBadge   = document.getElementById('phaseBadge');
-  const skillCounter = document.getElementById('skillCounter');
-  const canvas       = document.getElementById('gestureCanvas');
-  const ctx          = canvas ? canvas.getContext('2d') : null;
+  const setupScreen      = document.getElementById('setupScreen');
+  const gridScreen       = document.getElementById('gridScreen');
+  const swipeScreen      = document.getElementById('swipeScreen');
+  const recognizerScreen = document.getElementById('recognizerScreen');
+  const reviewScreen     = document.getElementById('reviewScreen');
+  const phaseBadge       = document.getElementById('phaseBadge');
+  const skillCounter     = document.getElementById('skillCounter');
+  
+  const canvas           = document.getElementById('gestureCanvas');
+  const ctx              = canvas ? canvas.getContext('2d') : null;
+
+  const recCanvas        = document.getElementById('recognizerCanvas');
+  const recCtx           = recCanvas ? recCanvas.getContext('2d') : null;
 
   /* ==========================================================================
      AUDIO SYNTHESIS FEEDBACK
@@ -1046,6 +1458,25 @@
     }
   }
 
+  // Update Recognizer Screen Feedback
+  function updateRecognizerDisplay(recordedVal = 0, lastActionName = '') {
+    const feedbackLabel = document.getElementById('recFeedbackLabel');
+    const feedbackVal   = document.getElementById('recFeedbackVal');
+    const lastActionEl  = document.getElementById('recLastAction');
+
+    if (phase === 'routine') {
+      feedbackLabel.textContent = `Skill ${currentSkillIndex + 1} / 10`;
+      feedbackVal.textContent = typeof recordedVal === 'number' ? `-${recordedVal.toFixed(1)}` : recordedVal;
+    } else if (phase === 'landing') {
+      feedbackLabel.textContent = `Landing Deduction`;
+      feedbackVal.textContent = typeof recordedVal === 'number' ? `-${recordedVal.toFixed(1)}` : recordedVal;
+    }
+
+    if (lastActionName) {
+      lastActionEl.textContent = lastActionName;
+    }
+  }
+
   // Start Routine
   function startRoutine(mode) {
     if (mode) {
@@ -1054,21 +1485,28 @@
     phase = 'routine';
     currentSkillIndex = 0;
     skillDeductions = new Array(10).fill(0);
+    skillThumbnails = new Array(10).fill(null);
     landingDeduction = 0;
+    landingThumbnail = null;
     skillsPerformed = 10;
 
     setupScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
+    gridScreen.classList.add('hidden');
+    swipeScreen.classList.add('hidden');
+    recognizerScreen.classList.add('hidden');
 
     if (currentInterface === 'grid') {
       gridScreen.classList.remove('hidden');
-      swipeScreen.classList.add('hidden');
       renderGrid(activeRoutineZones);
-    } else {
+    } else if (currentInterface === 'swipe') {
       swipeScreen.classList.remove('hidden');
-      gridScreen.classList.add('hidden');
       updateSwipeDisplay(0.0, 'Ready for gesture input');
       setTimeout(initCanvasSize, 50);
+    } else if (currentInterface === 'recognizer') {
+      recognizerScreen.classList.remove('hidden');
+      updateRecognizerDisplay(0.0, 'Draw digit on canvas');
+      setTimeout(initRecCanvasSize, 50);
     }
 
     phaseBadge.textContent = 'Routine';
@@ -1101,7 +1539,7 @@
     btn.addEventListener('pointerleave', () => btn.classList.remove('active-touch'));
   });
 
-  function handleZoneInput(zoneIndex, actionLabel = '') {
+  function handleZoneInput(zoneIndex, actionLabel = '', thumbnailData = null) {
     triggerFeedback('tap');
 
     const activeSet = (phase === 'landing') ? LANDING_PRESET : activeRoutineZones;
@@ -1109,14 +1547,18 @@
 
     if (phase === 'routine') {
       skillDeductions[currentSkillIndex] = val;
+      if (thumbnailData) skillThumbnails[currentSkillIndex] = thumbnailData;
+
       currentSkillIndex++;
 
       if (currentSkillIndex >= 10) {
         phase = 'landing';
         if (currentInterface === 'grid') {
           renderGrid(LANDING_PRESET);
-        } else {
+        } else if (currentInterface === 'swipe') {
           updateSwipeDisplay(val, actionLabel ? `${actionLabel} (Skill 10)` : '');
+        } else if (currentInterface === 'recognizer') {
+          updateRecognizerDisplay(val, actionLabel ? `${actionLabel} (Skill 10)` : '');
         }
         phaseBadge.textContent = 'Landing';
         phaseBadge.className = 'phase-badge badge-landing';
@@ -1124,16 +1566,20 @@
       } else {
         if (currentInterface === 'swipe') {
           updateSwipeDisplay(val, actionLabel ? `${actionLabel} (Skill ${currentSkillIndex})` : '');
+        } else if (currentInterface === 'recognizer') {
+          updateRecognizerDisplay(val, actionLabel ? `${actionLabel} (Skill ${currentSkillIndex})` : '');
         }
       }
       updateCounter();
 
     } else if (phase === 'landing') {
       landingDeduction = val;
+      if (thumbnailData) landingThumbnail = thumbnailData;
 
       phase = 'review';
       gridScreen.classList.add('hidden');
       swipeScreen.classList.add('hidden');
+      recognizerScreen.classList.add('hidden');
       reviewScreen.classList.remove('hidden');
       phaseBadge.textContent = 'Review';
       phaseBadge.className = 'phase-badge badge-review';
@@ -1145,7 +1591,7 @@
   }
 
   /* ==========================================================================
-     SWIPE & GESTURE RECOGNITION ENGINE
+     SWIPE GESTURE RECOGNITION ENGINE
      ========================================================================== */
   let pointerPoints = [];
   let isPointerDown = false;
@@ -1156,7 +1602,10 @@
     canvas.height = swipeScreen.offsetHeight || window.innerHeight;
   }
 
-  window.addEventListener('resize', initCanvasSize);
+  window.addEventListener('resize', () => {
+    initCanvasSize();
+    initRecCanvasSize();
+  });
 
   if (swipeScreen) {
     swipeScreen.addEventListener('pointerdown', (e) => {
@@ -1207,8 +1656,6 @@
 
     const start = points[0];
     const end = points[points.length - 1];
-    const duration = end.t - start.t;
-
     let pathLength = 0;
     let minX = start.x, maxX = start.x, minY = start.y, maxY = start.y;
 
@@ -1228,19 +1675,16 @@
     const boxWidth = maxX - minX;
     const boxHeight = maxY - minY;
 
-    // 1. TAP DETECTION: Small total movement
     if (pathLength < 30) {
       handleZoneInput(0, 'Tap -> Zone 1');
       return;
     }
 
-    // 2. CIRCLE DETECTION: Path is long but start/end are close
     if (pathLength > 90 && netDist < 70 && boxWidth > 30 && boxHeight > 30) {
       handleZoneInput(5, 'Circle -> Zone 6');
       return;
     }
 
-    // 3. FLICK / SWIPE DETECTION: Axis classification
     if (Math.abs(netDy) >= Math.abs(netDx)) {
       if (netDy < 0) {
         handleZoneInput(1, 'Flick Up -> Zone 2');
@@ -1254,6 +1698,87 @@
         handleZoneInput(4, 'Swipe Left -> Zone 5');
       }
     }
+  }
+
+  /* ==========================================================================
+     NUMBER RECOGNITION INTERFACE ($1 UNISTROKE ENGINE)
+     ========================================================================== */
+  let recPoints = [];
+  let isRecPointerDown = false;
+
+  function initRecCanvasSize() {
+    if (!recCanvas || !recognizerScreen) return;
+    recCanvas.width = recognizerScreen.offsetWidth || window.innerWidth;
+    recCanvas.height = recognizerScreen.offsetHeight || window.innerHeight;
+  }
+
+  if (recCanvas) {
+    recCanvas.addEventListener('pointerdown', (e) => {
+      if (phase !== 'routine' && phase !== 'landing') return;
+      e.preventDefault();
+      try { recCanvas.setPointerCapture(e.pointerId); } catch(err) {}
+      isRecPointerDown = true;
+      recPoints = [new Point(e.clientX, e.clientY)];
+      if (recCtx) {
+        recCtx.clearRect(0, 0, recCanvas.width, recCanvas.height);
+        recCtx.beginPath();
+        recCtx.moveTo(e.clientX, e.clientY);
+        recCtx.strokeStyle = '#9bd98b';
+        recCtx.lineWidth = 8;
+        recCtx.lineCap = 'round';
+        recCtx.lineJoin = 'round';
+      }
+    });
+
+    recCanvas.addEventListener('pointermove', (e) => {
+      if (!isRecPointerDown) return;
+      e.preventDefault();
+      recPoints.push(new Point(e.clientX, e.clientY));
+      if (recCtx) {
+        recCtx.lineTo(e.clientX, e.clientY);
+        recCtx.stroke();
+      }
+    });
+
+    recCanvas.addEventListener('pointerup', (e) => {
+      if (!isRecPointerDown) return;
+      e.preventDefault();
+      isRecPointerDown = false;
+      try { recCanvas.releasePointerCapture(e.pointerId); } catch(err) {}
+
+      // Capture drawing thumbnail before clearing
+      const thumbData = recCanvas.toDataURL('image/png');
+
+      if (recCtx) {
+        recCtx.clearRect(0, 0, recCanvas.width, recCanvas.height);
+      }
+
+      processNumberRecognition(recPoints, thumbData);
+    });
+
+    recCanvas.addEventListener('pointercancel', () => {
+      isRecPointerDown = false;
+      if (recCtx) recCtx.clearRect(0, 0, recCanvas.width, recCanvas.height);
+    });
+  }
+
+  function processNumberRecognition(points, thumbData) {
+    if (!points || points.length < 3) return;
+
+    const result = dollarRecognizer.Recognize(points);
+    const numDigit = parseInt(result.Name, 10) || 0;
+    
+    // Map recognized digit (0..5) to zone index (0..5)
+    let zoneIdx = Math.min(5, Math.max(0, numDigit));
+
+    let actionLabel = `Recognized "${result.Name}" (${Math.round(result.Score * 100)}%)`;
+    handleZoneInput(zoneIdx, actionLabel, thumbData);
+  }
+
+  function quickSelectRecognized(deductionVal) {
+    let zoneIdx = activeRoutineZones.indexOf(deductionVal);
+    if (zoneIdx === -1) zoneIdx = 0;
+    handleZoneInput(zoneIdx, `Quick ${deductionVal.toFixed(1)}`);
   }
 
   // Adjust Skills Performed Count (0 to 10)
@@ -1277,8 +1802,8 @@
     const maxBaseScore = skillsPerformed * 1.0;
     const netScore = Math.max(0, maxBaseScore - totalDeduct);
 
-    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(1);
-    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(1);
+    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
+    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
 
     const listContainer = document.getElementById('reviewList');
     listContainer.innerHTML = '';
@@ -1289,8 +1814,13 @@
       const row = document.createElement('div');
       row.className = `review-row ${isPerformed ? '' : 'disabled-row'}`;
 
+      const thumbUrl = skillThumbnails[i];
+
       row.innerHTML = `
-        <span class="sk-lbl">Skill ${i + 1} ${isPerformed ? '' : '<small>(Excluded)</small>'}</span>
+        <span class="sk-lbl">Skill ${i + 1} ${isPerformed ? '' : '<small>(Excl)</small>'}</span>
+        <div class="review-thumb-box">
+          ${thumbUrl ? `<img src="${thumbUrl}" class="review-thumb-img" alt="S${i+1}">` : '<span class="review-thumb-empty">—</span>'}
+        </div>
         <div class="value-controls-group">
           ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>` : ''}
           <span class="sk-val">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
@@ -1304,7 +1834,10 @@
     const landingRow = document.createElement('div');
     landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
     landingRow.innerHTML = `
-      <span class="sk-lbl">Landing ${isLandingActive ? '' : '<small>(Excluded)</small>'}</span>
+      <span class="sk-lbl">Landing ${isLandingActive ? '' : '<small>(Excl)</small>'}</span>
+      <div class="review-thumb-box">
+        ${landingThumbnail ? `<img src="${landingThumbnail}" class="review-thumb-img" alt="Landing">` : '<span class="review-thumb-empty">—</span>'}
+      </div>
       <div class="value-controls-group">
         ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(-1)">−</button>` : ''}
         <span class="sk-val">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
@@ -1336,7 +1869,7 @@
     triggerFeedback('tap');
     let currentIdx = LANDING_PRESET.indexOf(landingDeduction);
     if (currentIdx === -1) {
-      currentIdx = LANDING_PRESET.reduce((closest, val, idx) =>
+      currentIdx = LANDING_PRESET.reduce((closest, val, idx) => 
         Math.abs(val - landingDeduction) < Math.abs(LANDING_PRESET[closest] - landingDeduction) ? idx : closest, 0);
     }
 
@@ -1352,6 +1885,7 @@
     setupScreen.classList.remove('hidden');
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
+    recognizerScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
     phaseBadge.textContent = 'Setup';
     phaseBadge.className = 'phase-badge badge-routine';
