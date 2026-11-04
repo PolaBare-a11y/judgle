@@ -16,6 +16,7 @@
       --fig-pink:   #dc5183;
       --fig-green:  #9bd98b;
       --fig-orange: #e68a00;
+      --fig-red:    #f44336;
 
       /* Dark Mode Surfaces */
       --bg-dark:    #0a0a0f;
@@ -195,6 +196,7 @@
       text-align: center;
       margin-top: 20px;
       pointer-events: none;
+      z-index: 2;
     }
 
     .swipe-feedback-label {
@@ -220,6 +222,59 @@
       min-height: 24px;
     }
 
+    /* FAINT BACKGROUND WATERMARK COMPASS GUIDE */
+    .swipe-bg-overlay {
+      position: absolute;
+      top: 46%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 280px;
+      height: 280px;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.15;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bg-compass {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .compass-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 170px;
+      height: 170px;
+      border: 2px dashed var(--fig-purple);
+      border-radius: 50%;
+    }
+
+    .compass-item {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-main);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .compass-icon { font-size: 1.6rem; line-height: 1; }
+
+    .compass-top { top: 0; left: 50%; transform: translateX(-50%); }
+    .compass-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
+    .compass-left { left: 0; top: 50%; transform: translateY(-50%); }
+    .compass-right { right: 0; top: 50%; transform: translateY(-50%); }
+    .compass-center { top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+
     .swipe-guide-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -228,6 +283,7 @@
       max-width: 420px;
       margin-bottom: 20px;
       pointer-events: none;
+      z-index: 2;
     }
 
     .swipe-guide-card {
@@ -292,6 +348,16 @@
       color: var(--fig-blue);
       text-transform: uppercase;
       letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title-icon {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      flex-shrink: 0;
     }
 
     .section-desc {
@@ -331,10 +397,126 @@
     .preset-card h4 { font-size: 0.9rem; margin-bottom: 2px; color: var(--text-main); }
     .preset-card p { font-size: 0.72rem; color: var(--text-sub); }
 
+    /* SETUP SWIPE INSTRUCTIONS WITH VISUAL GRADIENT DIAL & RED REFRESH CIRCLE GUIDE */
+    .swipe-setup-content {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .visual-guide-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* SMALL GRADIENT VISUAL COMPASS DIAL */
+    .visual-compass-wrapper {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        var(--band-top-color) 0deg 45deg,
+        var(--band-mid-color) 45deg 225deg,
+        var(--band-bot-color) 225deg 315deg,
+        var(--band-top-color) 315deg 360deg
+      );
+      padding: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+    }
+
+    .visual-compass-inner {
+      width: 100%;
+      height: 100%;
+      background: #1a1926;
+      border-radius: 50%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .v-compass-node {
+      position: absolute;
+      font-weight: 800;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .v-node-top    { top: 5px; left: 50%; transform: translateX(-50%); color: var(--band-top-color); }
+    .v-node-right  { right: 7px; top: 50%; transform: translateY(-50%); color: var(--band-mid-color); }
+    .v-node-bottom { bottom: 5px; left: 50%; transform: translateX(-50%); color: var(--band-mid-color); }
+    .v-node-left   { left: 7px; top: 50%; transform: translateY(-50%); color: var(--band-bot-color); }
+
+    .v-node-center {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--band-top-bg);
+      border: 2px solid var(--band-top-color);
+      color: var(--band-top-color);
+      font-size: 0.8rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* RED REFRESH ICON & 0.5 CIRCLE GUIDE BELOW DIAL */
+    .visual-circle-guide {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .red-refresh-svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--fig-red);
+      filter: drop-shadow(0px 0px 4px rgba(244, 67, 54, 0.4));
+    }
+
+    .circle-val-label {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--fig-red);
+      line-height: 1;
+    }
+
     .setup-guide-grid {
       margin-bottom: 0;
-      max-width: 100%;
+      flex: 1;
       pointer-events: auto;
+    }
+
+    /* STARTING PAGE FOOTNOTE */
+    .setup-footnote {
+      margin-top: auto;
+      padding: 10px 12px;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text-sub);
+      border-top: 1px solid var(--border-col);
+      line-height: 1.45;
+      background: rgba(20, 20, 31, 0.5);
+      border-radius: 8px;
+    }
+
+    .setup-footnote strong {
+      color: var(--fig-purple);
     }
 
     .btn-primary {
@@ -348,6 +530,17 @@
       cursor: pointer;
       text-align: center;
       flex-shrink: 0;
+    }
+
+    .btn-secondary {
+      background: #1e1c2e;
+      border: 1px solid var(--border-col);
+      color: var(--text-sub);
+    }
+
+    .btn-secondary:active {
+      background: var(--fig-purple);
+      color: var(--text-main);
     }
 
     .btn-swipe-start {
@@ -379,8 +572,8 @@
       margin-bottom: 6px;
     }
 
-    .score-box { 
-      text-align: center; 
+    .score-box {
+      text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -488,6 +681,14 @@
       color: #fff;
     }
 
+    /* REVIEW BOTTOM ACTION BUTTON BAR */
+    .review-action-bar {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -514,7 +715,15 @@
 
       <!-- TOP SECTION: GRID INTERFACE & PRESETS -->
       <div class="setup-section-card">
-        <div class="section-title">Grid Interface</div>
+        <div class="section-title">
+          <svg class="section-title-icon" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
+          Grid Interface
+        </div>
         <div class="section-desc">Traditional 2x3 on-screen touch zones spanning 95%+ of the display during live judging.</div>
 
         <div class="section-subtitle">Select E-Judge Preset</div>
@@ -534,44 +743,85 @@
 
       <!-- BOTTOM SECTION: SWIPE INTERFACE & DEDUCTION GUIDE -->
       <div class="setup-section-card">
-        <div class="section-title" style="color:var(--fig-pink);">Swipe Interface</div>
+        <div class="section-title" style="color:var(--fig-pink);">
+          <svg class="section-title-icon" style="stroke:var(--fig-pink);" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"></path>
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
+            <path d="M18 8a2 2 0 0 1 2 2v4a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.8-5.6-2.4L2.5 15a1.2 1.2 0 0 1 .4-1.7v0a1.2 1.2 0 0 1 1.6.4l2.5 3.8"></path>
+          </svg>
+          Swipe Interface
+        </div>
         <div class="section-desc">Full-screen gesture input. Perform gestures anywhere on screen to record deductions.</div>
 
         <div class="section-subtitle">Gesture Guide</div>
-        <div class="swipe-guide-grid setup-guide-grid">
-          <div class="swipe-guide-card">
-            <div class="swipe-guide-icon">👆</div>
-            <div class="swipe-guide-action">Tap</div>
-            <div class="swipe-guide-zone">Zone 1 (0.0)</div>
+        <div class="swipe-setup-content">
+         
+          <!-- Visual Compass Dial + Red Refresh Circle Guide Column -->
+          <div class="visual-guide-column">
+            <div class="visual-compass-wrapper">
+              <div class="visual-compass-inner">
+                <div class="v-compass-node v-node-top">1</div>
+                <div class="v-compass-node v-node-right">2</div>
+                <div class="v-compass-node v-node-bottom">3</div>
+                <div class="v-compass-node v-node-left">4</div>
+                <div class="v-compass-node v-node-center">0</div>
+              </div>
+            </div>
+
+            <!-- Red Refresh Icon + 0.5 underneath -->
+            <div class="visual-circle-guide">
+              <svg class="red-refresh-svg" viewBox="0 0 24 24" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              <span class="circle-val-label">0.5</span>
+            </div>
           </div>
-          <div class="swipe-guide-card">
-            <div class="swipe-guide-icon">⬆️</div>
-            <div class="swipe-guide-action">Flick Up</div>
-            <div class="swipe-guide-zone">Zone 2 (0.1)</div>
+
+          <!-- Gesture Cards Grid -->
+          <div class="swipe-guide-grid setup-guide-grid">
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">👆</div>
+              <div class="swipe-guide-action">Tap</div>
+              <div class="swipe-guide-zone">0</div>
+            </div>
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">⬆️</div>
+              <div class="swipe-guide-action">Flick Up</div>
+              <div class="swipe-guide-zone">0.1</div>
+            </div>
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">➡️</div>
+              <div class="swipe-guide-action">Swipe Right</div>
+              <div class="swipe-guide-zone">0.2</div>
+            </div>
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">⬇️</div>
+              <div class="swipe-guide-action">Flick Down</div>
+              <div class="swipe-guide-zone">0.3</div>
+            </div>
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">⬅️</div>
+              <div class="swipe-guide-action">Swipe Left</div>
+              <div class="swipe-guide-zone">0.4</div>
+            </div>
+            <div class="swipe-guide-card">
+              <div class="swipe-guide-icon">🔃</div>
+              <div class="swipe-guide-action">Circle</div>
+              <div class="swipe-guide-zone">0.5</div>
+            </div>
           </div>
-          <div class="swipe-guide-card">
-            <div class="swipe-guide-icon">➡️</div>
-            <div class="swipe-guide-action">Swipe Right</div>
-            <div class="swipe-guide-zone">Zone 3 (0.2)</div>
-          </div>
-          <div class="swipe-guide-card">
-            <div class="swipe-guide-icon">⬇️</div>
-            <div class="swipe-guide-action">Flick Down</div>
-            <div class="swipe-guide-zone">Zone 4 (0.3)</div>
-          </div>
-          <div class="swipe-guide-card">
-            <div class="swipe-guide-icon">⬅️</div>
-            <div class="swipe-guide-action">Swipe Left</div>
-            <div class="swipe-guide-zone">Zone 5 (0.4)</div>
-          </div>
-          <div class="swipe-guide-card">
-            <div class="swipe-guide-icon">🔄</div>
-            <div class="swipe-guide-action">Circle</div>
-            <div class="swipe-guide-zone">Zone 6 (0.5)</div>
-          </div>
+
         </div>
 
         <button class="btn-primary btn-swipe-start" onclick="startRoutine('swipe')" style="width:100%; margin-top:4px;">Start Swipe Judging</button>
+      </div>
+
+      <!-- FOOTNOTE ON STARTING PAGE -->
+      <div class="setup-footnote">
+        Created by <strong>Jed</strong> • In Development<br>
+        Aiming to create an electronic judging input method that can be used to give real-time scoring for audiences.
       </div>
 
     </div>
@@ -579,21 +829,49 @@
     <!-- 2A. ROUTINE & LANDING 2x3 GRID INPUT WITH ROW BANDING -->
     <div id="gridScreen" class="grid-container hidden">
       <!-- Top Row Band (FIG Green) -->
-      <div class="zone-btn zone-row-top" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
-      <div class="zone-btn zone-row-top" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
-      
+      <div class="zone-btn zone-row-top" id="zone0"><span class="val">0.0</span></div><!--<span class="zone-sub">Zone 1</span></div>-->
+      <div class="zone-btn zone-row-top" id="zone1"><span class="val">0.1</span></div><!--<span class="zone-sub">Zone 2</span></div>-->
+     
       <!-- Middle Row Band (FIG Blue) -->
-      <div class="zone-btn zone-row-mid" id="zone2"><span class="val">0.2</span><span class="zone-sub">Zone 3</span></div>
-      <div class="zone-btn zone-row-mid" id="zone3"><span class="val">0.3</span><span class="zone-sub">Zone 4</span></div>
-      
+      <div class="zone-btn zone-row-mid" id="zone2"><span class="val">0.2</span></div><!--<span class="zone-sub">Zone 3</span></div>-->
+      <div class="zone-btn zone-row-mid" id="zone3"><span class="val">0.3</span></div><!--<span class="zone-sub">Zone 4</span></div>-->
+     
       <!-- Bottom Row Band (Soft FIG Orange) -->
-      <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span><span class="zone-sub">Zone 5</span></div>
-      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
+      <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span></div><!--<span class="zone-sub">Zone 5</span></div>-->
+      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span></div><!--<span class="zone-sub">Zone 6</span></div>-->
     </div>
 
     <!-- 2B. SWIPE / GESTURE INPUT INTERFACE -->
     <div id="swipeScreen" class="swipe-container hidden">
       <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
+
+      <!-- Faint Background Watermark Compass Guide -->
+      <div class="swipe-bg-overlay">
+        <div class="bg-compass">
+          <div class="compass-ring"></div>
+          <div class="compass-item compass-top">
+            <span class="compass-icon">⬆️</span>
+            <span>0.1</span>
+          </div>
+          <div class="compass-item compass-right">
+            <span class="compass-icon">➡️</span>
+            <span>0.2</span>
+          </div>
+          <div class="compass-item compass-bottom">
+            <span class="compass-icon">⬇️</span>
+            <span>0.3</span>
+          </div>
+          <div class="compass-item compass-left">
+            <span class="compass-icon">⬅️</span>
+            <span>0.4</span>
+          </div>
+          <div class="compass-item compass-center">
+            <span class="compass-icon">👆</span>
+            <span>0.0</span>
+            <div style="font-size:0.6rem; color:var(--fig-purple); margin-top:2px;">🔃 0.5</div>
+          </div>
+        </div>
+      </div>
 
       <div class="swipe-feedback-area">
         <div class="swipe-feedback-label" id="swipeFeedbackLabel">Skill 1 / 10</div>
@@ -605,32 +883,32 @@
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">👆</div>
           <div class="swipe-guide-action">Tap</div>
-          <div class="swipe-guide-zone">Zone 1</div>
+          <div class="swipe-guide-zone">0</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">⬆️</div>
           <div class="swipe-guide-action">Flick Up</div>
-          <div class="swipe-guide-zone">Zone 2</div>
+          <div class="swipe-guide-zone">0.1</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">➡️</div>
           <div class="swipe-guide-action">Swipe Right</div>
-          <div class="swipe-guide-zone">Zone 3</div>
+          <div class="swipe-guide-zone">0.2</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">⬇️</div>
           <div class="swipe-guide-action">Flick Down</div>
-          <div class="swipe-guide-zone">Zone 4</div>
+          <div class="swipe-guide-zone">0.3</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">⬅️</div>
           <div class="swipe-guide-action">Swipe Left</div>
-          <div class="swipe-guide-zone">Zone 5</div>
+          <div class="swipe-guide-zone">0.4</div>
         </div>
         <div class="swipe-guide-card">
-          <div class="swipe-guide-icon">🔄</div>
+          <div class="swipe-guide-icon">🔃</div>
           <div class="swipe-guide-action">Circle</div>
-          <div class="swipe-guide-zone">Zone 6</div>
+          <div class="swipe-guide-zone">0.5</div>
         </div>
       </div>
     </div>
@@ -651,13 +929,13 @@
         <!-- Total Deductions Accumulator -->
         <div class="score-box">
           <span class="score-lbl">Total Deductions</span>
-          <div class="deduct-val" id="totalDeductDisplay">0.00</div>
+          <div class="deduct-val" id="totalDeductDisplay">0.0</div>
         </div>
 
         <!-- Net E-Score Calculation -->
         <div class="score-box">
           <span class="score-lbl">Net E-Score</span>
-          <div class="score-val" id="netScoreDisplay">10.00</div>
+          <div class="score-val" id="netScoreDisplay">10.0</div>
         </div>
       </div>
 
@@ -665,7 +943,11 @@
         <!-- 11 Squeezed Rows generated dynamically -->
       </div>
 
-      <button class="btn-primary" onclick="resetToSetup()">Confirm & Next Routine</button>
+      <!-- BOTTOM ACTION BUTTONS BAR -->
+      <div class="review-action-bar">
+        <button class="btn-primary" onclick="startRoutine()" style="flex: 1.2;">Confirm & Next Routine</button>
+        <button class="btn-primary btn-secondary" onclick="resetToSetup()" style="flex: 1;">Change Input Method</button>
+      </div>
     </div>
 
   </div>
@@ -995,8 +1277,8 @@
     const maxBaseScore = skillsPerformed * 1.0;
     const netScore = Math.max(0, maxBaseScore - totalDeduct);
 
-    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
-    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
+    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(1);
+    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(1);
 
     const listContainer = document.getElementById('reviewList');
     listContainer.innerHTML = '';
@@ -1054,7 +1336,7 @@
     triggerFeedback('tap');
     let currentIdx = LANDING_PRESET.indexOf(landingDeduction);
     if (currentIdx === -1) {
-      currentIdx = LANDING_PRESET.reduce((closest, val, idx) => 
+      currentIdx = LANDING_PRESET.reduce((closest, val, idx) =>
         Math.abs(val - landingDeduction) < Math.abs(LANDING_PRESET[closest] - landingDeduction) ? idx : closest, 0);
     }
 
