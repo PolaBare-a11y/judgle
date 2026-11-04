@@ -1,653 +1,650 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Trampoline Execution Judge Interface</title>
-<style>
-/* ==========================================================================
-COLOR PALETTE & STYLING CUSTOMIZATION
-World Gymnastics FIG Ribbon Gradient Palette:
-- FIG Blue: #4495e5 (Primary accent / Active state)
-- FIG Purple: #7d5fb3 (Borders / Secondary accent)
-- FIG Pink: #dc5183 (Landing mode / Highlights)
-- FIG Green: #9bd98b (Execution Net Score / Confirmation)
-========================================================================== */
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trampoline Execution Judge Interface</title>
+  <style>
+    /* ==========================================================================
+       COLOR PALETTE & STYLING CUSTOMIZATION
+       World Gymnastics FIG Ribbon Gradient Palette:
+       - FIG Blue:   #4495e5  (Primary accent / Active state)
+       - FIG Purple: #7d5fb3  (Borders / Secondary accent)
+       - FIG Pink:   #dc5183  (Landing mode / Highlights)
+       - FIG Green:  #9bd98b  (Execution Net Score / Confirmation)
+       ========================================================================== */
 
-:root {
-/* Update these hex values to customize theme colors throughout the app */
---fig-blue: #4495e5;
---fig-purple: #7d5fb3;
---fig-pink: #dc5183;
---fig-green: #9bd98b;
+    :root {
+      /* Theme Color Variables */
+      --fig-blue:   #4495e5;
+      --fig-purple: #7d5fb3;
+      --fig-pink:   #dc5183;
+      --fig-green:  #9bd98b;
 
-/* Dark Mode Surfaces */
---bg-dark: #0a0a0f;
---card-bg: #14141f;
---border-col: #2c2940; /* Subtle purple-tinted dark border */
---text-main: #ffffff;
---text-sub: #8a8a9e;
-}
+      /* Dark Mode Surfaces */
+      --bg-dark:    #0a0a0f;
+      --card-bg:    #14141f;
+      --border-col: #2c2940;
+      --text-main:  #ffffff;
+      --text-sub:   #8a8a9e;
+    }
 
-* {
-box-sizing: border-box;
-margin: 0;
-padding: 0;
-user-select: none;
--webkit-user-select: none;
-touch-action: manipulation;
-}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
 
-body, html {
-width: 100%;
-height: 100%;
-background-color: var(--bg-dark);
-color: var(--text-main);
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-overflow: hidden;
-}
+    body, html {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+    }
 
-/* Screen Wrapper */
-.app-wrapper {
-display: flex;
-flex-direction: column;
-width: 100vw;
-height: 100vh;
-height: 100dvh;
-}
+    .app-wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+    }
 
-/* ==========================================================================
-TOP STATUS BAR (CUSTOMIZE HEADER COLORS HERE)
-========================================================================== */
-.status-bar {
-height: 48px;
-background: #111118;
-border-bottom: 1px solid var(--border-col);
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 0 16px;
-font-weight: 600;
-font-size: 14px;
-z-index: 10;
-}
+    /* Top Status Bar */
+    .status-bar {
+      height: 44px;
+      flex-shrink: 0;
+      background: #111118;
+      border-bottom: 1px solid var(--border-col);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-weight: 600;
+      font-size: 13px;
+      z-index: 10;
+    }
 
-.status-title {
-display: flex;
-align-items: center;
-gap: 8px;
-}
+    .status-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-.phase-badge {
-padding: 3px 8px;
-border-radius: 4px;
-font-size: 11px;
-text-transform: uppercase;
-font-weight: 700;
-}
+    .phase-badge {
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
 
-/* Phase Badge Colors */
-.badge-routine { background: var(--fig-blue); color: #fff; }
-.badge-landing { background: var(--fig-pink); color: #fff; }
-.badge-review { background: var(--fig-green); color: #111; }
+    .badge-routine { background: var(--fig-blue); color: #fff; }
+    .badge-landing { background: var(--fig-pink); color: #fff; }
+    .badge-review  { background: var(--fig-green); color: #111; }
 
-.btn-header {
-background: #1d1b2a;
-border: 1px solid var(--border-col);
-color: #ccc;
-padding: 6px 12px;
-border-radius: 6px;
-font-size: 12px;
-cursor: pointer;
-}
+    .btn-header {
+      background: #1d1b2a;
+      border: 1px solid var(--border-col);
+      color: #ccc;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+    }
 
-.btn-header:active { background: var(--fig-purple); color: #fff; }
+    .btn-header:active { background: var(--fig-purple); color: #fff; }
 
-/* Main Content Area */
-.main-content {
-flex: 1;
-position: relative;
-width: 100%;
-height: calc(100% - 48px);
-}
+    .main-content {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: calc(100% - 44px);
+      overflow: hidden;
+    }
 
-/* ==========================================================================
-2 COLUMNS x 3 ROWS GRID LAYOUT (CUSTOMIZE BUTTON BORDERS & ACTIVE STATES)
-========================================================================== */
-.grid-container {
-display: grid;
-grid-template-columns: repeat(2, 1fr); /* 2 Columns */
-grid-template-rows: repeat(3, 1fr); /* 3 Rows */
-gap: 8px;
-padding: 8px;
-width: 100%;
-height: 100%;
-background: #000000;
-}
+    /* 2 COLUMNS x 3 ROWS GRID LAYOUT */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 8px;
+      padding: 8px;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+    }
 
-.zone-btn {
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-background: var(--card-bg);
-border: 2px solid var(--fig-purple); /* Soft FIG Purple Border */
-border-radius: 14px;
-color: var(--text-main);
-font-size: 3rem;
-font-weight: 800;
-cursor: pointer;
-transition: background 0.05s ease, border-color 0.05s ease, transform 0.05s ease;
-position: relative;
-}
+    .zone-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-bg);
+      border: 2px solid var(--fig-purple);
+      border-radius: 14px;
+      color: var(--text-main);
+      font-size: 3rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.05s ease, border-color 0.05s ease, transform 0.05s ease;
+      position: relative;
+    }
 
-/* Touch / Active Feedback State */
-.zone-btn:active, .zone-btn.active-touch {
-background: rgba(68, 149, 229, 0.25) !important;
-border-color: var(--fig-blue) !important;
-transform: scale(0.98);
-}
+    .zone-btn:active, .zone-btn.active-touch {
+      background: rgba(68, 149, 229, 0.25) !important;
+      border-color: var(--fig-blue) !important;
+      transform: scale(0.98);
+    }
 
-.landing-mode .zone-btn {
-border-color: var(--fig-pink);
-}
+    .landing-mode .zone-btn {
+      border-color: var(--fig-pink);
+    }
 
-.landing-mode .zone-btn:active, .landing-mode .zone-btn.active-touch {
-background: rgba(220, 81, 131, 0.25) !important;
-border-color: var(--fig-pink) !important;
-}
+    .landing-mode .zone-btn:active, .landing-mode .zone-btn.active-touch {
+      background: rgba(220, 81, 131, 0.25) !important;
+      border-color: var(--fig-pink) !important;
+    }
 
-.zone-sub {
-font-size: 0.85rem;
-font-weight: 600;
-color: var(--text-sub);
-margin-top: 4px;
-text-transform: uppercase;
-letter-spacing: 1px;
-}
+    .zone-sub {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
 
-/* ==========================================================================
-SETUP SCREEN
-========================================================================== */
-.setup-screen {
-padding: 24px;
-display: flex;
-flex-direction: column;
-gap: 20px;
-height: 100%;
-overflow-y: auto;
-background: var(--bg-dark);
-}
+    /* SETUP SCREEN */
+    .setup-screen {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+      overflow-y: auto;
+      background: var(--bg-dark);
+    }
 
-.section-title {
-font-size: 1rem;
-font-weight: 700;
-color: var(--text-sub);
-text-transform: uppercase;
-letter-spacing: 1px;
-}
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
 
-.preset-group {
-display: grid;
-grid-template-columns: repeat(2, 1fr);
-gap: 12px;
-}
+    .preset-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
 
-.preset-card {
-background: var(--card-bg);
-border: 2px solid var(--border-col);
-border-radius: 12px;
-padding: 14px;
-cursor: pointer;
-}
+    .preset-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border-col);
+      border-radius: 10px;
+      padding: 12px;
+      cursor: pointer;
+    }
 
-.preset-card.selected {
-border-color: var(--fig-blue);
-background: rgba(68, 149, 229, 0.12);
-}
+    .preset-card.selected {
+      border-color: var(--fig-blue);
+      background: rgba(68, 149, 229, 0.12);
+    }
 
-.preset-card h4 { font-size: 1rem; margin-bottom: 4px; color: var(--text-main); }
-.preset-card p { font-size: 0.8rem; color: var(--text-sub); }
+    .preset-card h4 { font-size: 0.95rem; margin-bottom: 2px; color: var(--text-main); }
+    .preset-card p { font-size: 0.75rem; color: var(--text-sub); }
 
-.btn-primary {
-background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple));
-color: white;
-border: none;
-padding: 16px;
-border-radius: 12px;
-font-size: 1.1rem;
-font-weight: 700;
-cursor: pointer;
-text-align: center;
-margin-top: auto;
-}
+    .btn-primary {
+      background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple));
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      flex-shrink: 0;
+    }
 
-.btn-primary:active { opacity: 0.9; transform: scale(0.99); }
+    .btn-primary:active { opacity: 0.9; transform: scale(0.99); }
 
-/* ==========================================================================
-ROUTINE REVIEW SCREEN (SINGLE ROW PER SKILL WITH +/- CONTROLS)
-========================================================================== */
-.review-screen {
-padding: 16px;
-display: flex;
-flex-direction: column;
-height: 100%;
-background: var(--bg-dark);
-overflow-y: auto;
-}
+    /* REVIEW SCREEN: ZERO-SCROLL SINGLE-PAGE DYNAMIC SQUEEZE LAYOUT */
+    .review-screen {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: var(--bg-dark);
+      overflow: hidden; /* No scrolling */
+    }
 
-.score-banner {
-background: var(--card-bg);
-border: 1px solid var(--border-col);
-border-radius: 12px;
-padding: 16px;
-display: flex;
-justify-content: space-around;
-align-items: center;
-margin-bottom: 16px;
-}
+    .score-banner {
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-shrink: 0;
+      margin-bottom: 6px;
+    }
 
-.score-box { text-align: center; }
-.score-val { font-size: 2.2rem; font-weight: 800; color: var(--fig-green); }
-.deduct-val { font-size: 2.2rem; font-weight: 800; color: var(--fig-pink); }
-.score-lbl { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+    .score-box { text-align: center; }
+    .score-val { font-size: 1.8rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
+    .deduct-val { font-size: 1.8rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
+    .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
 
-.review-list {
-display: flex;
-flex-direction: column;
-gap: 8px;
-margin-bottom: 16px;
-}
+    /* Dynamic flex-fill container for 11 rows */
+    .review-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-height: 0; /* Allows rows to shrink dynamically */
+      margin-bottom: 6px;
+    }
 
-/* Single Row Format for Each Skill */
-.review-row {
-background: var(--card-bg);
-border: 1px solid var(--border-col);
-border-radius: 10px;
-padding: 10px 16px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
+    /* Single Row Format */
+    .review-row {
+      flex: 1;
+      min-height: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 6px;
+      padding: 0 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-.review-row.landing-row {
-border-color: var(--fig-pink);
-background: rgba(220, 81, 131, 0.08);
-}
+    .review-row.landing-row {
+      border-color: var(--fig-pink);
+      background: rgba(220, 81, 131, 0.08);
+    }
 
-.row-info {
-display: flex;
-align-items: center;
-gap: 16px;
-}
+    .sk-lbl {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      font-weight: 600;
+    }
 
-.sk-lbl {
-font-size: 0.95rem;
-color: var(--text-sub);
-font-weight: 600;
-width: 70px;
-}
+    .landing-row .sk-lbl {
+      color: var(--fig-pink);
+    }
 
-.sk-val {
-font-size: 1.3rem;
-font-weight: 700;
-color: var(--text-main);
-min-width: 50px;
-}
+    /* Value and +/- controls grouped tightly together */
+    .value-controls-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-.landing-row .sk-lbl, .landing-row .sk-val {
-color: var(--fig-pink);
-}
+    .sk-val {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      min-width: 48px;
+      text-align: center;
+    }
 
-/* Inline +/- Step Buttons */
-.row-controls {
-display: flex;
-gap: 8px;
-}
+    .landing-row .sk-val {
+      color: var(--fig-pink);
+    }
 
-.btn-step {
-width: 44px;
-height: 44px;
-border-radius: 8px;
-background: #1e1c2e;
-border: 1px solid var(--fig-purple);
-color: var(--text-main);
-font-size: 1.4rem;
-font-weight: 700;
-display: flex;
-align-items: center;
-justify-content: center;
-cursor: pointer;
-}
+    .btn-step {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: #1e1c2e;
+      border: 1px solid var(--fig-purple);
+      color: var(--text-main);
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
 
-.btn-step:active {
-background: var(--fig-blue);
-border-color: var(--fig-blue);
-color: #fff;
-}
+    .btn-step:active {
+      background: var(--fig-blue);
+      border-color: var(--fig-blue);
+      color: #fff;
+    }
 
-.hidden { display: none !important; }
-</style>
+    .hidden { display: none !important; }
+  </style>
 </head>
 <body>
 
 <div class="app-wrapper">
-<!-- Top Status Bar -->
-<div class="status-bar">
-<div class="status-title">
-<span id="phaseBadge" class="phase-badge badge-routine">Routine</span>
-<span id="skillCounter">Skill 1 / 10</span>
-</div>
-<div style="display:flex; gap:8px;">
-<button class="btn-header" onclick="toggleFullscreen()">Fullscreen</button>
-<button class="btn-header" onclick="resetToSetup()">Reset</button>
-</div>
-</div>
+  <!-- Top Status Bar -->
+  <div class="status-bar">
+    <div class="status-title">
+      <span id="phaseBadge" class="phase-badge badge-routine">Routine</span>
+      <span id="skillCounter">Skill 1 / 10</span>
+    </div>
+    <div style="display:flex; gap:6px;">
+      <button class="btn-header" onclick="toggleFullscreen()">Fullscreen</button>
+      <button class="btn-header" onclick="resetToSetup()">Reset</button>
+    </div>
+  </div>
 
-<!-- Main Canvas -->
-<div class="main-content">
+  <!-- Main Canvas -->
+  <div class="main-content">
 
-<!-- 1. SETUP / CONFIGURATION SCREEN -->
-<div id="setupScreen" class="setup-screen">
-<div class="section-title">Select Preset Scale</div>
+    <!-- 1. SETUP / CONFIGURATION SCREEN -->
+    <div id="setupScreen" class="setup-screen">
+      <div class="section-title">Select Preset Scale</div>
+      
+      <div class="preset-group">
+        <div class="preset-card selected" onclick="selectPreset('fig', this)">
+          <h4>FIG Standard</h4>
+          <p>0.0, 0.1, 0.2, 0.3, 0.4, 0.5</p>
+        </div>
+        <div class="preset-card" onclick="selectPreset('coarse', this)">
+          <h4>Coarse Scale</h4>
+          <p>0.0, 0.1, 0.2, 0.3, 0.5, 0.5</p>
+        </div>
+        <div class="preset-card" onclick="selectPreset('synchro', this)">
+          <h4>Fine Scale (HD)</h4>
+          <p>0.00, 0.05, 0.10, 0.15, 0.20, 0.30</p>
+        </div>
+        <div class="preset-card" onclick="selectPreset('flipped', this)">
+          <h4>FIG (Flipped)</h4>
+          <p>Right-to-Left orientation</p>
+        </div>
+      </div>
 
-<div class="preset-group">
-<div class="preset-card selected" onclick="selectPreset('fig', this)">
-<h4>FIG Standard</h4>
-<p>0.0, 0.1, 0.2, 0.3, 0.4, 0.5</p>
-</div>
-<div class="preset-card" onclick="selectPreset('coarse', this)">
-<h4>Coarse Scale</h4>
-<p>0.0, 0.1, 0.2, 0.3, 0.5, 0.5</p>
-</div>
-<div class="preset-card" onclick="selectPreset('synchro', this)">
-<h4>Fine Scale (HD)</h4>
-<p>0.00, 0.05, 0.10, 0.15, 0.20, 0.30</p>
-</div>
-<div class="preset-card" onclick="selectPreset('flipped', this)">
-<h4>FIG (Flipped)</h4>
-<p>Right-to-Left orientation</p>
-</div>
-</div>
+      <div class="section-title" style="margin-top:6px;">Grid Preview (2 Cols x 3 Rows)</div>
+      <div style="font-size:0.8rem; color:var(--text-sub);">
+        Touch zones span 95%+ of the screen during live judging.
+      </div>
 
-<div class="section-title" style="margin-top:10px;">Grid Preview (2 Cols x 3 Rows)</div>
-<div style="font-size:0.85rem; color:var(--text-sub); margin-bottom:-10px;">
-Touch zones span 95%+ of the screen during live judging.
-</div>
+      <button class="btn-primary" onclick="startRoutine()" style="margin-top:auto;">Start Routine Judging</button>
+    </div>
 
-<button class="btn-primary" onclick="startRoutine()">Start Routine Judging</button>
-</div>
+    <!-- 2. ROUTINE & LANDING 2x3 GRID INPUT -->
+    <div id="gridScreen" class="grid-container hidden">
+      <!-- 2 Columns x 3 Rows = 6 Zones -->
+      <div class="zone-btn" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
+      <div class="zone-btn" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
+      <div class="zone-btn" id="zone2"><span class="val">0.2</span><span class="zone-sub">Zone 3</span></div>
+      <div class="zone-btn" id="zone3"><span class="val">0.3</span><span class="zone-sub">Zone 4</span></div>
+      <div class="zone-btn" id="zone4"><span class="val">0.4</span><span class="zone-sub">Zone 5</span></div>
+      <div class="zone-btn" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
+    </div>
 
-<!-- 2. ROUTINE & LANDING 2x3 GRID INPUT -->
-<div id="gridScreen" class="grid-container hidden">
-<!-- 2 Columns x 3 Rows = 6 Zones -->
-<div class="zone-btn" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
-<div class="zone-btn" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
-<div class="zone-btn" id="zone2"><span class="val">0.2</span><span class="zone-sub">Zone 3</span></div>
-<div class="zone-btn" id="zone3"><span class="val">0.3</span><span class="zone-sub">Zone 4</span></div>
-<div class="zone-btn" id="zone4"><span class="val">0.4</span><span class="zone-sub">Zone 5</span></div>
-<div class="zone-btn" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
-</div>
+    <!-- 3. REVIEW & EDIT SCREEN (ONE-PAGE NO-SCROLL LAYOUT) -->
+    <div id="reviewScreen" class="review-screen hidden">
+      <div class="score-banner">
+        <div class="score-box">
+          <div class="deduct-val" id="totalDeductDisplay">0.00</div>
+          <div class="score-lbl">Total Deduction</div>
+        </div>
+        <div class="score-box">
+          <div class="score-val" id="netScoreDisplay">10.00</div>
+          <div class="score-lbl">Execution Score</div>
+        </div>
+      </div>
 
-<!-- 3. REVIEW & EDIT SCREEN (ONE ROW PER SKILL WITH +/- BUTTONS) -->
-<div id="reviewScreen" class="review-screen hidden">
-<div class="score-banner">
-<div class="score-box">
-<div class="deduct-val" id="totalDeductDisplay">0.00</div>
-<div class="score-lbl">Total Deduction</div>
-</div>
-<div class="score-box">
-<div class="score-val" id="netScoreDisplay">10.00</div>
-<div class="score-lbl">Execution Score</div>
-</div>
-</div>
+      <div class="review-list" id="reviewList">
+        <!-- 11 Rows generated dynamically -->
+      </div>
 
-<div class="section-title" style="margin-bottom:10px;">Skill Breakdown</div>
+      <button class="btn-primary" onclick="resetToSetup()">Confirm & Next Routine</button>
+    </div>
 
-<div class="review-list" id="reviewList">
-<!-- Rows generated dynamically -->
-</div>
-
-<button class="btn-primary" onclick="resetToSetup()" style="margin-top:auto;">Confirm & Next Routine</button>
-</div>
-
-</div>
+  </div>
 </div>
 
 <script>
-// Presets Configuration
-const PRESETS = {
-fig: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
-coarse: [0.0, 0.1, 0.2, 0.3, 0.5, 0.5],
-synchro: [0.00, 0.05, 0.10, 0.15, 0.20, 0.30],
-flipped: [0.1, 0.0, 0.3, 0.2, 0.5, 0.4]
-};
+  // Presets & FIG Landing Scale
+  const PRESETS = {
+    fig:     [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
+    coarse:  [0.0, 0.1, 0.2, 0.3, 0.5, 0.5],
+    synchro: [0.00, 0.05, 0.10, 0.15, 0.20, 0.30],
+    flipped: [0.1, 0.0, 0.3, 0.2, 0.5, 0.4]
+  };
 
-const LANDING_PRESET = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
+  // Discrete FIG Landing Scale Values
+  const LANDING_PRESET = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
 
-let currentPresetKey = 'fig';
-let activeRoutineZones = [...PRESETS.fig];
-let phase = 'setup'; // 'setup' | 'routine' | 'landing' | 'review'
-let currentSkillIndex = 0; // 0 to 9 for skills, 10 for landing
-let skillDeductions = new Array(10).fill(0);
-let landingDeduction = 0;
+  let currentPresetKey = 'fig';
+  let activeRoutineZones = [...PRESETS.fig];
+  let phase = 'setup';
+  let currentSkillIndex = 0;
+  let skillDeductions = new Array(10).fill(0);
+  let landingDeduction = 0;
 
-// DOM Elements
-const setupScreen = document.getElementById('setupScreen');
-const gridScreen = document.getElementById('gridScreen');
-const reviewScreen = document.getElementById('reviewScreen');
-const phaseBadge = document.getElementById('phaseBadge');
-const skillCounter = document.getElementById('skillCounter');
+  // DOM Elements
+  const setupScreen  = document.getElementById('setupScreen');
+  const gridScreen   = document.getElementById('gridScreen');
+  const reviewScreen = document.getElementById('reviewScreen');
+  const phaseBadge   = document.getElementById('phaseBadge');
+  const skillCounter = document.getElementById('skillCounter');
 
-/* ==========================================================================
-HAPTIC & AUDIO SYNTHESIS FEEDBACK (FIX FOR MOBILE CHROME & iOS)
-========================================================================== */
-let audioCtx = null;
+  /* ==========================================================================
+     AUDIO SYNTHESIS FEEDBACK
+     ========================================================================== */
+  let audioCtx = null;
 
-function triggerFeedback(type = 'tap') {
-// 1. Physical Hardware Vibration (Android Chrome / Android Browsers)
-if ('vibrate' in navigator) {
-try {
-if (type === 'tap') navigator.vibrate(20);
-if (type === 'transition') navigator.vibrate([35, 20, 35]);
-if (type === 'complete') navigator.vibrate([50, 30, 80]);
-} catch (e) { /* Ignore restriction */ }
-}
+  function triggerFeedback(type = 'tap') {
+    // Web Audio Micro-Tick Synthesis
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(type === 'complete' ? 880 : 520, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.09, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.025);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.025);
+    } catch (e) { /* Catch browser audio restrictions */ }
+  }
 
-// 2. Web Audio Micro-Tick Fallback (iOS Safari / iOS Chrome)
-try {
-if (!audioCtx) {
-audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-}
-if (audioCtx.state === 'suspended') {
-audioCtx.resume();
-}
-const osc = audioCtx.createOscillator();
-const gain = audioCtx.createGain();
-osc.type = 'sine';
-osc.frequency.setValueAtTime(type === 'complete' ? 800 : 440, audioCtx.currentTime);
-gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
-osc.connect(gain);
-gain.connect(audioCtx.destination);
-osc.start();
-osc.stop(audioCtx.currentTime + 0.03);
-} catch (e) { /* Audio fallback silent failure catch */ }
-}
+  // Preset Selection
+  function selectPreset(key, el) {
+    currentPresetKey = key;
+    activeRoutineZones = [...PRESETS[key]];
+    document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
 
-// Preset Selection
-function selectPreset(key, el) {
-currentPresetKey = key;
-activeRoutineZones = [...PRESETS[key]];
-document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
-el.classList.add('selected');
-}
+  // Render Grid Display Values
+  function renderGrid(values) {
+    for (let i = 0; i < 6; i++) {
+      const btn = document.getElementById(`zone${i}`);
+      btn.querySelector('.val').textContent = typeof values[i] === 'number' ? values[i].toFixed(1) : values[i];
+    }
+  }
 
-// Render Grid Display Values
-function renderGrid(values) {
-for (let i = 0; i < 6; i++) {
-const btn = document.getElementById(`zone${i}`);
-btn.querySelector('.val').textContent = typeof values[i] === 'number' ? values[i].toFixed(1) : values[i];
-}
-}
+  // Start Routine
+  function startRoutine() {
+    phase = 'routine';
+    currentSkillIndex = 0;
+    skillDeductions = new Array(10).fill(0);
+    landingDeduction = 0;
 
-// Start Routine
-function startRoutine() {
-phase = 'routine';
-currentSkillIndex = 0;
-skillDeductions = new Array(10).fill(0);
-landingDeduction = 0;
+    setupScreen.classList.add('hidden');
+    reviewScreen.classList.add('hidden');
+    gridScreen.classList.remove('hidden');
+    gridScreen.classList.remove('landing-mode');
 
-setupScreen.classList.add('hidden');
-reviewScreen.classList.add('hidden');
-gridScreen.classList.remove('hidden');
-gridScreen.classList.remove('landing-mode');
+    phaseBadge.textContent = 'Routine';
+    phaseBadge.className = 'phase-badge badge-routine';
+    updateCounter();
 
-phaseBadge.textContent = 'Routine';
-phaseBadge.className = 'phase-badge badge-routine';
-updateCounter();
+    renderGrid(activeRoutineZones);
+    triggerFeedback('transition');
+  }
 
-renderGrid(activeRoutineZones);
-triggerFeedback('transition');
-}
+  function updateCounter() {
+    if (phase === 'routine') {
+      skillCounter.textContent = `Skill ${currentSkillIndex + 1} / 10`;
+    } else if (phase === 'landing') {
+      skillCounter.textContent = `Landing Deduction`;
+    } else if (phase === 'review') {
+      skillCounter.textContent = `Complete`;
+    }
+  }
 
-function updateCounter() {
-if (phase === 'routine') {
-skillCounter.textContent = `Skill ${currentSkillIndex + 1} / 10`;
-} else if (phase === 'landing') {
-skillCounter.textContent = `Landing Deduction`;
-} else if (phase === 'review') {
-skillCounter.textContent = `Complete`;
-}
-}
+  // Touch Event Listeners for 2x3 Grid
+  const zoneButtons = document.querySelectorAll('.zone-btn');
+  zoneButtons.forEach((btn, index) => {
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      btn.classList.add('active-touch');
+      handleZoneInput(index);
+    });
 
-// Touch Event Listeners for 2x3 Grid
-const zoneButtons = document.querySelectorAll('.zone-btn');
-zoneButtons.forEach((btn, index) => {
-btn.addEventListener('pointerdown', (e) => {
-e.preventDefault();
-btn.classList.add('active-touch');
-handleZoneInput(index);
-});
+    btn.addEventListener('pointerup', () => btn.classList.remove('active-touch'));
+    btn.addEventListener('pointerleave', () => btn.classList.remove('active-touch'));
+  });
 
-btn.addEventListener('pointerup', () => btn.classList.remove('active-touch'));
-btn.addEventListener('pointerleave', () => btn.classList.remove('active-touch'));
-});
+  function handleZoneInput(zoneIndex) {
+    triggerFeedback('tap');
 
-function handleZoneInput(zoneIndex) {
-triggerFeedback('tap');
+    if (phase === 'routine') {
+      const val = activeRoutineZones[zoneIndex];
+      skillDeductions[currentSkillIndex] = val;
+      currentSkillIndex++;
 
-if (phase === 'routine') {
-const val = activeRoutineZones[zoneIndex];
-skillDeductions[currentSkillIndex] = val;
-currentSkillIndex++;
+      if (currentSkillIndex >= 10) {
+        phase = 'landing';
+        gridScreen.classList.add('landing-mode');
+        phaseBadge.textContent = 'Landing';
+        phaseBadge.className = 'phase-badge badge-landing';
+        renderGrid(LANDING_PRESET);
+        triggerFeedback('transition');
+      }
+      updateCounter();
 
-if (currentSkillIndex >= 10) {
-// Auto transition to Landing Phase
-phase = 'landing';
-gridScreen.classList.add('landing-mode');
-phaseBadge.textContent = 'Landing';
-phaseBadge.className = 'phase-badge badge-landing';
-renderGrid(LANDING_PRESET);
-triggerFeedback('transition');
-}
-updateCounter();
+    } else if (phase === 'landing') {
+      const val = LANDING_PRESET[zoneIndex];
+      landingDeduction = val;
 
-} else if (phase === 'landing') {
-const val = LANDING_PRESET[zoneIndex];
-landingDeduction = val;
+      phase = 'review';
+      gridScreen.classList.add('hidden');
+      reviewScreen.classList.remove('hidden');
+      phaseBadge.textContent = 'Review';
+      phaseBadge.className = 'phase-badge badge-review';
+      updateCounter();
 
-// Auto transition to Review Screen
-phase = 'review';
-gridScreen.classList.add('hidden');
-reviewScreen.classList.remove('hidden');
-phaseBadge.textContent = 'Review';
-phaseBadge.className = 'phase-badge badge-review';
-updateCounter();
+      renderReviewSummary();
+      triggerFeedback('complete');
+    }
+  }
 
-renderReviewSummary();
-triggerFeedback('complete');
-}
-}
+  // Render Review Screen with Dynamic Squeezed Rows and Grouped Controls
+  function renderReviewSummary() {
+    const totalDeduct = skillDeductions.reduce((a, b) => a + b, 0) + landingDeduction;
+    const netScore = Math.max(0, 10 - totalDeduct);
 
-// Render Review Screen with Individual Skill Rows and +/- Step Buttons
-function renderReviewSummary() {
-const totalDeduct = skillDeductions.reduce((a, b) => a + b, 0) + landingDeduction;
-const netScore = Math.max(0, 10 - totalDeduct);
+    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
+    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
 
-document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
-document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
+    const listContainer = document.getElementById('reviewList');
+    listContainer.innerHTML = '';
 
-const listContainer = document.getElementById('reviewList');
-listContainer.innerHTML = '';
+    // Render Rows for Skills 1 to 10
+    skillDeductions.forEach((val, i) => {
+      const row = document.createElement('div');
+      row.className = 'review-row';
+      row.innerHTML = `
+        <span class="sk-lbl">Skill ${i + 1}</span>
+        <div class="value-controls-group">
+          <button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>
+          <span class="sk-val">-${val.toFixed(1)}</span>
+          <button class="btn-step" onclick="stepSkillValue(${i}, 1)">+</button>
+        </div>
+      `;
+      listContainer.appendChild(row);
+    });
 
-// Render Rows for Skills 1 to 10
-skillDeductions.forEach((val, i) => {
-const row = document.createElement('div');
-row.className = 'review-row';
-row.innerHTML = `
-<div class="row-info">
-<span class="sk-lbl">Skill ${i + 1}</span>
-<span class="sk-val">-${val.toFixed(1)}</span>
-</div>
-<div class="row-controls">
-<button class="btn-step" onclick="adjustValue(${i}, -0.1)">−</button>
-<button class="btn-step" onclick="adjustValue(${i}, 0.1)">+</button>
-</div>
-`;
-listContainer.appendChild(row);
-});
+    // Render Row for Landing
+    const landingRow = document.createElement('div');
+    landingRow.className = 'review-row landing-row';
+    landingRow.innerHTML = `
+      <span class="sk-lbl">Landing</span>
+      <div class="value-controls-group">
+        <button class="btn-step" onclick="stepLandingValue(-1)">−</button>
+        <span class="sk-val">-${landingDeduction.toFixed(1)}</span>
+        <button class="btn-step" onclick="stepLandingValue(1)">+</button>
+      </div>
+    `;
+    listContainer.appendChild(landingRow);
+  }
 
-// Render Row for Landing
-const landingRow = document.createElement('div');
-landingRow.className = 'review-row landing-row';
-landingRow.innerHTML = `
-<div class="row-info">
-<span class="sk-lbl">Landing</span>
-<span class="sk-val">-${landingDeduction.toFixed(1)}</span>
-</div>
-<div class="row-controls">
-<button class="btn-step" onclick="adjustValue(10, -0.1)">−</button>
-<button class="btn-step" onclick="adjustValue(10, 0.1)">+</button>
-</div>
-`;
-listContainer.appendChild(landingRow);
-}
+  // Step Skill Value through Preset Scale or 0.1 Increments
+  function stepSkillValue(index, direction) {
+    triggerFeedback('tap');
+    let currentVal = skillDeductions[index];
+    // Find step in active preset or adjust by 0.1 (clamped 0.0 - 0.5)
+    let sortedPreset = [...new Set(activeRoutineZones)].sort((a,b) => a - b);
+    let matchIdx = sortedPreset.indexOf(currentVal);
 
-// Adjust Individual Skill / Landing Deduction via +/- Buttons
-function adjustValue(index, delta) {
-triggerFeedback('tap');
+    if (matchIdx !== -1) {
+      let newIdx = Math.min(sortedPreset.length - 1, Math.max(0, matchIdx + direction));
+      skillDeductions[index] = sortedPreset[newIdx];
+    } else {
+      let updated = Math.round((currentVal + (direction * 0.1)) * 10) / 10;
+      skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
+    }
+    renderReviewSummary();
+  }
 
-if (index === 10) {
-// Landing adjustment (0.0 to 1.0 range)
-let updated = Math.round((landingDeduction + delta) * 10) / 10;
-landingDeduction = Math.min(1.0, Math.max(0.0, updated));
-} else {
-// Skill adjustment (0.0 to 0.5 range)
-let updated = Math.round((skillDeductions[index] + delta) * 10) / 10;
-skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
-}
+  // Step Landing Value through Discrete FIG Scale: [0.0, 0.1, 0.2, 0.3, 0.5, 1.0]
+  function stepLandingValue(direction) {
+    triggerFeedback('tap');
+    let currentIdx = LANDING_PRESET.indexOf(landingDeduction);
+    if (currentIdx === -1) {
+      // Find closest value in LANDING_PRESET
+      currentIdx = LANDING_PRESET.reduce((closest, val, idx) => 
+        Math.abs(val - landingDeduction) < Math.abs(LANDING_PRESET[closest] - landingDeduction) ? idx : closest, 0);
+    }
 
-renderReviewSummary();
-}
+    let newIdx = Math.min(LANDING_PRESET.length - 1, Math.max(0, currentIdx + direction));
+    landingDeduction = LANDING_PRESET[newIdx];
 
-function resetToSetup() {
-phase = 'setup';
-setupScreen.classList.remove('hidden');
-gridScreen.classList.add('hidden');
-reviewScreen.classList.add('hidden');
-phaseBadge.textContent = 'Setup';
-phaseBadge.className = 'phase-badge badge-routine';
-skillCounter.textContent = 'Skill 1 / 10';
-}
+    renderReviewSummary();
+  }
 
-function toggleFullscreen() {
-if (!document.fullscreenElement) {
-document.documentElement.requestFullscreen().catch(() => {});
-} else {
-document.exitFullscreen().catch(() => {});
-}
-}
+  function resetToSetup() {
+    phase = 'setup';
+    setupScreen.classList.remove('hidden');
+    gridScreen.classList.add('hidden');
+    reviewScreen.classList.add('hidden');
+    phaseBadge.textContent = 'Setup';
+    phaseBadge.className = 'phase-badge badge-routine';
+    skillCounter.textContent = 'Skill 1 / 10';
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
 </script>
 </body>
 </html>
