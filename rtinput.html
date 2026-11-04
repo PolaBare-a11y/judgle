@@ -1798,12 +1798,12 @@
     const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
     const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
     const totalDeduct = skillDeductSum + (isLandingActive ? landingDeduction : 0);
-
+    const showThumbnails = currentInterface === 'recognizer';
     const maxBaseScore = skillsPerformed * 1.0;
     const netScore = Math.max(0, maxBaseScore - totalDeduct);
 
-    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
-    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
+    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(1);
+    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(1);
 
     const listContainer = document.getElementById('reviewList');
     listContainer.innerHTML = '';
@@ -1818,9 +1818,11 @@
 
       row.innerHTML = `
         <span class="sk-lbl">Skill ${i + 1} ${isPerformed ? '' : '<small>(Excl)</small>'}</span>
-        <div class="review-thumb-box">
-          ${thumbUrl ? `<img src="${thumbUrl}" class="review-thumb-img" alt="S${i+1}">` : '<span class="review-thumb-empty">—</span>'}
-        </div>
+        ${showThumbnails ? `
+		<div class="review-thumb-box">
+          		${thumbUrl ? `<img src="${thumbUrl}" class="review-thumb-img" alt="S${i+1}">` : '<span class="review-thumb-empty">—</span>'}
+        	</div>
+	` : ''}
         <div class="value-controls-group">
           ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>` : ''}
           <span class="sk-val">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
