@@ -2,42 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Trampoline Execution Judge Interface</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Trampoline Execution Judge - Dual Interface</title>
   <style>
-    /* ==========================================================================
-       COLOR PALETTE & STYLING CUSTOMIZATION
-       ========================================================================== */
-
     :root {
-      /* World Gymnastics Ribbon Palette */
-      --fig-blue:   #4495e5;
-      --fig-purple: #7d5fb3;
-      --fig-pink:   #dc5183;
-      --fig-green:  #9bd98b;
-      --fig-orange: #e68a00;
-
-      /* Dark Mode Surfaces */
-      --bg-dark:    #0a0a0f;
-      --card-bg:    #14141f;
-      --border-col: #2c2940;
-      --text-main:  #ffffff;
-      --text-sub:   #8a8a9e;
-
-      /* ==========================================================================
-         2x3 GRID ROW BANDING COLORS
-         ========================================================================== */
-      /* Top Band (Row 1: Zone 1 & 2 - Clean / Low Deductions) */
-      --band-top-color: #9bd98b;
-      --band-top-bg:    rgba(155, 217, 139, 0.12);
-
-      /* Middle Band (Row 2: Zone 3 & 4 - Moderate Deductions) */
-      --band-mid-color: #4495e5;
-      --band-mid-bg:    rgba(68, 149, 229, 0.12);
-
-      /* Bottom Band (Row 3: Zone 5 & 6 - Higher Deductions / Landing) */
-      --band-bot-color: #e68a00;
-      --band-bot-bg:    rgba(230, 138, 0, 0.12);
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --warning: #f59e0b;
     }
 
     * {
@@ -49,682 +27,662 @@
       touch-action: manipulation;
     }
 
-    body, html {
-      width: 100%;
-      height: 100%;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+    body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
       overflow: hidden;
     }
 
-    .app-wrapper {
+    /* Top Navigation Bar */
+    header {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
       display: flex;
-      flex-direction: column;
-      width: 100vw;
-      height: 100vh;
-      height: 100dvh;
-    }
-
-    /* Top Status Bar */
-    .status-bar {
-      height: 44px;
-      flex-shrink: 0;
-      background: #111118;
-      border-bottom: 1px solid var(--border-col);
-      display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 0 14px;
-      font-weight: 600;
-      font-size: 13px;
+      align-items: center;
       z-index: 10;
     }
 
-    .status-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .phase-badge {
-      padding: 2px 7px;
-      border-radius: 4px;
-      font-size: 10px;
-      text-transform: uppercase;
+    .app-title {
+      font-size: 1.1rem;
       font-weight: 700;
-    }
-
-    .badge-routine { background: var(--fig-blue); color: #fff; }
-    .badge-landing { background: var(--fig-pink); color: #fff; }
-    .badge-review  { background: var(--fig-green); color: #111; }
-
-    .btn-header {
-      background: #1d1b2a;
-      border: 1px solid var(--border-col);
-      color: #ccc;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      cursor: pointer;
-    }
-
-    .btn-header:active { background: var(--fig-purple); color: #fff; }
-
-    .main-content {
-      flex: 1;
-      position: relative;
-      width: 100%;
-      height: calc(100% - 44px);
-      overflow: hidden;
-    }
-
-    /* 2 COLUMNS x 3 ROWS GRID LAYOUT WITH ROW BANDING */
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: 8px;
-      padding: 8px;
-      width: 100%;
-      height: 100%;
-      background: #000000;
-    }
-
-    .zone-btn {
+      color: var(--accent);
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      border-radius: 14px;
-      font-size: 3rem;
-      font-weight: 800;
-      cursor: pointer;
-      transition: transform 0.05s ease, filter 0.05s ease;
-      position: relative;
+      gap: 8px;
     }
 
-    /* Row Banding Styles */
-    .zone-row-top {
-      border: 3px solid var(--band-top-color);
-      color: var(--band-top-color);
-      background: var(--band-top-bg);
+    /* Segmented Control for Interface Switching */
+    .mode-toggle {
+      display: flex;
+      background-color: var(--bg);
+      border-radius: 8px;
+      padding: 3px;
+      border: 1px solid var(--border);
     }
 
-    .zone-row-mid {
-      border: 3px solid var(--band-mid-color);
-      color: var(--band-mid-color);
-      background: var(--band-mid-bg);
-    }
-
-    .zone-row-bot {
-      border: 3px solid var(--band-bot-color);
-      color: var(--band-bot-color);
-      background: var(--band-bot-bg);
-    }
-
-    .zone-btn:active, .zone-btn.active-touch {
-      transform: scale(0.97);
-      filter: brightness(1.3);
-    }
-
-    .zone-sub {
+    .mode-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
       font-size: 0.85rem;
       font-weight: 600;
-      color: var(--text-sub);
-      margin-top: 4px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    /* SETUP SCREEN */
-    .setup-screen {
-      padding: 20px;
+    .mode-btn.active {
+      background-color: var(--accent);
+      color: #0f172a;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      height: 100%;
-      overflow-y: auto;
-      background: var(--bg-dark);
-    }
-
-    .section-title {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--text-sub);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .preset-group {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-
-    .preset-card {
-      background: var(--card-bg);
-      border: 2px solid var(--border-col);
-      border-radius: 10px;
-      padding: 12px;
-      cursor: pointer;
-    }
-
-    .preset-card.selected {
-      border-color: var(--fig-blue);
-      background: rgba(68, 149, 229, 0.12);
-    }
-
-    .preset-card h4 { font-size: 0.95rem; margin-bottom: 2px; color: var(--text-main); }
-    .preset-card p { font-size: 0.75rem; color: var(--text-sub); }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple));
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
-      flex-shrink: 0;
-    }
-
-    .btn-primary:active { opacity: 0.9; transform: scale(0.99); }
-
-    /* REVIEW SCREEN */
-    .review-screen {
-      padding: 8px 12px;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      background: var(--bg-dark);
+      position: relative;
       overflow: hidden;
     }
 
-    /* Combined Score Banner */
-    .score-banner {
-      background: var(--card-bg);
-      border: 1px solid var(--border-col);
-      border-radius: 10px;
-      padding: 8px 10px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      flex-shrink: 0;
-      margin-bottom: 6px;
-    }
-
-    .score-box { 
-      text-align: center; 
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .score-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
-    .deduct-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
-    .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-
-    /* Dynamic flex-fill container for 11 squeezed rows */
-    .review-list {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-height: 0;
-      margin-bottom: 6px;
-    }
-
-    /* Single Row Format */
-    .review-row {
-      flex: 1;
-      min-height: 0;
-      background: var(--card-bg);
-      border: 1px solid var(--border-col);
-      border-radius: 6px;
-      padding: 0 10px;
+    /* Status Header */
+    .status-bar {
+      background-color: #131d31;
+      padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      border-bottom: 1px solid var(--border);
     }
 
-    .review-row.disabled-row {
-      opacity: 0.35;
-      background: #0d0d14;
-      border-color: #1a1a26;
+    .skill-indicator {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text);
     }
 
-    .review-row.landing-row {
-      border-color: var(--fig-pink);
-      background: rgba(220, 81, 131, 0.08);
+    .running-score {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
     }
 
-    .landing-row.disabled-row {
-      border-color: #2c2430;
-      background: #0d0a12;
+    /* INTERFACE 1: GRID VIEW */
+    #grid-interface {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 12px;
+      padding: 16px;
     }
 
-    .sk-lbl {
+    .deduction-btn {
+      background-color: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      color: var(--text);
+      font-size: 2.2rem;
+      font-weight: 800;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.08s ease, border-color 0.15s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+
+    .deduction-btn:active {
+      transform: scale(0.95);
+      border-color: var(--accent);
+      background-color: #26334d;
+    }
+
+    .deduction-btn span.label {
       font-size: 0.8rem;
-      color: var(--text-sub);
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* INTERFACE 2: SWIPE / GESTURE VIEW */
+    #swipe-interface {
+      flex: 1;
+      display: none;
+      position: relative;
+      background-color: #0b1120;
+      touch-action: none;
+    }
+
+    #gesture-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .swipe-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      text-align: center;
+      opacity: 0.25;
+    }
+
+    .swipe-guide-grid {
+      display: grid;
+      grid-template-columns: 80px 80px 80px;
+      grid-template-rows: 80px 80px 80px;
+      gap: 8px;
+      align-items: center;
+      justify-items: center;
+    }
+
+    .guide-cell {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .gesture-badge {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(30, 41, 59, 0.9);
+      border: 1px solid var(--accent);
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--accent);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    /* REVIEW SCREEN (SHARED) */
+    #review-screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      background-color: var(--bg);
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .score-summary-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .net-e-score {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--success);
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .skills-count-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--card-bg);
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .skills-count-selector select {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .review-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .review-table th, .review-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .review-table th {
+      background-color: #162032;
+      color: var(--text-muted);
       font-weight: 600;
     }
 
-    .landing-row .sk-lbl {
-      color: var(--fig-pink);
-    }
-
-    .disabled-row .sk-lbl {
-      color: #555566;
-    }
-
-    /* Value and +/- controls grouped tightly together */
-    .value-controls-group {
+    .val-adjuster {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
-    .sk-val {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--text-main);
-      min-width: 44px;
-      text-align: center;
-    }
-
-    .landing-row .sk-val {
-      color: var(--fig-pink);
-    }
-
-    .disabled-row .sk-val {
-      color: #555566;
-    }
-
-    .btn-step {
+    .adj-btn {
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
       width: 28px;
       height: 28px;
       border-radius: 6px;
-      background: #1e1c2e;
-      border: 1px solid var(--fig-purple);
-      color: var(--text-main);
-      font-size: 1.1rem;
       font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       cursor: pointer;
-      flex-shrink: 0;
     }
 
-    .btn-step:active {
-      background: var(--fig-blue);
-      border-color: var(--fig-blue);
-      color: #fff;
+    .action-btn {
+      background-color: var(--accent);
+      color: #0f172a;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 16px;
     }
-
-    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-<div class="app-wrapper">
-  <!-- Top Status Bar -->
-  <div class="status-bar">
-    <div class="status-title">
-      <span id="phaseBadge" class="phase-badge badge-routine">Routine</span>
-      <span id="skillCounter">Skill 1 / 10</span>
+  <!-- Top Navigation & Interface Selector -->
+  <header>
+    <div class="app-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+      E-Judge
     </div>
-    <div style="display:flex; gap:6px;">
-      <button class="btn-header" onclick="toggleFullscreen()">Fullscreen</button>
-      <button class="btn-header" onclick="resetToSetup()">Reset</button>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-mode-grid" onclick="setInterfaceMode('grid')">Grid</button>
+      <button class="mode-btn" id="btn-mode-swipe" onclick="setInterfaceMode('swipe')">Swipe</button>
     </div>
-  </div>
+  </header>
 
-  <!-- Main Canvas -->
-  <div class="main-content">
+  <main>
+    <!-- Live Status Bar -->
+    <div class="status-bar" id="status-bar">
+      <div class="skill-indicator" id="skill-indicator">Skill 1 of 10</div>
+      <div class="running-score" id="running-deductions">Total Deductions: 0.0</div>
+    </div>
 
-    <!-- 1. SETUP / CONFIGURATION SCREEN -->
-    <div id="setupScreen" class="setup-screen">
-      <div class="section-title">Select E-Judge Preset</div>
-      
-      <div class="preset-group">
-        <div class="preset-card selected" onclick="selectPreset('fig', this)">
-          <h4>FIG Standard</h4>
-          <p>0.0, 0.1, 0.2, 0.3, 0.4, 0.5</p>
+    <!-- INTERFACE 1: GRID MODE -->
+    <div id="grid-interface">
+      <button class="deduction-btn" onclick="recordDeduction(0.0)">0.0<span class="label">Clean</span></button>
+      <button class="deduction-btn" onclick="recordDeduction(0.1)">0.1<span class="label">Minor</span></button>
+      <button class="deduction-btn" onclick="recordDeduction(0.2)">0.2<span class="label">Medium</span></button>
+      <button class="deduction-btn" onclick="recordDeduction(0.3)">0.3<span class="label">Substantial</span></button>
+      <button class="deduction-btn" onclick="recordDeduction(0.4)">0.4<span class="label">Major</span></button>
+      <button class="deduction-btn" onclick="recordDeduction(0.5)">0.5<span class="label">Max Error</span></button>
+    </div>
+
+    <!-- INTERFACE 2: SWIPE GESTURE MODE -->
+    <div id="swipe-interface">
+      <canvas id="gesture-canvas"></canvas>
+      <div class="swipe-overlay">
+        <div class="swipe-guide-grid">
+          <div></div><div class="guide-cell">▲ 0.1</div><div></div>
+          <div class="guide-cell">◄ 0.4</div><div class="guide-cell">TAP<br>0.0</div><div class="guide-cell">0.2 ►</div>
+          <div></div><div class="guide-cell">▼ 0.3</div><div class="guide-cell">⭕ 0.5</div>
         </div>
-        <!--
-        <div class="preset-card" onclick="selectPreset('coarse', this)">
-          <h4>Coarse Scale</h4>
-          <p>0.0, 0.1, 0.2, 0.3, 0.5, 0.5</p>
+      </div>
+      <div class="gesture-badge" id="gesture-badge">Detected: Tap (0.0)</div>
+    </div>
+
+    <!-- REVIEW & AUDIT SCREEN -->
+    <div id="review-screen">
+      <div class="score-summary-card">
+        <div>
+          <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">NET E-SCORE</div>
+          <div class="net-e-score" id="net-e-score">10.00</div>
         </div>
-        <div class="preset-card" onclick="selectPreset('synchro', this)">
-          <h4>Fine Scale (HD)</h4>
-          <p>0.00, 0.05, 0.10, 0.15, 0.20, 0.30</p>
-        </div>
-        -->
-        <div class="preset-card" onclick="selectPreset('flipped', this)">
-          <h4>FIG (Flipped)</h4>
-          <p>Right-to-Left orientation</p>
+        <div style="text-align:right;">
+          <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">TOTAL DEDUCTIONS</div>
+          <div style="font-size:1.4rem; font-weight:800; color:var(--danger);" id="total-deduction-val">0.00</div>
         </div>
       </div>
 
-      <div class="section-title" style="margin-top:6px;">Interface - Grid Preview (2 Cols x 3 Rows)</div>
-      <div style="font-size:0.8rem; color:var(--text-sub);">
-        Touch zones span 95%+ of the screen during live judging.
-      </div>
-
-      <button class="btn-primary" onclick="startRoutine()" style="margin-top:auto;">Start Routine Judging</button>
-    </div>
-
-    <!-- 2. ROUTINE & LANDING 2x3 GRID INPUT WITH ROW BANDING -->
-    <div id="gridScreen" class="grid-container hidden">
-      <!-- Top Row Band (FIG Green) -->
-      <div class="zone-btn zone-row-top" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
-      <div class="zone-btn zone-row-top" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
-      
-      <!-- Middle Row Band (FIG Blue) -->
-      <div class="zone-btn zone-row-mid" id="zone2"><span class="val">0.2</span><span class="zone-sub">Zone 3</span></div>
-      <div class="zone-btn zone-row-mid" id="zone3"><span class="val">0.3</span><span class="zone-sub">Zone 4</span></div>
-      
-      <!-- Bottom Row Band (Soft FIG Orange) -->
-      <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span><span class="zone-sub">Zone 5</span></div>
-      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
-    </div>
-
-    <!-- 3. REVIEW & EDIT SCREEN -->
-    <div id="reviewScreen" class="review-screen hidden">
-      <div class="score-banner">
-        <!-- Skills Performed Adjuster -->
-        <div class="score-box">
-          <span class="score-lbl">Skills</span>
-          <div class="value-controls-group">
-            <button class="btn-step" onclick="adjustSkillsCount(-1)">−</button>
-            <span class="sk-val" id="skillsCountDisplay" style="color:var(--fig-blue);">10</span>
-            <button class="btn-step" onclick="adjustSkillsCount(1)">+</button>
-          </div>
-        </div>
-
-        <!-- Total Deductions Accumulator -->
-        <div class="score-box">
-          <span class="score-lbl">Total Deductions</span>
-          <div class="deduct-val" id="totalDeductDisplay">0.00</div>
-        </div>
-
-        <!-- Net E-Score Calculation -->
-        <div class="score-box">
-          <span class="score-lbl">Net E-Score</span>
-          <div class="score-val" id="netScoreDisplay">10.00</div>
+      <div class="controls-row">
+        <div class="skills-count-selector">
+          <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">Skills Performed:</span>
+          <select id="skills-performed-select" onchange="updateSkillsCount(this.value)">
+            <option value="10">10</option>
+            <option value="9">9</option>
+            <option value="8">8</option>
+            <option value="7">7</option>
+            <option value="6">6</option>
+            <option value="5">5</option>
+            <option value="4">4</option>
+            <option value="3">3</option>
+            <option value="2">2</option>
+            <option value="1">1</option>
+          </select>
         </div>
       </div>
 
-      <div class="review-list" id="reviewList">
-        <!-- 11 Squeezed Rows generated dynamically -->
-      </div>
+      <table class="review-table">
+        <thead>
+          <tr>
+            <th>Element</th>
+            <th>Deduction</th>
+            <th>Adjust</th>
+          </tr>
+        </thead>
+        <tbody id="review-tbody">
+          <!-- Dynamically Populated -->
+        </tbody>
+      </table>
 
-      <button class="btn-primary" onclick="resetToSetup()">Confirm & Next Routine</button>
+      <button class="action-btn" onclick="resetRoutine()">New Routine</button>
     </div>
+  </main>
 
-  </div>
-</div>
+  <script>
+    // App State
+    let currentMode = 'grid'; // 'grid' | 'swipe'
+    let currentPhase = 'routine'; // 'routine' | 'landing' | 'review'
+    let skillIndex = 0;
+    let deductions = new Array(10).fill(null);
+    let landingDeduction = null;
+    let skillsPerformed = 10;
 
-<script>
-  // Presets & FIG Landing Scale
-  const PRESETS = {
-    fig:     [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
-    coarse:  [0.0, 0.1, 0.2, 0.3, 0.5, 0.5],
-    synchro: [0.00, 0.05, 0.10, 0.15, 0.20, 0.30],
-    flipped: [0.1, 0.0, 0.3, 0.2, 0.5, 0.4]
-  };
+    // Gesture Tracking Variables
+    let isDrawing = false;
+    let strokePath = [];
+    let canvas, ctx;
 
-  const LANDING_PRESET = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
+    window.addEventListener('DOMContentLoaded', () => {
+      canvas = document.getElementById('gesture-canvas');
+      ctx = canvas.getContext('2d');
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
 
-  let currentPresetKey = 'fig';
-  let activeRoutineZones = [...PRESETS.fig];
-  let phase = 'setup';
-  let currentSkillIndex = 0;
-  let skillDeductions = new Array(10).fill(0);
-  let landingDeduction = 0;
-  let skillsPerformed = 10;
-
-  // DOM Elements
-  const setupScreen  = document.getElementById('setupScreen');
-  const gridScreen   = document.getElementById('gridScreen');
-  const reviewScreen = document.getElementById('reviewScreen');
-  const phaseBadge   = document.getElementById('phaseBadge');
-  const skillCounter = document.getElementById('skillCounter');
-
-  /* ==========================================================================
-     AUDIO SYNTHESIS FEEDBACK
-     ========================================================================== */
-  let audioCtx = null;
-
-  function triggerFeedback(type = 'tap') {
-    try {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(type === 'complete' ? 880 : 520, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.09, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.025);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.025);
-    } catch (e) { /* Catch browser audio restrictions */ }
-  }
-
-  // Preset Selection
-  function selectPreset(key, el) {
-    currentPresetKey = key;
-    activeRoutineZones = [...PRESETS[key]];
-    document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
-  }
-
-  // Render Grid Values
-  function renderGrid(values) {
-    for (let i = 0; i < 6; i++) {
-      const btn = document.getElementById(`zone${i}`);
-      const val = values[i];
-      btn.querySelector('.val').textContent = typeof val === 'number' ? val.toFixed(1) : val;
-    }
-  }
-
-  // Start Routine
-  function startRoutine() {
-    phase = 'routine';
-    currentSkillIndex = 0;
-    skillDeductions = new Array(10).fill(0);
-    landingDeduction = 0;
-    skillsPerformed = 10;
-
-    setupScreen.classList.add('hidden');
-    reviewScreen.classList.add('hidden');
-    gridScreen.classList.remove('hidden');
-    gridScreen.classList.remove('landing-mode');
-
-    phaseBadge.textContent = 'Routine';
-    phaseBadge.className = 'phase-badge badge-routine';
-    updateCounter();
-
-    renderGrid(activeRoutineZones);
-    triggerFeedback('transition');
-  }
-
-  function updateCounter() {
-    if (phase === 'routine') {
-      skillCounter.textContent = `Skill ${currentSkillIndex + 1} / 10`;
-    } else if (phase === 'landing') {
-      skillCounter.textContent = `Landing Deduction`;
-    } else if (phase === 'review') {
-      skillCounter.textContent = `Complete`;
-    }
-  }
-
-  // Touch Event Listeners for 2x3 Grid
-  const zoneButtons = document.querySelectorAll('.zone-btn');
-  zoneButtons.forEach((btn, index) => {
-    btn.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      btn.classList.add('active-touch');
-      handleZoneInput(index);
+      setupGestureListeners();
     });
 
-    btn.addEventListener('pointerup', () => btn.classList.remove('active-touch'));
-    btn.addEventListener('pointerleave', () => btn.classList.remove('active-touch'));
-  });
+    function resizeCanvas() {
+      if (!canvas) return;
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
 
-  function handleZoneInput(zoneIndex) {
-    triggerFeedback('tap');
+    function setInterfaceMode(mode) {
+      currentMode = mode;
+      document.getElementById('btn-mode-grid').classList.toggle('active', mode === 'grid');
+      document.getElementById('btn-mode-swipe').classList.toggle('active', mode === 'swipe');
 
-    if (phase === 'routine') {
-      const val = activeRoutineZones[zoneIndex];
-      skillDeductions[currentSkillIndex] = val;
-      currentSkillIndex++;
-
-      if (currentSkillIndex >= 10) {
-        phase = 'landing';
-        gridScreen.classList.add('landing-mode');
-        phaseBadge.textContent = 'Landing';
-        phaseBadge.className = 'phase-badge badge-landing';
-        renderGrid(LANDING_PRESET);
-        triggerFeedback('transition');
+      if (currentPhase !== 'review') {
+        document.getElementById('grid-interface').style.display = (mode === 'grid') ? 'grid' : 'none';
+        document.getElementById('swipe-interface').style.display = (mode === 'swipe') ? 'block' : 'none';
+        if (mode === 'swipe') resizeCanvas();
       }
-      updateCounter();
-
-    } else if (phase === 'landing') {
-      const val = LANDING_PRESET[zoneIndex];
-      landingDeduction = val;
-
-      phase = 'review';
-      gridScreen.classList.add('hidden');
-      reviewScreen.classList.remove('hidden');
-      phaseBadge.textContent = 'Review';
-      phaseBadge.className = 'phase-badge badge-review';
-      updateCounter();
-
-      renderReviewSummary();
-      triggerFeedback('complete');
-    }
-  }
-
-  // Adjust Skills Performed Count (0 to 10)
-  function adjustSkillsCount(delta) {
-    triggerFeedback('tap');
-    skillsPerformed = Math.min(10, Math.max(0, skillsPerformed + delta));
-    renderReviewSummary();
-  }
-
-  // Render Review Screen with Skills Performed & Landing Exclusion Calculation
-  function renderReviewSummary() {
-    document.getElementById('skillsCountDisplay').textContent = skillsPerformed;
-
-    const isLandingActive = (skillsPerformed === 10);
-
-    // Sum active performed skill deductions (+ landing ONLY if full 10-skill routine)
-    const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
-    const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
-    const totalDeduct = skillDeductSum + (isLandingActive ? landingDeduction : 0);
-
-    const maxBaseScore = skillsPerformed * 1.0;
-    const netScore = Math.max(0, maxBaseScore - totalDeduct);
-
-    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
-    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
-
-    const listContainer = document.getElementById('reviewList');
-    listContainer.innerHTML = '';
-
-    // Render Rows for Skills 1 to 10
-    skillDeductions.forEach((val, i) => {
-      const isPerformed = i < skillsPerformed;
-      const row = document.createElement('div');
-      row.className = `review-row ${isPerformed ? '' : 'disabled-row'}`;
-
-      row.innerHTML = `
-        <span class="sk-lbl">Skill ${i + 1} ${isPerformed ? '' : '<small>(Excluded)</small>'}</span>
-        <div class="value-controls-group">
-          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>` : ''}
-          <span class="sk-val">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
-          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, 1)">+</button>` : ''}
-        </div>
-      `;
-      listContainer.appendChild(row);
-    });
-
-    // Render Row for Landing (Dimmed & Excluded if skillsPerformed < 10)
-    const landingRow = document.createElement('div');
-    landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
-    landingRow.innerHTML = `
-      <span class="sk-lbl">Landing ${isLandingActive ? '' : '<small>(Excluded)</small>'}</span>
-      <div class="value-controls-group">
-        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(-1)">−</button>` : ''}
-        <span class="sk-val">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
-        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(1)">+</button>` : ''}
-      </div>
-    `;
-    listContainer.appendChild(landingRow);
-  }
-
-  // Step Skill Value through Preset Scale or 0.1 Increments
-  function stepSkillValue(index, direction) {
-    triggerFeedback('tap');
-    let currentVal = skillDeductions[index];
-    let sortedPreset = [...new Set(activeRoutineZones)].sort((a,b) => a - b);
-    let matchIdx = sortedPreset.indexOf(currentVal);
-
-    if (matchIdx !== -1) {
-      let newIdx = Math.min(sortedPreset.length - 1, Math.max(0, matchIdx + direction));
-      skillDeductions[index] = sortedPreset[newIdx];
-    } else {
-      let updated = Math.round((currentVal + (direction * 0.1)) * 10) / 10;
-      skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
-    }
-    renderReviewSummary();
-  }
-
-  // Step Landing Value through Discrete FIG Scale: [0.0, 0.1, 0.2, 0.3, 0.5, 1.0]
-  function stepLandingValue(direction) {
-    triggerFeedback('tap');
-    let currentIdx = LANDING_PRESET.indexOf(landingDeduction);
-    if (currentIdx === -1) {
-      currentIdx = LANDING_PRESET.reduce((closest, val, idx) => 
-        Math.abs(val - landingDeduction) < Math.abs(LANDING_PRESET[closest] - landingDeduction) ? idx : closest, 0);
     }
 
-    let newIdx = Math.min(LANDING_PRESET.length - 1, Math.max(0, currentIdx + direction));
-    landingDeduction = LANDING_PRESET[newIdx];
+    function recordDeduction(value) {
+      if (currentPhase === 'routine') {
+        deductions[skillIndex] = value;
+        skillIndex++;
 
-    renderReviewSummary();
-  }
+        if (skillIndex >= 10) {
+          currentPhase = 'landing';
+        }
+      } else if (currentPhase === 'landing') {
+        landingDeduction = value;
+        currentPhase = 'review';
+      }
 
-  function resetToSetup() {
-    phase = 'setup';
-    skillsPerformed = 10;
-    setupScreen.classList.remove('hidden');
-    gridScreen.classList.add('hidden');
-    reviewScreen.classList.add('hidden');
-    phaseBadge.textContent = 'Setup';
-    phaseBadge.className = 'phase-badge badge-routine';
-    skillCounter.textContent = 'Skill 1 / 10';
-  }
-
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-      document.exitFullscreen().catch(() => {});
+      updateUI();
     }
-  }
-</script>
+
+    function updateUI() {
+      const statusBar = document.getElementById('status-bar');
+      const skillIndicator = document.getElementById('skill-indicator');
+      const runningDeductions = document.getElementById('running-deductions');
+      const gridInterface = document.getElementById('grid-interface');
+      const swipeInterface = document.getElementById('swipe-interface');
+      const reviewScreen = document.getElementById('review-screen');
+
+      const sumDeductions = deductions.reduce((a, b) => a + (b || 0), 0) + (landingDeduction || 0);
+
+      if (currentPhase === 'routine') {
+        statusBar.style.display = 'flex';
+        reviewScreen.style.display = 'none';
+        gridInterface.style.display = (currentMode === 'grid') ? 'grid' : 'none';
+        swipeInterface.style.display = (currentMode === 'swipe') ? 'block' : 'none';
+
+        skillIndicator.textContent = `Skill ${skillIndex + 1} of 10`;
+        runningDeductions.textContent = `Total Deductions: ${sumDeductions.toFixed(1)}`;
+      } else if (currentPhase === 'landing') {
+        statusBar.style.display = 'flex';
+        reviewScreen.style.display = 'none';
+        gridInterface.style.display = (currentMode === 'grid') ? 'grid' : 'none';
+        swipeInterface.style.display = (currentMode === 'swipe') ? 'block' : 'none';
+
+        skillIndicator.textContent = `Landing Deduction`;
+        runningDeductions.textContent = `Skill Deductions: ${deductions.reduce((a, b) => a + (b || 0), 0).toFixed(1)}`;
+      } else if (currentPhase === 'review') {
+        statusBar.style.display = 'none';
+        gridInterface.style.display = 'none';
+        swipeInterface.style.display = 'none';
+        reviewScreen.style.display = 'flex';
+
+        renderReviewTable();
+      }
+    }
+
+    function renderReviewTable() {
+      const tbody = document.getElementById('review-tbody');
+      tbody.innerHTML = '';
+
+      let activeSkillCount = parseInt(skillsPerformed);
+      let skillSum = 0;
+
+      // Render Active Skills
+      for (let i = 0; i < activeSkillCount; i++) {
+        let val = deductions[i] !== null ? deductions[i] : 0.0;
+        skillSum += val;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>Skill ${i + 1}</td>
+          <td style="font-weight:700;">${val.toFixed(1)}</td>
+          <td>
+            <div class="val-adjuster">
+              <button class="adj-btn" onclick="adjustSkill(${i}, -0.1)">-</button>
+              <button class="adj-btn" onclick="adjustSkill(${i}, 0.1)">+</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // Render Landing (If 10 skills performed)
+      let landingVal = 0.0;
+      if (activeSkillCount === 10) {
+        landingVal = landingDeduction !== null ? landingDeduction : 0.0;
+        const trLanding = document.createElement('tr');
+        trLanding.style.backgroundColor = '#1e2d42';
+        trLanding.innerHTML = `
+          <td>Landing</td>
+          <td style="font-weight:700;">${landingVal.toFixed(1)}</td>
+          <td>
+            <div class="val-adjuster">
+              <button class="adj-btn" onclick="adjustLanding(-0.1)">-</button>
+              <button class="adj-btn" onclick="adjustLanding(0.1)">+</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(trLanding);
+      }
+
+      const totalDeductions = skillSum + (activeSkillCount === 10 ? landingVal : 0);
+      const netEScore = Math.max(0, (activeSkillCount * 1.0) - totalDeductions);
+
+      document.getElementById('net-e-score').textContent = netEScore.toFixed(2);
+      document.getElementById('total-deduction-val').textContent = totalDeductions.toFixed(2);
+    }
+
+    function adjustSkill(index, delta) {
+      let current = deductions[index] !== null ? deductions[index] : 0.0;
+      deductions[index] = Math.max(0, Math.min(0.5, Math.round((current + delta) * 10) / 10));
+      renderReviewTable();
+    }
+
+    function adjustLanding(delta) {
+      let current = landingDeduction !== null ? landingDeduction : 0.0;
+      landingDeduction = Math.max(0, Math.min(1.0, Math.round((current + delta) * 10) / 10));
+      renderReviewTable();
+    }
+
+    function updateSkillsCount(count) {
+      skillsPerformed = parseInt(count);
+      renderReviewTable();
+    }
+
+    function resetRoutine() {
+      currentPhase = 'routine';
+      skillIndex = 0;
+      deductions = new Array(10).fill(null);
+      landingDeduction = null;
+      skillsPerformed = 10;
+      document.getElementById('skills-performed-select').value = "10";
+      updateUI();
+    }
+
+    /* GESTURE ENGINE LOGIC */
+    function setupGestureListeners() {
+      const target = document.getElementById('swipe-interface');
+
+      target.addEventListener('pointerdown', (e) => {
+        isDrawing = true;
+        strokePath = [{ x: e.offsetX, y: e.offsetY, time: Date.now() }];
+      });
+
+      target.addEventListener('pointermove', (e) => {
+        if (!isDrawing) return;
+        strokePath.push({ x: e.offsetX, y: e.offsetY, time: Date.now() });
+        drawPath();
+      });
+
+      target.addEventListener('pointerup', (e) => {
+        if (!isDrawing) return;
+        isDrawing = false;
+        classifyGesture();
+        clearCanvas();
+      });
+    }
+
+    function drawPath() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (strokePath.length < 2) return;
+
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(strokePath[0].x, strokePath[0].y);
+
+      for (let i = 1; i < strokePath.length; i++) {
+        ctx.lineTo(strokePath[i].x, strokePath[i].y);
+      }
+      ctx.stroke();
+    }
+
+    function clearCanvas() {
+      setTimeout(() => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }, 150);
+    }
+
+    function classifyGesture() {
+      if (strokePath.length === 0) return;
+
+      const start = strokePath[0];
+      const end = strokePath[strokePath.length - 1];
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Check for Circle
+      let totalPathLength = 0;
+      for (let i = 1; i < strokePath.length; i++) {
+        let pdx = strokePath[i].x - strokePath[i - 1].x;
+        let pdy = strokePath[i].y - strokePath[i - 1].y;
+        totalPathLength += Math.sqrt(pdx * pdx + pdy * pdy);
+      }
+
+      let detectedVal = 0.0;
+      let label = "Tap (0.0)";
+
+      if (totalPathLength > 110 && dist < totalPathLength * 0.4) {
+        detectedVal = (currentPhase === 'landing') ? 1.0 : 0.5;
+        label = `Circle (${detectedVal})`;
+      } else if (dist < 18) {
+        detectedVal = 0.0;
+        label = "Tap (0.0)";
+      } else {
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        if (angle >= -135 && angle < -45) {
+          detectedVal = 0.1;
+          label = "Flick Up (0.1)";
+        } else if (angle >= -45 && angle < 45) {
+          detectedVal = 0.2;
+          label = "Swipe Right (0.2)";
+        } else if (angle >= 45 && angle < 135) {
+          detectedVal = 0.3;
+          label = "Flick Down (0.3)";
+        } else {
+          detectedVal = (currentPhase === 'landing') ? 0.5 : 0.4;
+          label = `Swipe Left (${detectedVal})`;
+        }
+      }
+
+      showBadge(`Detected: ${label}`);
+      recordDeduction(detectedVal);
+    }
+
+    function showBadge(text) {
+      const badge = document.getElementById('gesture-badge');
+      badge.textContent = text;
+      badge.style.opacity = '1';
+      setTimeout(() => {
+        badge.style.opacity = '0';
+      }, 800);
+    }
+  </script>
 </body>
 </html>
