@@ -1837,9 +1837,11 @@
     landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
     landingRow.innerHTML = `
       <span class="sk-lbl">Landing ${isLandingActive ? '' : '<small>(Excl)</small>'}</span>
-      <div class="review-thumb-box">
+      ${showThumbnails ? `
+	<div class="review-thumb-box">
         ${landingThumbnail ? `<img src="${landingThumbnail}" class="review-thumb-img" alt="Landing">` : '<span class="review-thumb-empty">—</span>'}
       </div>
+	` : ''}
       <div class="value-controls-group">
         ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(-1)">−</button>` : ''}
         <span class="sk-val">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
