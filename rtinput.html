@@ -3,44 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Trampoline Execution Judge - Dual Interface</title>
+  <title>Trampoline Execution Judge Interface</title>
   <style>
     /* ==========================================================================
-       WORLD GYMNASTICS FIG PALETTE & SURFACES
+       COLOR PALETTE & STYLING CUSTOMIZATION
        ========================================================================== */
-    :root {
-      --fig-blue: #4495e5;
-      --fig-purple: #7d5fb3;
-      --fig-pink: #dc5183;
-      --fig-green: #22c55e;
 
-      /* Dark Mode Backgrounds */
-      --bg-dark: #0a0a0f;
-      --card-bg: #14141f;
+    :root {
+      /* World Gymnastics Ribbon Palette */
+      --fig-blue:   #4495e5;
+      --fig-purple: #7d5fb3;
+      --fig-pink:   #dc5183;
+      --fig-green:  #9bd98b;
+      --fig-orange: #e68a00;
+
+      /* Dark Mode Surfaces */
+      --bg-dark:    #0a0a0f;
+      --card-bg:    #14141f;
       --border-col: #2c2940;
-      --text-main: #ffffff;
-      --text-sub: #8a8a9e;
+      --text-main:  #ffffff;
+      --text-sub:   #8a8a9e;
 
       /* ==========================================================================
-         GRID BANDED COLOURS (CUSTOMIZE ZONE BACKGROUNDS & BORDERS HERE)
+         2x3 GRID ROW BANDING COLORS
          ========================================================================== */
-      --zone0-bg: rgba(34, 197, 94, 0.15);   /* Zone 1 (0.0 Clean): Soft Green */
-      --zone0-border: #22c55e;
-      
-      --zone1-bg: rgba(163, 230, 53, 0.15);  /* Zone 2 (0.1 Minor): Lime Green */
-      --zone1-border: #84cc16;
-      
-      --zone2-bg: rgba(250, 204, 21, 0.15);  /* Zone 3 (0.2 Medium): Amber Yellow */
-      --zone2-border: #eab308;
-      
-      --zone3-bg: rgba(251, 146, 60, 0.15);  /* Zone 4 (0.3 Substantial): Orange */
-      --zone3-border: #f97316;
-      
-      --zone4-bg: rgba(248, 113, 113, 0.15); /* Zone 5 (0.4 Major): Red-Orange */
-      --zone4-border: #ef4444;
-      
-      --zone5-bg: rgba(225, 29, 72, 0.20);   /* Zone 6 (0.5 Max Error): Crimson Red */
-      --zone5-border: #dc2626;
+      /* Top Band (Row 1: Zone 1 & 2 - Clean / Low Deductions) */
+      --band-top-color: #9bd98b;
+      --band-top-bg:    rgba(155, 217, 139, 0.12);
+
+      /* Middle Band (Row 2: Zone 3 & 4 - Moderate Deductions) */
+      --band-mid-color: #4495e5;
+      --band-mid-bg:    rgba(68, 149, 229, 0.12);
+
+      /* Bottom Band (Row 3: Zone 5 & 6 - Higher Deductions / Landing) */
+      --band-bot-color: #e68a00;
+      --band-bot-bg:    rgba(230, 138, 0, 0.12);
     }
 
     * {
@@ -72,12 +69,13 @@
     /* Top Status Bar */
     .status-bar {
       height: 44px;
+      flex-shrink: 0;
       background: #111118;
       border-bottom: 1px solid var(--border-col);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 12px;
+      padding: 0 14px;
       font-weight: 600;
       font-size: 13px;
       z-index: 10;
@@ -90,23 +88,22 @@
     }
 
     .phase-badge {
-      padding: 3px 8px;
+      padding: 2px 7px;
       border-radius: 4px;
       font-size: 10px;
       text-transform: uppercase;
       font-weight: 700;
     }
 
-    .badge-setup { background: var(--fig-purple); color: #fff; }
     .badge-routine { background: var(--fig-blue); color: #fff; }
     .badge-landing { background: var(--fig-pink); color: #fff; }
-    .badge-review { background: var(--fig-green); color: #000; }
+    .badge-review  { background: var(--fig-green); color: #111; }
 
     .btn-header {
       background: #1d1b2a;
       border: 1px solid var(--border-col);
       color: #ccc;
-      padding: 5px 10px;
+      padding: 4px 10px;
       border-radius: 6px;
       font-size: 11px;
       cursor: pointer;
@@ -122,108 +119,13 @@
       overflow: hidden;
     }
 
-    /* ==========================================================================
-       SECTIONED SETUP SCREEN
-       ========================================================================== */
-    .setup-screen {
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      height: 100%;
-      overflow-y: auto;
-      background: var(--bg-dark);
-    }
-
-    .setup-section {
-      background: #10101a;
-      border: 1px solid var(--border-col);
-      border-radius: 12px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .section-title {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--fig-blue);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .preset-group {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-
-    .preset-card {
-      background: var(--card-bg);
-      border: 2px solid var(--border-col);
-      border-radius: 8px;
-      padding: 10px;
-      cursor: pointer;
-    }
-
-    .preset-card.selected {
-      border-color: var(--fig-blue);
-      background: rgba(68, 149, 229, 0.15);
-    }
-
-    .preset-card h4 { font-size: 0.9rem; margin-bottom: 2px; color: var(--text-main); }
-    .preset-card p { font-size: 0.72rem; color: var(--text-sub); }
-
-    .gesture-map-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-col);
-      border-radius: 8px;
-      padding: 10px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      text-align: center;
-    }
-
-    .gesture-item {
-      background: #181826;
-      border: 1px solid var(--border-col);
-      padding: 6px;
-      border-radius: 6px;
-    }
-
-    .gesture-item .g-symbol { font-size: 1rem; color: var(--fig-pink); font-weight: 800; }
-    .gesture-item .g-val { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
-    .gesture-item .g-lbl { font-size: 0.65rem; color: var(--text-sub); }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple));
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .btn-primary:active { opacity: 0.9; transform: scale(0.99); }
-    .btn-swipe-launch { background: linear-gradient(135deg, var(--fig-pink), var(--fig-purple)); }
-
-    /* ==========================================================================
-       2x3 GRID INTERFACE WITH BANDED COLOURS
-       ========================================================================== */
+    /* 2 COLUMNS x 3 ROWS GRID LAYOUT WITH ROW BANDING */
     .grid-container {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       grid-template-rows: repeat(3, 1fr);
-      gap: 6px;
-      padding: 6px;
+      gap: 8px;
+      padding: 8px;
       width: 100%;
       height: 100%;
       background: #000000;
@@ -234,226 +136,318 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      border-radius: 12px;
-      color: var(--text-main);
-      font-size: 2.8rem;
+      border-radius: 14px;
+      font-size: 3rem;
       font-weight: 800;
       cursor: pointer;
-      position: relative;
       transition: transform 0.05s ease, filter 0.05s ease;
+      position: relative;
     }
 
-    /* BANDED COLOUR ASSIGNMENTS FOR GRID ZONES */
-    #zone0 { background: var(--zone0-bg); border: 2px solid var(--zone0-border); }
-    #zone1 { background: var(--zone1-bg); border: 2px solid var(--zone1-border); }
-    #zone2 { background: var(--zone2-bg); border: 2px solid var(--zone2-border); }
-    #zone3 { background: var(--zone3-bg); border: 2px solid var(--zone3-border); }
-    #zone4 { background: var(--zone4-bg); border: 2px solid var(--zone4-border); }
-    #zone5 { background: var(--zone5-bg); border: 2px solid var(--zone5-border); }
+    /* Row Banding Styles */
+    .zone-row-top {
+      border: 3px solid var(--band-top-color);
+      color: var(--band-top-color);
+      background: var(--band-top-bg);
+    }
+
+    .zone-row-mid {
+      border: 3px solid var(--band-mid-color);
+      color: var(--band-mid-color);
+      background: var(--band-mid-bg);
+    }
+
+    .zone-row-bot {
+      border: 3px solid var(--band-bot-color);
+      color: var(--band-bot-color);
+      background: var(--band-bot-bg);
+    }
 
     .zone-btn:active, .zone-btn.active-touch {
-      filter: brightness(1.4);
       transform: scale(0.97);
+      filter: brightness(1.3);
     }
 
     .zone-sub {
-      font-size: 0.75rem;
+      font-size: 0.85rem;
       font-weight: 600;
       color: var(--text-sub);
-      margin-top: 2px;
+      margin-top: 4px;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: 1px;
     }
 
-    /* ==========================================================================
-       SWIPE INTERFACE
-       ========================================================================== */
-    #swipeScreen {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: #080811;
+    /* SWIPE GESTURE INTERFACE */
+    .swipe-container {
+      width: 100%;
+      height: 100%;
+      background: #08080d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      position: relative;
       touch-action: none;
     }
 
-    #gestureCanvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    .swipe-overlay-guide {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
+    .swipe-feedback-area {
       text-align: center;
-      opacity: 0.22;
+      margin-top: 20px;
+      pointer-events: none;
     }
 
-    .guide-grid {
+    .swipe-feedback-label {
+      font-size: 1.1rem;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+
+    .swipe-feedback-val {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--fig-blue);
+      line-height: 1;
+    }
+
+    .swipe-last-action {
+      font-size: 1rem;
+      color: var(--fig-green);
+      font-weight: 600;
+      margin-top: 8px;
+      min-height: 24px;
+    }
+
+    .swipe-guide-grid {
       display: grid;
-      grid-template-columns: 75px 75px 75px;
-      grid-template-rows: 75px 75px 75px;
-      gap: 6px;
-      align-items: center;
-      justify-items: center;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 420px;
+      margin-bottom: 20px;
+      pointer-events: none;
+    }
+
+    .swipe-guide-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .swipe-guide-icon {
+      font-size: 1.3rem;
+      color: var(--fig-purple);
+      margin-bottom: 4px;
+    }
+
+    .swipe-guide-action {
+      font-size: 0.75rem;
+      color: var(--text-main);
       font-weight: 700;
+    }
+
+    .swipe-guide-zone {
+      font-size: 0.65rem;
       color: var(--text-sub);
     }
 
-    .gesture-badge {
+    .gesture-canvas {
       position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(20, 20, 31, 0.95);
-      border: 1px solid var(--fig-blue);
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--fig-blue);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      z-index: 5;
     }
 
-    /* ==========================================================================
-       NON-SCROLLING 2-COLUMN REVIEW SCREEN WITH MAX SKILLS
-       ========================================================================== */
+    /* SETUP SCREEN */
+    .setup-screen {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+      overflow-y: auto;
+      background: var(--bg-dark);
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .preset-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .preset-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border-col);
+      border-radius: 10px;
+      padding: 12px;
+      cursor: pointer;
+    }
+
+    .preset-card.selected {
+      border-color: var(--fig-blue);
+      background: rgba(68, 149, 229, 0.12);
+    }
+
+    .preset-card h4 { font-size: 0.95rem; margin-bottom: 2px; color: var(--text-main); }
+    .preset-card p { font-size: 0.75rem; color: var(--text-sub); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple));
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .btn-primary:active { opacity: 0.9; transform: scale(0.99); }
+
+    /* REVIEW SCREEN */
     .review-screen {
-      padding: 8px 10px;
+      padding: 8px 12px;
       display: flex;
       flex-direction: column;
       height: 100%;
       background: var(--bg-dark);
-      overflow: hidden; /* Fits on single viewport without scrolling */
-      justify-content: space-between;
+      overflow: hidden;
     }
 
+    /* Combined Score Banner */
     .score-banner {
       background: var(--card-bg);
       border: 1px solid var(--border-col);
       border-radius: 10px;
-      padding: 8px 12px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      text-align: center;
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-around;
       align-items: center;
+      flex-shrink: 0;
+      margin-bottom: 6px;
     }
 
-    .score-box {
+    .score-box { 
+      text-align: center; 
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    .max-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-blue); line-height: 1.1; }
-    .deduct-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
     .score-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
-    .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+    .deduct-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
+    .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
 
-    .review-controls-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 4px 0;
-      padding: 4px 8px;
-      background: #12121a;
-      border-radius: 8px;
-      border: 1px solid var(--border-col);
-    }
-
-    .skills-selector {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .skills-selector label { font-size: 0.78rem; color: var(--fig-blue); font-weight: 700; text-transform: uppercase; }
-    .skills-selector select {
-      background: var(--card-bg);
-      border: 1px solid var(--fig-blue);
-      color: #ffffff;
-      font-size: 0.85rem;
-      font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 6px;
-      outline: none;
-    }
-
-    /* 2-Column Compact Grid for Skills */
-    .review-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 6px;
+    /* Dynamic flex-fill container for 11 squeezed rows */
+    .review-list {
       flex: 1;
-      align-content: start;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-height: 0;
+      margin-bottom: 6px;
     }
 
-    .review-card {
+    /* Single Row Format */
+    .review-row {
+      flex: 1;
+      min-height: 0;
       background: var(--card-bg);
       border: 1px solid var(--border-col);
-      border-radius: 8px;
-      padding: 4px 8px;
+      border-radius: 6px;
+      padding: 0 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 38px;
     }
 
-    .review-card.landing-card {
-      grid-column: span 2;
+    .review-row.disabled-row {
+      opacity: 0.35;
+      background: #0d0d14;
+      border-color: #1a1a26;
+    }
+
+    .review-row.landing-row {
       border-color: var(--fig-pink);
       background: rgba(220, 81, 131, 0.08);
     }
 
-    .card-label-val {
+    .landing-row.disabled-row {
+      border-color: #2c2430;
+      background: #0d0a12;
+    }
+
+    .sk-lbl {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      font-weight: 600;
+    }
+
+    .landing-row .sk-lbl {
+      color: var(--fig-pink);
+    }
+
+    .disabled-row .sk-lbl {
+      color: #555566;
+    }
+
+    /* Value and +/- controls grouped tightly together */
+    .value-controls-group {
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .sk-lbl {
-      font-size: 0.78rem;
-      color: var(--text-sub);
-      font-weight: 600;
-    }
-
     .sk-val {
-      font-size: 0.95rem;
-      font-weight: 800;
+      font-size: 1.05rem;
+      font-weight: 700;
       color: var(--text-main);
+      min-width: 44px;
+      text-align: center;
     }
 
-    .landing-card .sk-lbl, .landing-card .sk-val {
+    .landing-row .sk-val {
       color: var(--fig-pink);
     }
 
-    .card-step-btns {
-      display: flex;
-      gap: 4px;
+    .disabled-row .sk-val {
+      color: #555566;
     }
 
-    .btn-step-mini {
+    .btn-step {
       width: 28px;
       height: 28px;
       border-radius: 6px;
       background: #1e1c2e;
       border: 1px solid var(--fig-purple);
       color: var(--text-main);
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      flex-shrink: 0;
     }
 
-    .btn-step-mini:active {
+    .btn-step:active {
       background: var(--fig-blue);
       border-color: var(--fig-blue);
       color: #fff;
@@ -465,11 +459,11 @@
 <body>
 
 <div class="app-wrapper">
-  <!-- Status Bar -->
+  <!-- Top Status Bar -->
   <div class="status-bar">
     <div class="status-title">
-      <span id="phaseBadge" class="phase-badge badge-setup">Setup</span>
-      <span id="skillCounter">Select Interface Mode</span>
+      <span id="phaseBadge" class="phase-badge badge-routine">Routine</span>
+      <span id="skillCounter">Skill 1 / 10</span>
     </div>
     <div style="display:flex; gap:6px;">
       <button class="btn-header" onclick="toggleFullscreen()">Fullscreen</button>
@@ -477,177 +471,174 @@
     </div>
   </div>
 
-  <!-- Main Canvas Container -->
+  <!-- Main Canvas -->
   <div class="main-content">
 
-    <!-- 1. SECTIONED SETUP SCREEN -->
+    <!-- 1. SETUP / CONFIGURATION SCREEN -->
     <div id="setupScreen" class="setup-screen">
-      
-      <!-- Section 1: Grid Interface Options -->
-      <div class="setup-section">
-        <div class="section-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-          Grid Interface (Button Pad)
+      <div class="section-title">Select Input Interface</div>
+      <div class="preset-group">
+        <div class="preset-card selected" id="interfaceGridCard" onclick="selectInterface('grid', this)">
+          <h4>Grid Interface</h4>
+          <p>2x3 On-screen touch zones</p>
         </div>
-
-        <div style="font-size:0.75rem; color:var(--text-sub);">Select Preset Scale:</div>
-        <div class="preset-group">
-          <div class="preset-card selected" onclick="selectPreset('fig', this)">
-            <h4>FIG Standard</h4>
-            <p>0.0, 0.1, 0.2, 0.3, 0.4, 0.5</p>
-          </div>
-          <div class="preset-card" onclick="selectPreset('coarse', this)">
-            <h4>Coarse Scale</h4>
-            <p>0.0, 0.1, 0.2, 0.3, 0.5, 0.5</p>
-          </div>
-          <div class="preset-card" onclick="selectPreset('synchro', this)">
-            <h4>Fine Scale (HD)</h4>
-            <p>0.00, 0.05, 0.10, 0.15, 0.20, 0.30</p>
-          </div>
-          <div class="preset-card" onclick="selectPreset('flipped', this)">
-            <h4>FIG (Flipped)</h4>
-            <p>Right-to-Left orientation</p>
-          </div>
+        <div class="preset-card" id="interfaceSwipeCard" onclick="selectInterface('swipe', this)">
+          <h4>Swipe Interface</h4>
+          <p>Tap, Flicks & Circle Gestures</p>
         </div>
-
-        <button class="btn-primary" onclick="startRoutine('grid')">Start Grid Routine Judging</button>
       </div>
 
-      <!-- Section 2: Swipe Interface Options -->
-      <div class="setup-section">
-        <div class="section-title" style="color:var(--fig-pink);">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"></path><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 0 1 2 2v4a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.8-5.6-2.4L2.5 15a1.2 1.2 0 0 1 .4-1.7v0a1.2 1.2 0 0 1 1.6.4l2.5 3.8"></path></svg>
-          Swipe Interface (Eyes-Free Gestures)
+      <div class="section-title" style="margin-top:6px;">Select E-Judge Preset</div>
+      <div class="preset-group">
+        <div class="preset-card selected" id="presetFigCard" onclick="selectPreset('fig', this)">
+          <h4>FIG Standard</h4>
+          <p>0.0, 0.1, 0.2, 0.3, 0.4, 0.5</p>
         </div>
-
-        <div style="font-size:0.75rem; color:var(--text-sub);">Gesture Map:</div>
-        <div class="gesture-map-card">
-          <div class="gesture-item"><div class="g-symbol">●</div><div class="g-val">0.0</div><div class="g-lbl">Tap</div></div>
-          <div class="gesture-item"><div class="g-symbol">▲</div><div class="g-val">0.1</div><div class="g-lbl">Flick Up</div></div>
-          <div class="gesture-item"><div class="g-symbol">►</div><div class="g-val">0.2</div><div class="g-lbl">Swipe Right</div></div>
-          <div class="gesture-item"><div class="g-symbol">▼</div><div class="g-val">0.3</div><div class="g-lbl">Flick Down</div></div>
-          <div class="gesture-item"><div class="g-symbol">◄</div><div class="g-val">0.4</div><div class="g-lbl">Swipe Left</div></div>
-          <div class="gesture-item"><div class="g-symbol">⭕</div><div class="g-val">0.5</div><div class="g-lbl">Circle</div></div>
+        <div class="preset-card" id="presetFlippedCard" onclick="selectPreset('flipped', this)">
+          <h4>FIG (Flipped)</h4>
+          <p>Right-to-Left orientation</p>
         </div>
-
-        <button class="btn-primary btn-swipe-launch" onclick="startRoutine('swipe')">Start Swipe Routine Judging</button>
       </div>
 
+      <div class="section-title" style="margin-top:6px;">Interface Preview</div>
+      <div id="interfacePreviewText" style="font-size:0.8rem; color:var(--text-sub);">
+        Touch zones span 95%+ of the screen during live judging.
+      </div>
+
+      <button class="btn-primary" onclick="startRoutine()" style="margin-top:auto;">Start Routine Judging</button>
     </div>
 
-    <!-- 2. ROUTINE & LANDING 2x3 GRID INPUT WITH BANDED COLOURS -->
+    <!-- 2A. ROUTINE & LANDING 2x3 GRID INPUT WITH ROW BANDING -->
     <div id="gridScreen" class="grid-container hidden">
-      <div class="zone-btn" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
-      <div class="zone-btn" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
-      <div class="zone-btn" id="zone2"><span class="val">0.2</span><span class="zone-sub">Zone 3</span></div>
-      <div class="zone-btn" id="zone3"><span class="val">0.3</span><span class="zone-sub">Zone 4</span></div>
-      <div class="zone-btn" id="zone4"><span class="val">0.4</span><span class="zone-sub">Zone 5</span></div>
-      <div class="zone-btn" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
+      <!-- Top Row Band (FIG Green) -->
+      <div class="zone-btn zone-row-top" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
+      <div class="zone-btn zone-row-top" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
+      
+      <!-- Middle Row Band (FIG Blue) -->
+      <div class="zone-btn zone-row-mid" id="zone2"><span class="val">0.2</span><span class="zone-sub">Zone 3</span></div>
+      <div class="zone-btn zone-row-mid" id="zone3"><span class="val">0.3</span><span class="zone-sub">Zone 4</span></div>
+      
+      <!-- Bottom Row Band (Soft FIG Orange) -->
+      <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span><span class="zone-sub">Zone 5</span></div>
+      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
     </div>
 
-    <!-- 3. ROUTINE & LANDING SWIPE GESTURE INPUT -->
-    <div id="swipeScreen" class="hidden">
-      <canvas id="gestureCanvas"></canvas>
-      <div class="swipe-overlay-guide">
-        <div class="guide-grid">
-          <div></div><div>▲ 0.1</div><div></div>
-          <div>◄ 0.4</div><div>TAP<br>0.0</div><div>0.2 ►</div>
-          <div></div><div>▼ 0.3</div><div>⭕ 0.5</div>
+    <!-- 2B. SWIPE / GESTURE INPUT INTERFACE -->
+    <div id="swipeScreen" class="swipe-container hidden">
+      <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
+
+      <div class="swipe-feedback-area">
+        <div class="swipe-feedback-label" id="swipeFeedbackLabel">Skill 1 / 10</div>
+        <div class="swipe-feedback-val" id="swipeFeedbackVal">0.0</div>
+        <div class="swipe-last-action" id="swipeLastAction">Ready for gesture</div>
+      </div>
+
+      <div class="swipe-guide-grid">
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">👆</div>
+          <div class="swipe-guide-action">Tap</div>
+          <div class="swipe-guide-zone">Zone 1</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">⬆️</div>
+          <div class="swipe-guide-action">Flick Up</div>
+          <div class="swipe-guide-zone">Zone 2</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">➡️</div>
+          <div class="swipe-guide-action">Swipe Right</div>
+          <div class="swipe-guide-zone">Zone 3</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">⬇️</div>
+          <div class="swipe-guide-action">Flick Down</div>
+          <div class="swipe-guide-zone">Zone 4</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">⬅️</div>
+          <div class="swipe-guide-action">Swipe Left</div>
+          <div class="swipe-guide-zone">Zone 5</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">🔄</div>
+          <div class="swipe-guide-action">Circle</div>
+          <div class="swipe-guide-zone">Zone 6</div>
         </div>
       </div>
-      <div class="gesture-badge" id="gestureBadge">Detected: Tap (0.0)</div>
     </div>
 
-    <!-- 4. REVIEW SCREEN (SINGLE-VIEWPORT 2-COLUMN GRID WITH MAX SKILLS) -->
+    <!-- 3. REVIEW & EDIT SCREEN -->
     <div id="reviewScreen" class="review-screen hidden">
       <div class="score-banner">
+        <!-- Skills Performed Adjuster -->
         <div class="score-box">
-          <div class="max-val" id="maxSkillsDisplay">10.00</div>
-          <div class="score-lbl">Max Score</div>
+          <span class="score-lbl">Skills</span>
+          <div class="value-controls-group">
+            <button class="btn-step" onclick="adjustSkillsCount(-1)">−</button>
+            <span class="sk-val" id="skillsCountDisplay" style="color:var(--fig-blue);">10</span>
+            <button class="btn-step" onclick="adjustSkillsCount(1)">+</button>
+          </div>
         </div>
+
+        <!-- Total Deductions Accumulator -->
         <div class="score-box">
+          <span class="score-lbl">Total Deductions</span>
           <div class="deduct-val" id="totalDeductDisplay">0.00</div>
-          <div class="score-lbl">Total Deductions</div>
         </div>
+
+        <!-- Net E-Score Calculation -->
         <div class="score-box">
+          <span class="score-lbl">Net E-Score</span>
           <div class="score-val" id="netScoreDisplay">10.00</div>
-          <div class="score-lbl">Execution Score</div>
         </div>
       </div>
 
-      <div class="review-controls-bar">
-        <div style="font-size:0.75rem; font-weight:700; color:var(--text-sub); text-transform:uppercase;">Skill Breakdown</div>
-        <div class="skills-selector">
-          <label for="skillsPerformedSelect">Max Skills:</label>
-          <select id="skillsPerformedSelect" onchange="updateSkillsCount(this.value)">
-            <option value="10" selected>10</option>
-            <option value="9">9</option>
-            <option value="8">8</option>
-            <option value="7">7</option>
-            <option value="6">6</option>
-            <option value="5">5</option>
-            <option value="4">4</option>
-            <option value="3">3</option>
-            <option value="2">2</option>
-            <option value="1">1</option>
-          </select>
-        </div>
+      <div class="review-list" id="reviewList">
+        <!-- 11 Squeezed Rows generated dynamically -->
       </div>
 
-      <div class="review-grid" id="reviewGridList">
-        <!-- 2-Column Grid with inline +/- buttons generated dynamically -->
-      </div>
-
-      <button class="btn-primary" onclick="resetToSetup()" style="margin-top:6px;">Confirm & Next Routine</button>
+      <button class="btn-primary" onclick="resetToSetup()">Confirm & Next Routine</button>
     </div>
 
   </div>
 </div>
 
 <script>
-  // Presets Configuration
+  // Presets & FIG Landing Scale
   const PRESETS = {
-    fig: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
-    coarse: [0.0, 0.1, 0.2, 0.3, 0.5, 0.5],
+    fig:     [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
+    coarse:  [0.0, 0.1, 0.2, 0.3, 0.5, 0.5],
     synchro: [0.00, 0.05, 0.10, 0.15, 0.20, 0.30],
     flipped: [0.1, 0.0, 0.3, 0.2, 0.5, 0.4]
   };
 
   const LANDING_PRESET = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
 
+  let currentInterface = 'grid'; // 'grid' or 'swipe'
   let currentPresetKey = 'fig';
   let activeRoutineZones = [...PRESETS.fig];
-  let activeMode = 'grid'; // 'grid' | 'swipe'
-  let phase = 'setup'; // 'setup' | 'routine' | 'landing' | 'review'
-  let currentSkillIndex = 0; // 0 to 9 for skills
+  let phase = 'setup';
+  let currentSkillIndex = 0;
   let skillDeductions = new Array(10).fill(0);
   let landingDeduction = 0;
   let skillsPerformed = 10;
 
   // DOM Elements
-  const setupScreen = document.getElementById('setupScreen');
-  const gridScreen = document.getElementById('gridScreen');
-  const swipeScreen = document.getElementById('swipeScreen');
+  const setupScreen  = document.getElementById('setupScreen');
+  const gridScreen   = document.getElementById('gridScreen');
+  const swipeScreen  = document.getElementById('swipeScreen');
   const reviewScreen = document.getElementById('reviewScreen');
-  const phaseBadge = document.getElementById('phaseBadge');
+  const phaseBadge   = document.getElementById('phaseBadge');
   const skillCounter = document.getElementById('skillCounter');
+  const canvas       = document.getElementById('gestureCanvas');
+  const ctx          = canvas ? canvas.getContext('2d') : null;
 
   /* ==========================================================================
-     DUAL HAPTIC & AUDIO SYNTHESIS FEEDBACK
+     AUDIO SYNTHESIS FEEDBACK
      ========================================================================== */
   let audioCtx = null;
 
   function triggerFeedback(type = 'tap') {
-    // 1. Physical Hardware Vibration (Android)
-    if ('vibrate' in navigator) {
-      try {
-        if (type === 'tap') navigator.vibrate(20);
-        if (type === 'transition') navigator.vibrate([35, 20, 35]);
-        if (type === 'complete') navigator.vibrate([50, 30, 80]);
-      } catch (e) {}
-    }
-
-    // 2. Web Audio Synthesizer Micro-Tick (iOS / Browsers)
     try {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -658,21 +649,37 @@
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(type === 'complete' ? 800 : 440, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
+      osc.frequency.setValueAtTime(type === 'complete' ? 880 : 520, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.09, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.025);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.03);
-    } catch (e) {}
+      osc.stop(audioCtx.currentTime + 0.025);
+    } catch (e) { /* Catch browser audio restrictions */ }
+  }
+
+  // Interface Selection
+  function selectInterface(mode, el) {
+    currentInterface = mode;
+    document.getElementById('interfaceGridCard').classList.remove('selected');
+    document.getElementById('interfaceSwipeCard').classList.remove('selected');
+    el.classList.add('selected');
+
+    const preview = document.getElementById('interfacePreviewText');
+    if (mode === 'grid') {
+      preview.textContent = 'Touch zones span 95%+ of the screen during live judging.';
+    } else {
+      preview.textContent = 'Swipe gestures: Tap (Z1), Flick Up (Z2), Swipe Right (Z3), Flick Down (Z4), Swipe Left (Z5), Circle (Z6).';
+    }
   }
 
   // Preset Selection
   function selectPreset(key, el) {
     currentPresetKey = key;
     activeRoutineZones = [...PRESETS[key]];
-    document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('presetFigCard').classList.remove('selected');
+    document.getElementById('presetFlippedCard').classList.remove('selected');
     el.classList.add('selected');
   }
 
@@ -680,35 +687,53 @@
   function renderGrid(values) {
     for (let i = 0; i < 6; i++) {
       const btn = document.getElementById(`zone${i}`);
-      btn.querySelector('.val').textContent = typeof values[i] === 'number' ? values[i].toFixed(1) : values[i];
+      const val = values[i];
+      btn.querySelector('.val').textContent = typeof val === 'number' ? val.toFixed(1) : val;
+    }
+  }
+
+  // Update Swipe Screen Feedback
+  function updateSwipeDisplay(recordedVal = 0, lastActionName = '') {
+    const feedbackLabel = document.getElementById('swipeFeedbackLabel');
+    const feedbackVal   = document.getElementById('swipeFeedbackVal');
+    const lastActionEl  = document.getElementById('swipeLastAction');
+
+    if (phase === 'routine') {
+      feedbackLabel.textContent = `Skill ${currentSkillIndex + 1} / 10`;
+      feedbackVal.textContent = typeof recordedVal === 'number' ? `-${recordedVal.toFixed(1)}` : recordedVal;
+    } else if (phase === 'landing') {
+      feedbackLabel.textContent = `Landing Deduction`;
+      feedbackVal.textContent = typeof recordedVal === 'number' ? `-${recordedVal.toFixed(1)}` : recordedVal;
+    }
+
+    if (lastActionName) {
+      lastActionEl.textContent = lastActionName;
     }
   }
 
   // Start Routine
-  function startRoutine(mode) {
-    activeMode = mode;
+  function startRoutine() {
     phase = 'routine';
     currentSkillIndex = 0;
     skillDeductions = new Array(10).fill(0);
     landingDeduction = 0;
     skillsPerformed = 10;
-    document.getElementById('skillsPerformedSelect').value = "10";
 
     setupScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
 
-    if (activeMode === 'grid') {
+    if (currentInterface === 'grid') {
       gridScreen.classList.remove('hidden');
-      gridScreen.classList.remove('landing-mode');
       swipeScreen.classList.add('hidden');
       renderGrid(activeRoutineZones);
     } else {
       swipeScreen.classList.remove('hidden');
       gridScreen.classList.add('hidden');
-      resizeCanvas();
+      updateSwipeDisplay(0.0, 'Ready for gesture input');
+      setTimeout(initCanvasSize, 50);
     }
 
-    phaseBadge.textContent = `Routine (${activeMode.toUpperCase()})`;
+    phaseBadge.textContent = 'Routine';
     phaseBadge.className = 'phase-badge badge-routine';
     updateCounter();
 
@@ -721,49 +746,53 @@
     } else if (phase === 'landing') {
       skillCounter.textContent = `Landing Deduction`;
     } else if (phase === 'review') {
-      skillCounter.textContent = `Routine Complete`;
+      skillCounter.textContent = `Complete`;
     }
   }
 
-  /* ==========================================================================
-     GRID TOUCH LISTENERS
-     ========================================================================== */
+  // Touch Event Listeners for 2x3 Grid
   const zoneButtons = document.querySelectorAll('.zone-btn');
   zoneButtons.forEach((btn, index) => {
     btn.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       btn.classList.add('active-touch');
-      handleInput(activeRoutineZones[index], LANDING_PRESET[index]);
+      handleZoneInput(index);
     });
 
     btn.addEventListener('pointerup', () => btn.classList.remove('active-touch'));
     btn.addEventListener('pointerleave', () => btn.classList.remove('active-touch'));
   });
 
-  function handleInput(routineVal, landingVal) {
+  function handleZoneInput(zoneIndex, actionLabel = '') {
     triggerFeedback('tap');
 
+    const activeSet = (phase === 'landing') ? LANDING_PRESET : activeRoutineZones;
+    const val = activeSet[zoneIndex];
+
     if (phase === 'routine') {
-      skillDeductions[currentSkillIndex] = routineVal;
+      skillDeductions[currentSkillIndex] = val;
       currentSkillIndex++;
 
       if (currentSkillIndex >= 10) {
-        // Transition to Landing Phase
         phase = 'landing';
-        if (activeMode === 'grid') {
-          gridScreen.classList.add('landing-mode');
+        if (currentInterface === 'grid') {
           renderGrid(LANDING_PRESET);
+        } else {
+          updateSwipeDisplay(val, actionLabel ? `${actionLabel} (Skill 10)` : '');
         }
         phaseBadge.textContent = 'Landing';
         phaseBadge.className = 'phase-badge badge-landing';
         triggerFeedback('transition');
+      } else {
+        if (currentInterface === 'swipe') {
+          updateSwipeDisplay(val, actionLabel ? `${actionLabel} (Skill ${currentSkillIndex})` : '');
+        }
       }
       updateCounter();
 
     } else if (phase === 'landing') {
-      landingDeduction = landingVal;
+      landingDeduction = val;
 
-      // Transition to Review Screen
       phase = 'review';
       gridScreen.classList.add('hidden');
       swipeScreen.classList.add('hidden');
@@ -778,206 +807,217 @@
   }
 
   /* ==========================================================================
-     SWIPE GESTURE ENGINE LOGIC
+     SWIPE & GESTURE RECOGNITION ENGINE
      ========================================================================== */
-  let canvas, ctx, isDrawing = false, strokePath = [];
+  let pointerPoints = [];
+  let isPointerDown = false;
 
-  window.addEventListener('DOMContentLoaded', () => {
-    canvas = document.getElementById('gestureCanvas');
-    ctx = canvas.getContext('2d');
-    setupGestureListeners();
-  });
-
-  function resizeCanvas() {
-    if (!canvas) return;
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
+  function initCanvasSize() {
+    if (!canvas || !swipeScreen) return;
+    canvas.width = swipeScreen.offsetWidth || window.innerWidth;
+    canvas.height = swipeScreen.offsetHeight || window.innerHeight;
   }
 
-  function setupGestureListeners() {
-    const target = document.getElementById('swipeScreen');
+  window.addEventListener('resize', initCanvasSize);
 
-    target.addEventListener('pointerdown', (e) => {
-      isDrawing = true;
-      strokePath = [{ x: e.offsetX, y: e.offsetY, time: Date.now() }];
+  if (swipeScreen) {
+    swipeScreen.addEventListener('pointerdown', (e) => {
+      if (phase !== 'routine' && phase !== 'landing') return;
+      e.preventDefault();
+      try { swipeScreen.setPointerCapture(e.pointerId); } catch(err) {}
+      isPointerDown = true;
+      pointerPoints = [{ x: e.clientX, y: e.clientY, t: Date.now() }];
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.moveTo(e.clientX, e.clientY);
+        ctx.strokeStyle = 'rgba(125, 95, 179, 0.8)';
+        ctx.lineWidth = 6;
+        ctx.lineCap = 'round';
+      }
     });
 
-    target.addEventListener('pointermove', (e) => {
-      if (!isDrawing) return;
-      strokePath.push({ x: e.offsetX, y: e.offsetY, time: Date.now() });
-      drawStroke();
+    swipeScreen.addEventListener('pointermove', (e) => {
+      if (!isPointerDown) return;
+      e.preventDefault();
+      pointerPoints.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+      if (ctx) {
+        ctx.lineTo(e.clientX, e.clientY);
+        ctx.stroke();
+      }
     });
 
-    target.addEventListener('pointerup', () => {
-      if (!isDrawing) return;
-      isDrawing = false;
-      classifyGesture();
-      clearCanvas();
+    swipeScreen.addEventListener('pointerup', (e) => {
+      if (!isPointerDown) return;
+      e.preventDefault();
+      isPointerDown = false;
+      try { swipeScreen.releasePointerCapture(e.pointerId); } catch(err) {}
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      processGesturePoints(pointerPoints);
+    });
+
+    swipeScreen.addEventListener('pointercancel', (e) => {
+      isPointerDown = false;
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
     });
   }
 
-  function drawStroke() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (strokePath.length < 2) return;
+  function processGesturePoints(points) {
+    if (!points || points.length === 0) return;
 
-    ctx.strokeStyle = '#4495e5';
-    ctx.lineWidth = 4;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(strokePath[0].x, strokePath[0].y);
+    const start = points[0];
+    const end = points[points.length - 1];
+    const duration = end.t - start.t;
 
-    for (let i = 1; i < strokePath.length; i++) {
-      ctx.lineTo(strokePath[i].x, strokePath[i].y);
+    let pathLength = 0;
+    let minX = start.x, maxX = start.x, minY = start.y, maxY = start.y;
+
+    for (let i = 1; i < points.length; i++) {
+      const dx = points[i].x - points[i-1].x;
+      const dy = points[i].y - points[i-1].y;
+      pathLength += Math.sqrt(dx * dx + dy * dy);
+      minX = Math.min(minX, points[i].x);
+      maxX = Math.max(maxX, points[i].x);
+      minY = Math.min(minY, points[i].y);
+      maxY = Math.max(maxY, points[i].y);
     }
-    ctx.stroke();
-  }
 
-  function clearCanvas() {
-    setTimeout(() => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }, 150);
-  }
+    const netDx = end.x - start.x;
+    const netDy = end.y - start.y;
+    const netDist = Math.sqrt(netDx * netDx + netDy * netDy);
+    const boxWidth = maxX - minX;
+    const boxHeight = maxY - minY;
 
-  function classifyGesture() {
-    if (strokePath.length === 0) return;
-
-    const start = strokePath[0];
-    const end = strokePath[strokePath.length - 1];
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    let totalLength = 0;
-    for (let i = 1; i < strokePath.length; i++) {
-      let pdx = strokePath[i].x - strokePath[i - 1].x;
-      let pdy = strokePath[i].y - strokePath[i - 1].y;
-      totalLength += Math.sqrt(pdx * pdx + pdy * pdy);
+    // 1. TAP DETECTION: Small total movement
+    if (pathLength < 30) {
+      handleZoneInput(0, 'Tap -> Zone 1');
+      return;
     }
 
-    let routineVal = 0.0, landingVal = 0.0, label = "Tap (0.0)";
+    // 2. CIRCLE DETECTION: Path is long but start/end are close
+    if (pathLength > 90 && netDist < 70 && boxWidth > 30 && boxHeight > 30) {
+      handleZoneInput(5, 'Circle -> Zone 6');
+      return;
+    }
 
-    if (totalLength > 110 && dist < totalLength * 0.4) {
-      routineVal = 0.5; landingVal = 1.0;
-      label = `Circle (${phase === 'landing' ? '1.0' : '0.5'})`;
-    } else if (dist < 18) {
-      routineVal = 0.0; landingVal = 0.0;
-      label = "Tap (0.0)";
-    } else {
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      if (angle >= -135 && angle < -45) {
-        routineVal = 0.1; landingVal = 0.1;
-        label = "Flick Up (0.1)";
-      } else if (angle >= -45 && angle < 45) {
-        routineVal = 0.2; landingVal = 0.2;
-        label = "Swipe Right (0.2)";
-      } else if (angle >= 45 && angle < 135) {
-        routineVal = 0.3; landingVal = 0.3;
-        label = "Flick Down (0.3)";
+    // 3. FLICK / SWIPE DETECTION: Axis classification
+    if (Math.abs(netDy) >= Math.abs(netDx)) {
+      if (netDy < 0) {
+        handleZoneInput(1, 'Flick Up -> Zone 2');
       } else {
-        routineVal = 0.4; landingVal = 0.5;
-        label = `Swipe Left (${phase === 'landing' ? '0.5' : '0.4'})`;
+        handleZoneInput(3, 'Flick Down -> Zone 4');
+      }
+    } else {
+      if (netDx > 0) {
+        handleZoneInput(2, 'Swipe Right -> Zone 3');
+      } else {
+        handleZoneInput(4, 'Swipe Left -> Zone 5');
       }
     }
-
-    showBadge(`Detected: ${label}`);
-    handleInput(routineVal, landingVal);
   }
 
-  function showBadge(text) {
-    const badge = document.getElementById('gestureBadge');
-    badge.textContent = text;
-    badge.style.opacity = '1';
-    setTimeout(() => { badge.style.opacity = '0'; }, 750);
-  }
-
-  /* ==========================================================================
-     NON-SCROLLING 2-COLUMN REVIEW SCREEN SUMMARY & INLINE +/- STEP CONTROLS
-     ========================================================================== */
-  function renderReviewSummary() {
-    let activeCount = parseInt(skillsPerformed);
-    let skillSum = 0;
-
-    for (let i = 0; i < activeCount; i++) {
-      skillSum += skillDeductions[i];
-    }
-
-    const landingVal = (activeCount === 10) ? landingDeduction : 0;
-    const totalDeduct = skillSum + landingVal;
-    const maxPossibleScore = activeCount * 1.0;
-    const netScore = Math.max(0, maxPossibleScore - totalDeduct);
-
-    document.getElementById('maxSkillsDisplay').textContent = `${activeCount}.00`;
-    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
-    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
-
-    const gridContainer = document.getElementById('reviewGridList');
-    gridContainer.innerHTML = '';
-
-    // Render 2-Column Cards for Active Skills (1 to activeCount)
-    for (let i = 0; i < activeCount; i++) {
-      const val = skillDeductions[i];
-      const card = document.createElement('div');
-      card.className = 'review-card';
-      card.innerHTML = `
-        <div class="card-label-val">
-          <span class="sk-lbl">Sk ${i + 1}</span>
-          <span class="sk-val">-${val.toFixed(1)}</span>
-        </div>
-        <div class="card-step-btns">
-          <button class="btn-step-mini" onclick="adjustValue(${i}, -0.1)">−</button>
-          <button class="btn-step-mini" onclick="adjustValue(${i}, 0.1)">+</button>
-        </div>
-      `;
-      gridContainer.appendChild(card);
-    }
-
-    // Render Landing Card if 10 skills performed
-    if (activeCount === 10) {
-      const landingCard = document.createElement('div');
-      landingCard.className = 'review-card landing-card';
-      landingCard.innerHTML = `
-        <div class="card-label-val">
-          <span class="sk-lbl">Landing</span>
-          <span class="sk-val">-${landingDeduction.toFixed(1)}</span>
-        </div>
-        <div class="card-step-btns">
-          <button class="btn-step-mini" onclick="adjustValue(10, -0.1)">−</button>
-          <button class="btn-step-mini" onclick="adjustValue(10, 0.1)">+</button>
-        </div>
-      `;
-      gridContainer.appendChild(landingCard);
-    }
-  }
-
-  function adjustValue(index, delta) {
+  // Adjust Skills Performed Count (0 to 10)
+  function adjustSkillsCount(delta) {
     triggerFeedback('tap');
-
-    if (index === 10) {
-      let updated = Math.round((landingDeduction + delta) * 10) / 10;
-      landingDeduction = Math.min(1.0, Math.max(0.0, updated));
-    } else {
-      let updated = Math.round((skillDeductions[index] + delta) * 10) / 10;
-      skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
-    }
-
+    skillsPerformed = Math.min(10, Math.max(0, skillsPerformed + delta));
     renderReviewSummary();
   }
 
-  function updateSkillsCount(val) {
-    skillsPerformed = parseInt(val);
+  // Render Review Screen with Skills Performed & Landing Exclusion Calculation
+  function renderReviewSummary() {
+    document.getElementById('skillsCountDisplay').textContent = skillsPerformed;
+
+    const isLandingActive = (skillsPerformed === 10);
+
+    // Sum active performed skill deductions (+ landing ONLY if full 10-skill routine)
+    const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
+    const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
+    const totalDeduct = skillDeductSum + (isLandingActive ? landingDeduction : 0);
+
+    const maxBaseScore = skillsPerformed * 1.0;
+    const netScore = Math.max(0, maxBaseScore - totalDeduct);
+
+    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(2);
+    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
+
+    const listContainer = document.getElementById('reviewList');
+    listContainer.innerHTML = '';
+
+    // Render Rows for Skills 1 to 10
+    skillDeductions.forEach((val, i) => {
+      const isPerformed = i < skillsPerformed;
+      const row = document.createElement('div');
+      row.className = `review-row ${isPerformed ? '' : 'disabled-row'}`;
+
+      row.innerHTML = `
+        <span class="sk-lbl">Skill ${i + 1} ${isPerformed ? '' : '<small>(Excluded)</small>'}</span>
+        <div class="value-controls-group">
+          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>` : ''}
+          <span class="sk-val">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
+          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, 1)">+</button>` : ''}
+        </div>
+      `;
+      listContainer.appendChild(row);
+    });
+
+    // Render Row for Landing (Dimmed & Excluded if skillsPerformed < 10)
+    const landingRow = document.createElement('div');
+    landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
+    landingRow.innerHTML = `
+      <span class="sk-lbl">Landing ${isLandingActive ? '' : '<small>(Excluded)</small>'}</span>
+      <div class="value-controls-group">
+        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(-1)">−</button>` : ''}
+        <span class="sk-val">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
+        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(1)">+</button>` : ''}
+      </div>
+    `;
+    listContainer.appendChild(landingRow);
+  }
+
+  // Step Skill Value through Preset Scale or 0.1 Increments
+  function stepSkillValue(index, direction) {
+    triggerFeedback('tap');
+    let currentVal = skillDeductions[index];
+    let sortedPreset = [...new Set(activeRoutineZones)].sort((a,b) => a - b);
+    let matchIdx = sortedPreset.indexOf(currentVal);
+
+    if (matchIdx !== -1) {
+      let newIdx = Math.min(sortedPreset.length - 1, Math.max(0, matchIdx + direction));
+      skillDeductions[index] = sortedPreset[newIdx];
+    } else {
+      let updated = Math.round((currentVal + (direction * 0.1)) * 10) / 10;
+      skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
+    }
+    renderReviewSummary();
+  }
+
+  // Step Landing Value through Discrete FIG Scale: [0.0, 0.1, 0.2, 0.3, 0.5, 1.0]
+  function stepLandingValue(direction) {
+    triggerFeedback('tap');
+    let currentIdx = LANDING_PRESET.indexOf(landingDeduction);
+    if (currentIdx === -1) {
+      currentIdx = LANDING_PRESET.reduce((closest, val, idx) => 
+        Math.abs(val - landingDeduction) < Math.abs(LANDING_PRESET[closest] - landingDeduction) ? idx : closest, 0);
+    }
+
+    let newIdx = Math.min(LANDING_PRESET.length - 1, Math.max(0, currentIdx + direction));
+    landingDeduction = LANDING_PRESET[newIdx];
+
     renderReviewSummary();
   }
 
   function resetToSetup() {
     phase = 'setup';
+    skillsPerformed = 10;
     setupScreen.classList.remove('hidden');
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
-
     phaseBadge.textContent = 'Setup';
-    phaseBadge.className = 'phase-badge badge-setup';
-    skillCounter.textContent = 'Select Interface Mode';
+    phaseBadge.className = 'phase-badge badge-routine';
+    skillCounter.textContent = 'Skill 1 / 10';
   }
 
   function toggleFullscreen() {
