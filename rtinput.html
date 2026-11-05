@@ -112,6 +112,17 @@
 
     .btn-header:active { background: var(--fig-purple); color: #fff; }
 
+    .btn-finish-routine {
+      background: linear-gradient(135deg, var(--fig-pink), var(--fig-purple));
+      color: #ffffff;
+      border: none;
+      font-weight: 700;
+    }
+
+    .btn-finish-routine:active {
+      opacity: 0.9;
+    }
+
     .main-content {
       flex: 1;
       position: relative;
@@ -272,7 +283,7 @@
     .compass-top { top: 0; left: 50%; transform: translateX(-50%); }
     .compass-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
     .compass-left { left: 0; top: 50%; transform: translateY(-50%); }
-    .compass-right { right: 0; top: 50%; transform: translateX(-50%); }
+    .compass-right { right: 0; top: 50%; transform: translateY(-50%); }
     .compass-center { top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
 
     .swipe-guide-grid {
@@ -964,6 +975,7 @@
       <span id="skillCounter">Skill 1 / 10</span>
     </div>
     <div style="display:flex; gap:6px;">
+      <button id="btnFinishRoutine" class="btn-header btn-finish-routine hidden" onclick="finishRoutineEarly()">Finish Routine</button>
       <button class="btn-header" onclick="toggleFullscreen()">Fullscreen</button>
       <button class="btn-header" onclick="resetToSetup()">Reset</button>
     </div>
@@ -1573,19 +1585,20 @@
   let customTrainedDigits = {};
 
   // DOM Elements
-  const setupScreen      = document.getElementById('setupScreen');
-  const gridScreen       = document.getElementById('gridScreen');
-  const swipeScreen      = document.getElementById('swipeScreen');
-  const recognizerScreen = document.getElementById('recognizerScreen');
-  const reviewScreen     = document.getElementById('reviewScreen');
-  const phaseBadge       = document.getElementById('phaseBadge');
-  const skillCounter     = document.getElementById('skillCounter');
+  const setupScreen       = document.getElementById('setupScreen');
+  const gridScreen        = document.getElementById('gridScreen');
+  const swipeScreen       = document.getElementById('swipeScreen');
+  const recognizerScreen  = document.getElementById('recognizerScreen');
+  const reviewScreen      = document.getElementById('reviewScreen');
+  const phaseBadge        = document.getElementById('phaseBadge');
+  const skillCounter      = document.getElementById('skillCounter');
+  const btnFinishRoutine  = document.getElementById('btnFinishRoutine');
   
-  const canvas           = document.getElementById('gestureCanvas');
-  const ctx              = canvas ? canvas.getContext('2d') : null;
+  const canvas            = document.getElementById('gestureCanvas');
+  const ctx               = canvas ? canvas.getContext('2d') : null;
 
-  const recCanvas        = document.getElementById('recognizerCanvas');
-  const recCtx           = recCanvas ? recCanvas.getContext('2d') : null;
+  const recCanvas         = document.getElementById('recognizerCanvas');
+  const recCtx            = recCanvas ? recCanvas.getContext('2d') : null;
 
   /* ==========================================================================
      AUDIO SYNTHESIS FEEDBACK
@@ -1705,6 +1718,8 @@
     swipeScreen.classList.add('hidden');
     recognizerScreen.classList.add('hidden');
 
+    if (btnFinishRoutine) btnFinishRoutine.classList.remove('hidden');
+
     if (currentInterface === 'grid') {
       gridScreen.classList.remove('hidden');
       renderGrid(activeRoutineZones);
@@ -1723,6 +1738,31 @@
     updateCounter();
 
     triggerFeedback('transition');
+  }
+
+  // Finish Routine Early Action
+  function finishRoutineEarly() {
+    triggerFeedback('tap');
+    clearPendingRecognizerState();
+
+    if (phase === 'routine') {
+      skillsPerformed = currentSkillIndex;
+    }
+
+    phase = 'review';
+    gridScreen.classList.add('hidden');
+    swipeScreen.classList.add('hidden');
+    recognizerScreen.classList.add('hidden');
+    reviewScreen.classList.remove('hidden');
+
+    if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
+
+    phaseBadge.textContent = 'Review';
+    phaseBadge.className = 'phase-badge badge-review';
+    updateCounter();
+
+    renderReviewSummary();
+    triggerFeedback('complete');
   }
 
   function updateCounter() {
@@ -1792,6 +1832,9 @@
       swipeScreen.classList.add('hidden');
       recognizerScreen.classList.add('hidden');
       reviewScreen.classList.remove('hidden');
+
+      if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
+
       phaseBadge.textContent = 'Review';
       phaseBadge.className = 'phase-badge badge-review';
       updateCounter();
@@ -2284,6 +2327,7 @@
     swipeScreen.classList.add('hidden');
     recognizerScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
+    if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
     phaseBadge.textContent = 'Setup';
     phaseBadge.className = 'phase-badge badge-routine';
     skillCounter.textContent = 'Skill 1 / 10';
