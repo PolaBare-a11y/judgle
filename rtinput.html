@@ -864,7 +864,7 @@
           </svg>
           Number Recognition
         </div>
-        <div class="section-desc">Unistroke handwriting recognition ($1 Algorithm). Draw digits directly on screen per skill element.</div>
+        <div class="section-desc">Unistroke handwriting recognition ($P Algorithm). Draw digits directly on screen per skill element.</div>
 
         <div class="section-subtitle">Recognized Strokes</div>
         <div class="num-guide-grid">
@@ -897,7 +897,7 @@
         <button class="btn-primary btn-recognizer-start" onclick="startRoutine('recognizer')" style="width:100%; margin-top:4px;">Start Number Recognition Judging</button>
       </div>
 
-      <!-- SECTION 2: SWIPE INTERFACE & DEDUCTION GUIDE -->
+      <!-- SECTION 1: SWIPE INTERFACE & DEDUCTION GUIDE -->
       <div class="setup-section-card">
         <div class="section-title" style="color:var(--fig-pink);">
           <svg class="section-title-icon" style="stroke:var(--fig-pink);" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -974,7 +974,7 @@
         <button class="btn-primary btn-swipe-start" onclick="startRoutine('swipe')" style="width:100%; margin-top:4px;">Start Swipe Judging</button>
       </div>
 
-      <!-- SECTION 1: GRID INTERFACE & PRESETS -->
+      <!-- SECTION 2: GRID INTERFACE & PRESETS -->
       <div class="setup-section-card">
         <div class="section-title">
           <svg class="section-title-icon" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1103,7 +1103,7 @@
 
       <div class="recognizer-bg-guide">
         <span id="recBgDigit">✍️</span>
-        <div class="recognizer-instructions">Draw digit on canvas (0..5)</div>
+        <div class="recognizer-instructions">Draw digit on canvas (0..5, 10)</div>
       </div>
 
       <div class="swipe-feedback-area">
@@ -1164,200 +1164,241 @@
 
 <script>
   /* ==========================================================================
-     $1 UNISTROKE RECOGNIZER CLASS IMPLEMENTATION
+     $P POINT SPACE RECOGNIZER CLASS IMPLEMENTATION
      ========================================================================== */
-  function Point(x, y) {
-    this.x = x;
-    this.y = y;
+ 
+  class Point {
+    constructor(x, y, strokeId = 1) {
+      this.x = x;
+      this.y = y;
+      this.strokeId = strokeId;
+    }
   }
 
-  class DollarRecognizer {
-    constructor() {
-      this.Unistrokes = [];
-      this.NumPoints = 64;
-      this.SquareSize = 250.0;
-      this.HalfDiagonal = 0.5 * Math.sqrt(250.0 * 250.0 + 250.0 * 250.0);
-      this.AngleRange = Math.PI / 4.0;
-      this.AnglePrecision = Math.PI / 90.0;
-      this.Phi = 0.5 * (-1.0 + Math.sqrt(5.0));
+  class PDollarPointSet {
+    constructor(name, points) {
+      this.Name = name;
+      this.Points = pResample(points, 32);
+      this.Points = pScale(this.Points);
+      this.Points = pTranslateToOrigin(this.Points);
+    }
+  }
 
+  class PDollarRecognizer {
+    constructor() {
+      this.PointSets = [];
       this.initTemplates();
     }
 
-    addTemplate(name, points) {
-      let pts = this.Resample(points, this.NumPoints);
-      let radians = this.IndicativeAngle(pts);
-      pts = this.RotateBy(pts, -radians);
-      pts = this.ScaleTo(pts, this.SquareSize);
-      pts = this.TranslateTo(pts, new Point(0, 0));
-      this.Unistrokes.push({ Name: name, Points: pts });
+    Recognize(points) {
+      if (!points || points.length === 0) return { Name: "0", Score: 0 };
+      let candidate = pResample(points, 32);
+      candidate = pScale(candidate);
+      candidate = pTranslateToOrigin(candidate);
+
+      let bestDistance = Infinity;
+      let bestTemplate = null;
+
+      for (let i = 0; i < this.PointSets.length; i++) {
+        let dist = pGreedyMatch(candidate, this.PointSets[i].Points);
+        if (dist < bestDistance) {
+          bestDistance = dist;
+          bestTemplate = this.PointSets[i];
+        }
+      }
+
+      let score = bestTemplate ? Math.max(0, (2.0 - bestDistance) / 2.0) : 0;
+      return {
+        Name: bestTemplate ? bestTemplate.Name : "0",
+        Score: score
+      };
     }
 
     initTemplates() {
-      // 0: Oval / Circle
-      let pts0 = [];
-      for (let i = 0; i <= 32; i++) {
-        let a = (i / 32) * Math.PI * 2;
-        pts0.push(new Point(100 + 50 * Math.cos(a), 100 + 70 * Math.sin(a)));
-      }
-      this.addTemplate("0", pts0);
-
-      // 1: Straight vertical down stroke
-      let pts1 = [new Point(100, 20), new Point(100, 180)];
-      this.addTemplate("1", pts1);
-
-      // 2: Curve top, diagonal down left, straight right
-      let pts2 = [];
-      for (let i = 0; i <= 10; i++) {
-        let a = Math.PI - (i / 10) * Math.PI;
-        pts2.push(new Point(100 + 40 * Math.cos(a), 50 - 30 * Math.sin(a)));
-      }
-      pts2.push(new Point(60, 160));
-      pts2.push(new Point(140, 160));
-      this.addTemplate("2", pts2);
-
-      // 3: Two right-facing bumps
-      let pts3 = [];
-      for (let i = 0; i <= 10; i++) {
-        let a = -Math.PI / 2 + (i / 10) * Math.PI;
-        pts3.push(new Point(100 + 35 * Math.cos(a), 50 + 35 * Math.sin(a)));
-      }
-      for (let i = 0; i <= 10; i++) {
-        let a = -Math.PI / 2 + (i / 10) * Math.PI;
-        pts3.push(new Point(100 + 40 * Math.cos(a), 125 + 40 * Math.sin(a)));
-      }
-      this.addTemplate("3", pts3);
-
-      // 4: Unistroke 4 (Diagonal down-left, horizontal right, vertical down)
-      let pts4 = [new Point(120, 20), new Point(50, 110), new Point(150, 110), new Point(120, 180)];
-      this.addTemplate("4", pts4);
-
-      // 5: Unistroke 5 (Top left, down, curve around bottom right)
-      let pts5 = [new Point(140, 30), new Point(70, 30), new Point(65, 90)];
-      for (let i = 0; i <= 10; i++) {
-        let a = -Math.PI / 2 + (i / 10) * Math.PI;
-        pts5.push(new Point(100 + 45 * Math.cos(a), 135 + 45 * Math.sin(a)));
-      }
-      this.addTemplate("5", pts5);
-    }
-
-    Recognize(points) {
-      if (points.length < 3) return { Name: "0", Score: 0.0 };
-      let pts = this.Resample(points, this.NumPoints);
-      let radians = this.IndicativeAngle(pts);
-      pts = this.RotateBy(pts, -radians);
-      pts = this.ScaleTo(pts, this.SquareSize);
-      pts = this.TranslateTo(pts, new Point(0, 0));
-
-      let bestDistance = Infinity;
-      let bestMatch = null;
-
-      for (let i = 0; i < this.Unistrokes.length; i++) {
-        let d = this.DistanceAtBestAngle(pts, this.Unistrokes[i], -this.AngleRange, this.AngleRange, this.AnglePrecision);
-        if (d < bestDistance) {
-          bestDistance = d;
-          bestMatch = this.Unistrokes[i];
+      // Helper to generate polyline points
+      const makePolyline = (keyPoints, strokeId = 1) => {
+        let pts = [];
+        for (let i = 0; i < keyPoints.length - 1; i++) {
+          let p1 = keyPoints[i];
+          let p2 = keyPoints[i + 1];
+          let steps = 10;
+          for (let s = 0; s < steps; s++) {
+            let t = s / steps;
+            pts.push(new Point(p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y), strokeId));
+          }
         }
-      }
-      let score = 1.0 - (bestDistance / this.HalfDiagonal);
-      return { Name: bestMatch ? bestMatch.Name : "0", Score: score };
-    }
+        let last = keyPoints[keyPoints.length - 1];
+        pts.push(new Point(last.x, last.y, strokeId));
+        return pts;
+      };
 
-    Resample(points, n) {
-      let I = this.PathLength(points) / (n - 1);
-      let D = 0.0;
-      let newPoints = [points[0]];
-      let pts = points.slice();
-      for (let i = 1; i < pts.length; i++) {
-        let d = this.Distance(pts[i - 1], pts[i]);
-        if ((D + d) >= I) {
-          let qx = pts[i - 1].x + ((I - D) / d) * (pts[i].x - pts[i - 1].x);
-          let qy = pts[i - 1].y + ((I - D) / d) * (pts[i].y - pts[i - 1].y);
-          let q = new Point(qx, qy);
-          newPoints.push(q);
-          pts.splice(i, 0, q);
-          D = 0.0;
-        } else D += d;
-      }
-      if (newPoints.length == n - 1) newPoints.push(pts[pts.length - 1]);
-      return newPoints;
-    }
+      // Helper to generate circle points
+      const makeCircle = (cx, cy, r, strokeId = 1, counterClockwise = false) => {
+        let pts = [];
+        let steps = 32;
+        for (let i = 0; i <= steps; i++) {
+          let angle = (i / steps) * 2 * Math.PI * (counterClockwise ? -1 : 1) - Math.PI / 2;
+          pts.push(new Point(cx + r * Math.cos(angle), cy + r * Math.sin(angle), strokeId));
+        }
+        return pts;
+      };
 
-    PathLength(points) {
-      let d = 0.0;
-      for (let i = 1; i < points.length; i++) d += this.Distance(points[i - 1], points[i]);
-      return d;
-    }
+      // Digit "0" (Clockwise and Counter-Clockwise)
+      this.PointSets.push(new PDollarPointSet("0", makeCircle(0.5, 0.5, 0.4, 1, false)));
+      this.PointSets.push(new PDollarPointSet("0", makeCircle(0.5, 0.5, 0.4, 1, true)));
 
-    Distance(p1, p2) {
-      let dx = p2.x - p1.x, dy = p2.y - p1.y;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
+      // Digit "1" (Straight down and slanted)
+      this.PointSets.push(new PDollarPointSet("1", makePolyline([{x:0.5, y:0.1}, {x:0.5, y:0.9}], 1)));
+      this.PointSets.push(new PDollarPointSet("1", makePolyline([{x:0.35, y:0.25}, {x:0.5, y:0.1}, {x:0.5, y:0.9}], 1)));
 
-    IndicativeAngle(points) {
-      let c = this.Centroid(points);
-      return Math.atan2(c.y - points[0].y, c.x - points[0].x);
-    }
+      // Digit "2"
+      this.PointSets.push(new PDollarPointSet("2", makePolyline([{x:0.2, y:0.25}, {x:0.5, y:0.1}, {x:0.8, y:0.25}, {x:0.5, y:0.5}, {x:0.2, y:0.85}, {x:0.8, y:0.85}], 1)));
 
-    Centroid(points) {
-      let x = 0.0, y = 0.0;
-      for (let p of points) { x += p.x; y += p.y; }
-      return new Point(x / points.length, y / points.length);
-    }
+      // Digit "3"
+      this.PointSets.push(new PDollarPointSet("3", makePolyline([{x:0.25, y:0.15}, {x:0.75, y:0.15}, {x:0.45, y:0.45}, {x:0.8, y:0.65}, {x:0.25, y:0.85}], 1)));
 
-    RotateBy(points, radians) {
-      let c = this.Centroid(points);
-      let cos = Math.cos(radians), sin = Math.sin(radians);
-      return points.map(p => new Point(
-        (p.x - c.x) * cos - (p.y - c.y) * sin + c.x,
-        (p.x - c.x) * sin + (p.y - c.y) * cos + c.y
-      ));
-    }
+      // Digit "4" (1-stroke and 2-stroke)
+      this.PointSets.push(new PDollarPointSet("4", makePolyline([{x:0.7, y:0.85}, {x:0.7, y:0.15}, {x:0.2, y:0.6}, {x:0.85, y:0.6}], 1)));
+      this.PointSets.push(new PDollarPointSet("4", makePolyline([{x:0.7, y:0.15}, {x:0.2, y:0.6}, {x:0.85, y:0.6}], 1).concat(makePolyline([{x:0.7, y:0.4}, {x:0.7, y:0.9}], 2))));
 
-    ScaleTo(points, size) {
-      let B = this.BoundingBox(points);
-      return points.map(p => new Point(p.x * (size / (B.Width || 1)), p.y * (size / (B.Height || 1))));
-    }
+      // Digit "5"
+      this.PointSets.push(new PDollarPointSet("5", makePolyline([{x:0.8, y:0.15}, {x:0.3, y:0.15}, {x:0.3, y:0.45}, {x:0.75, y:0.55}, {x:0.6, y:0.85}, {x:0.25, y:0.85}], 1)));
 
-    BoundingBox(points) {
-      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-      for (let p of points) {
-        minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
-        minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
-      }
-      return { Width: maxX - minX, Height: maxY - minY };
-    }
+      // Digit "10" (2-stroke: '1' + '0')
+      let stroke1_10 = makePolyline([{x:0.25, y:0.15}, {x:0.25, y:0.85}], 1);
+      let stroke2_10 = makeCircle(0.7, 0.5, 0.35, 2, false);
+      let stroke2_10_ccw = makeCircle(0.7, 0.5, 0.35, 2, true);
 
-    TranslateTo(points, pt) {
-      let c = this.Centroid(points);
-      return points.map(p => new Point(p.x + pt.x - c.x, p.y + pt.y - c.y));
-    }
-
-    DistanceAtBestAngle(points, T, a, b, threshold) {
-      let x1 = this.Phi * a + (1.0 - this.Phi) * b;
-      let f1 = this.DistanceAtAngle(points, T, x1);
-      let x2 = (1.0 - this.Phi) * a + this.Phi * b;
-      let f2 = this.DistanceAtAngle(points, T, x2);
-      while (Math.abs(b - a) > threshold) {
-        if (f1 < f2) { b = x2; x2 = x1; f2 = f1; x1 = this.Phi * a + (1.0 - this.Phi) * b; f1 = this.DistanceAtAngle(points, T, x1); }
-        else { a = x1; x1 = x2; f1 = f2; x2 = (1.0 - this.Phi) * a + this.Phi * b; f2 = this.DistanceAtAngle(points, T, x2); }
-      }
-      return Math.min(f1, f2);
-    }
-
-    DistanceAtAngle(points, T, radians) {
-      let newPoints = this.RotateBy(points, radians);
-      return this.PathDistance(newPoints, T.Points);
-    }
-
-    PathDistance(pts1, pts2) {
-      let d = 0.0;
-      for (let i = 0; i < pts1.length; i++) d += this.Distance(pts1[i], pts2[i]);
-      return d / pts1.length;
+      this.PointSets.push(new PDollarPointSet("10", stroke1_10.concat(stroke2_10)));
+      this.PointSets.push(new PDollarPointSet("10", stroke1_10.concat(stroke2_10_ccw)));
     }
   }
 
-  const dollarRecognizer = new DollarRecognizer();
+  // $P Algorithm Supporting Functions
+  function pDistance(p1, p2) {
+    let dx = p1.x - p2.x;
+    let dy = p1.y - p2.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function pPathLength(points) {
+    let d = 0;
+    for (let i = 1; i < points.length; i++) {
+      if (points[i].strokeId === points[i - 1].strokeId) {
+        d += pDistance(points[i - 1], points[i]);
+      }
+    }
+    return d;
+  }
+
+  function pResample(points, n) {
+    const I = pPathLength(points) / (n - 1);
+    if (I === 0 || !isFinite(I)) {
+      let pts = [];
+      for (let i = 0; i < n; i++) pts.push(new Point(points[0].x, points[0].y, points[0].strokeId));
+      return pts;
+    }
+    let D = 0.0;
+    let newPoints = [new Point(points[0].x, points[0].y, points[0].strokeId)];
+    let ptsCopy = [...points];
+
+    for (let i = 1; i < ptsCopy.length; i++) {
+      if (ptsCopy[i].strokeId === ptsCopy[i - 1].strokeId) {
+        let d = pDistance(ptsCopy[i - 1], ptsCopy[i]);
+        if (D + d >= I) {
+          let qx = ptsCopy[i - 1].x + ((I - D) / d) * (ptsCopy[i].x - ptsCopy[i - 1].x);
+          let qy = ptsCopy[i - 1].y + ((I - D) / d) * (ptsCopy[i].y - ptsCopy[i - 1].y);
+          let q = new Point(qx, qy, ptsCopy[i].strokeId);
+          newPoints.push(q);
+          ptsCopy.splice(i, 0, q);
+          D = 0.0;
+        } else {
+          D += d;
+        }
+      }
+    }
+    while (newPoints.length < n) {
+      newPoints.push(new Point(points[points.length - 1].x, points[points.length - 1].y, points[points.length - 1].strokeId));
+    }
+    return newPoints.slice(0, n);
+  }
+
+  function pScale(points) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (let p of points) {
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y);
+      maxY = Math.max(maxY, p.y);
+    }
+    let size = Math.max(maxX - minX, maxY - minY);
+    if (size === 0) size = 1;
+    let newPoints = [];
+    for (let p of points) {
+      let qx = (p.x - minX) / size;
+      let qy = (p.y - minY) / size;
+      newPoints.push(new Point(qx, qy, p.strokeId));
+    }
+    return newPoints;
+  }
+
+  function pTranslateToOrigin(points) {
+    let c = pCentroid(points);
+    let newPoints = [];
+    for (let p of points) {
+      newPoints.push(new Point(p.x - c.x, p.y - c.y, p.strokeId));
+    }
+    return newPoints;
+  }
+
+  function pCentroid(points) {
+    let x = 0, y = 0;
+    for (let p of points) {
+      x += p.x;
+      y += p.y;
+    }
+    return { x: x / points.length, y: y / points.length };
+  }
+
+  function pGreedyMatch(points1, points2) {
+    let n = points1.length;
+    let e = 0.5;
+    let step = Math.floor(Math.pow(n, 1 - e));
+    let minDistance = Infinity;
+    for (let i = 0; i < n; i += step) {
+      let d1 = pCloudDistance(points1, points2, i);
+      let d2 = pCloudDistance(points2, points1, i);
+      minDistance = Math.min(minDistance, d1, d2);
+    }
+    return minDistance;
+  }
+
+  function pCloudDistance(pts1, pts2, start) {
+    let n = pts1.length;
+    let matched = new Array(n).fill(false);
+    let sum = 0;
+    let i = start;
+    do {
+      let index = -1;
+      let minD = Infinity;
+      for (let j = 0; j < n; j++) {
+        if (!matched[j]) {
+          let d = pDistance(pts1[i], pts2[j]);
+          if (d < minD) {
+            minD = d;
+            index = j;
+          }
+        }
+      }
+      matched[index] = true;
+      let weight = 1 - ((i - start + n) % n) / n;
+      sum += weight * minD;
+      i = (i + 1) % n;
+    } while (i !== start);
+    return sum;
+  }
+
+  const dollarRecognizer = new PDollarRecognizer();
 
   // Presets & FIG Landing Scale
   const PRESETS = {
@@ -1477,6 +1518,19 @@
     }
   }
 
+  // Clear pending recognizer state
+  function clearPendingRecognizerState() {
+    if (recognizerTimer) {
+      clearTimeout(recognizerTimer);
+      recognizerTimer = null;
+    }
+    accumulatedRecPoints = [];
+    currentStrokeId = 0;
+    if (recCtx && recCanvas) {
+      recCtx.clearRect(0, 0, recCanvas.width, recCanvas.height);
+    }
+  }
+
   // Start Routine
   function startRoutine(mode) {
     if (mode) {
@@ -1489,6 +1543,8 @@
     landingDeduction = 0;
     landingThumbnail = null;
     skillsPerformed = 10;
+
+    clearPendingRecognizerState();
 
     setupScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
@@ -1701,10 +1757,12 @@
   }
 
   /* ==========================================================================
-     NUMBER RECOGNITION INTERFACE ($1 UNISTROKE ENGINE)
+     NUMBER RECOGNITION INTERFACE ($P POINT SPACE ENGINE)
      ========================================================================== */
-  let recPoints = [];
+  let accumulatedRecPoints = [];
+  let currentStrokeId = 0;
   let isRecPointerDown = false;
+  let recognizerTimer = null;
 
   function initRecCanvasSize() {
     if (!recCanvas || !recognizerScreen) return;
@@ -1717,12 +1775,24 @@
       if (phase !== 'routine' && phase !== 'landing') return;
       e.preventDefault();
       try { recCanvas.setPointerCapture(e.pointerId); } catch(err) {}
+
+      if (recognizerTimer) {
+        clearTimeout(recognizerTimer);
+        recognizerTimer = null;
+      }
+
       isRecPointerDown = true;
-      recPoints = [new Point(e.clientX, e.clientY)];
+      currentStrokeId++;
+
+      const rect = recCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      accumulatedRecPoints.push(new Point(x, y, currentStrokeId));
+
       if (recCtx) {
-        recCtx.clearRect(0, 0, recCanvas.width, recCanvas.height);
         recCtx.beginPath();
-        recCtx.moveTo(e.clientX, e.clientY);
+        recCtx.moveTo(x, y);
         recCtx.strokeStyle = '#9bd98b';
         recCtx.lineWidth = 8;
         recCtx.lineCap = 'round';
@@ -1733,9 +1803,15 @@
     recCanvas.addEventListener('pointermove', (e) => {
       if (!isRecPointerDown) return;
       e.preventDefault();
-      recPoints.push(new Point(e.clientX, e.clientY));
+
+      const rect = recCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      accumulatedRecPoints.push(new Point(x, y, currentStrokeId));
+
       if (recCtx) {
-        recCtx.lineTo(e.clientX, e.clientY);
+        recCtx.lineTo(x, y);
         recCtx.stroke();
       }
     });
@@ -1746,36 +1822,64 @@
       isRecPointerDown = false;
       try { recCanvas.releasePointerCapture(e.pointerId); } catch(err) {}
 
-      // Capture drawing thumbnail before clearing
-      const thumbData = recCanvas.toDataURL('image/png');
-
-      if (recCtx) {
-        recCtx.clearRect(0, 0, recCanvas.width, recCanvas.height);
-      }
-
-      processNumberRecognition(recPoints, thumbData);
+      recognizerTimer = setTimeout(() => {
+        finalizeRecognizerDrawing();
+      }, 300);
     });
 
     recCanvas.addEventListener('pointercancel', () => {
       isRecPointerDown = false;
-      if (recCtx) recCtx.clearRect(0, 0, recCanvas.width, recCanvas.height);
+      clearPendingRecognizerState();
     });
+  }
+
+  function finalizeRecognizerDrawing() {
+    recognizerTimer = null;
+    if (!accumulatedRecPoints || accumulatedRecPoints.length < 3) {
+      clearPendingRecognizerState();
+      return;
+    }
+
+    const thumbData = recCanvas.toDataURL('image/png');
+
+    if (recCtx) {
+      recCtx.clearRect(0, 0, recCanvas.width, recCanvas.height);
+    }
+
+    const pointsToRecognize = [...accumulatedRecPoints];
+    accumulatedRecPoints = [];
+    currentStrokeId = 0;
+
+    processNumberRecognition(pointsToRecognize, thumbData);
   }
 
   function processNumberRecognition(points, thumbData) {
     if (!points || points.length < 3) return;
 
     const result = dollarRecognizer.Recognize(points);
-    const numDigit = parseInt(result.Name, 10) || 0;
-    
-    // Map recognized digit (0..5) to zone index (0..5)
-    let zoneIdx = Math.min(5, Math.max(0, numDigit));
+    const matchedName = result ? result.Name : "0";
 
-    let actionLabel = `Recognized "${result.Name}" (${Math.round(result.Score * 100)}%)`;
+    let zoneIdx = 0;
+    let deductionVal = 0.0;
+
+    if (matchedName === "0") { zoneIdx = 0; deductionVal = 0.0; }
+    else if (matchedName === "1") { zoneIdx = 1; deductionVal = 0.1; }
+    else if (matchedName === "2") { zoneIdx = 2; deductionVal = 0.2; }
+    else if (matchedName === "3") { zoneIdx = 3; deductionVal = 0.3; }
+    else if (matchedName === "4") { zoneIdx = 4; deductionVal = 0.4; }
+    else if (matchedName === "5") { zoneIdx = 5; deductionVal = 0.5; }
+    else if (matchedName === "10") {
+      zoneIdx = 5;
+      deductionVal = (phase === 'landing') ? 1.0 : 0.5;
+    }
+
+    let actionLabel = `Recognized "${matchedName}" (-${deductionVal.toFixed(1)})`;
     handleZoneInput(zoneIdx, actionLabel, thumbData);
   }
 
   function quickSelectRecognized(deductionVal) {
+    clearPendingRecognizerState();
+
     let zoneIdx = activeRoutineZones.indexOf(deductionVal);
     if (zoneIdx === -1) zoneIdx = 0;
     handleZoneInput(zoneIdx, `Quick ${deductionVal.toFixed(1)}`);
@@ -1886,6 +1990,7 @@
   function resetToSetup() {
     phase = 'setup';
     skillsPerformed = 10;
+    clearPendingRecognizerState();
     setupScreen.classList.remove('hidden');
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
