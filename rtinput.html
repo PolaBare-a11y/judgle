@@ -776,6 +776,13 @@
       text-transform: uppercase;
     }
 
+    .review-score-tag {
+      font-size: 0.7rem;
+      color: var(--text-sub);
+      font-weight: 600;
+      min-width: 32px;
+    }
+
     /* Value and +/- controls grouped tightly together */
     .value-controls-group {
       display: flex;
@@ -1417,8 +1424,10 @@
   let currentSkillIndex = 0;
   let skillDeductions = new Array(10).fill(0);
   let skillThumbnails = new Array(10).fill(null);
+  let skillMatchScores = new Array(10).fill(null);
   let landingDeduction = 0;
   let landingThumbnail = null;
+  let landingMatchScore = null;
   let skillsPerformed = 10;
 
   // DOM Elements
@@ -1540,8 +1549,10 @@
     currentSkillIndex = 0;
     skillDeductions = new Array(10).fill(0);
     skillThumbnails = new Array(10).fill(null);
+    skillMatchScores = new Array(10).fill(null);
     landingDeduction = 0;
     landingThumbnail = null;
+    landingMatchScore = null;
     skillsPerformed = 10;
 
     clearPendingRecognizerState();
@@ -1595,7 +1606,7 @@
     btn.addEventListener('pointerleave', () => btn.classList.remove('active-touch'));
   });
 
-  function handleZoneInput(zoneIndex, actionLabel = '', thumbnailData = null) {
+  function handleZoneInput(zoneIndex, actionLabel = '', thumbnailData = null, matchScore = null) {
     triggerFeedback('tap');
 
     const activeSet = (phase === 'landing') ? LANDING_PRESET : activeRoutineZones;
@@ -1604,6 +1615,7 @@
     if (phase === 'routine') {
       skillDeductions[currentSkillIndex] = val;
       if (thumbnailData) skillThumbnails[currentSkillIndex] = thumbnailData;
+      if (matchScore !== null && matchScore !== undefined) skillMatchScores[currentSkillIndex] = matchScore;
 
       currentSkillIndex++;
 
@@ -1631,6 +1643,7 @@
     } else if (phase === 'landing') {
       landingDeduction = val;
       if (thumbnailData) landingThumbnail = thumbnailData;
+      if (matchScore !== null && matchScore !== undefined) landingMatchScore = matchScore;
 
       phase = 'review';
       gridScreen.classList.add('hidden');
@@ -1824,7 +1837,7 @@
 
       recognizerTimer = setTimeout(() => {
         finalizeRecognizerDrawing();
-      }, 300);
+      }, 250);
     });
 
     recCanvas.addEventListener('pointercancel', () => {
@@ -1858,6 +1871,7 @@
 
     const result = dollarRecognizer.Recognize(points);
     const matchedName = result ? result.Name : "0";
+    const scorePct = result ? Math.round(result.Score * 100) : 0;
 
     let zoneIdx = 0;
     let deductionVal = 0.0;
@@ -1874,7 +1888,7 @@
     }
 
     let actionLabel = `Recognized "${matchedName}" (-${deductionVal.toFixed(1)})`;
-    handleZoneInput(zoneIdx, actionLabel, thumbData);
+    handleZoneInput(zoneIdx, actionLabel, thumbData, scorePct);
   }
 
   function quickSelectRecognized(deductionVal) {
@@ -1919,14 +1933,19 @@
       row.className = `review-row ${isPerformed ? '' : 'disabled-row'}`;
 
       const thumbUrl = skillThumbnails[i];
+      const matchScore = skillMatchScores[i];
+      const scoreStr = (matchScore !== null && matchScore !== undefined) ? `${matchScore}%` : '';
 
       row.innerHTML = `
         <span class="sk-lbl">Skill ${i + 1} ${isPerformed ? '' : '<small>(Excl)</small>'}</span>
         ${showThumbnails ? `
-		<div class="review-thumb-box">
-          		${thumbUrl ? `<img src="${thumbUrl}" class="review-thumb-img" alt="S${i+1}">` : '<span class="review-thumb-empty">—</span>'}
-        	</div>
-	` : ''}
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div class="review-thumb-box">
+              ${thumbUrl ? `<img src="${thumbUrl}" class="review-thumb-img" alt="S${i+1}">` : '<span class="review-thumb-empty">—</span>'}
+            </div>
+            <span class="review-score-tag">${scoreStr}</span>
+          </div>
+        ` : ''}
         <div class="value-controls-group">
           ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>` : ''}
           <span class="sk-val">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
@@ -1939,13 +1958,18 @@
     // Render Row for Landing (Dimmed & Excluded if skillsPerformed < 10)
     const landingRow = document.createElement('div');
     landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
+    const landingScoreStr = (landingMatchScore !== null && landingMatchScore !== undefined) ? `${landingMatchScore}%` : '';
+
     landingRow.innerHTML = `
       <span class="sk-lbl">Landing ${isLandingActive ? '' : '<small>(Excl)</small>'}</span>
       ${showThumbnails ? `
-	<div class="review-thumb-box">
-        ${landingThumbnail ? `<img src="${landingThumbnail}" class="review-thumb-img" alt="Landing">` : '<span class="review-thumb-empty">—</span>'}
-      </div>
-	` : ''}
+        <div style="display:flex; align-items:center; gap:6px;">
+          <div class="review-thumb-box">
+            ${landingThumbnail ? `<img src="${landingThumbnail}" class="review-thumb-img" alt="Landing">` : '<span class="review-thumb-empty">—</span>'}
+          </div>
+          <span class="review-score-tag">${landingScoreStr}</span>
+        </div>
+      ` : ''}
       <div class="value-controls-group">
         ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(-1)">−</button>` : ''}
         <span class="sk-val">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
