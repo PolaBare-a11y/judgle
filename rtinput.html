@@ -272,7 +272,7 @@
     .compass-top { top: 0; left: 50%; transform: translateX(-50%); }
     .compass-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
     .compass-left { left: 0; top: 50%; transform: translateY(-50%); }
-    .compass-right { right: 0; top: 50%; transform: translateY(-50%); }
+    .compass-right { right: 0; top: 50%; transform: translateX(-50%); }
     .compass-center { top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
 
     .swipe-guide-grid {
@@ -1851,10 +1851,14 @@
       e.preventDefault();
       isPointerDown = false;
       try { swipeScreen.releasePointerCapture(e.pointerId); } catch(err) {}
+
+      // Capture drawing thumbnail before clearing
+      const thumbData = canvas ? canvas.toDataURL('image/png') : null;
+
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
-      processGesturePoints(pointerPoints);
+      processGesturePoints(pointerPoints, thumbData);
     });
 
     swipeScreen.addEventListener('pointercancel', (e) => {
@@ -1863,7 +1867,7 @@
     });
   }
 
-  function processGesturePoints(points) {
+  function processGesturePoints(points, thumbData = null) {
     if (!points || points.length === 0) return;
 
     const start = points[0];
@@ -1888,26 +1892,26 @@
     const boxHeight = maxY - minY;
 
     if (pathLength < 30) {
-      handleZoneInput(0, 'Tap -> Zone 1');
+      handleZoneInput(0, 'Tap -> Zone 1', thumbData);
       return;
     }
 
     if (pathLength > 90 && netDist < 70 && boxWidth > 30 && boxHeight > 30) {
-      handleZoneInput(5, 'Circle -> Zone 6');
+      handleZoneInput(5, 'Circle -> Zone 6', thumbData);
       return;
     }
 
     if (Math.abs(netDy) >= Math.abs(netDx)) {
       if (netDy < 0) {
-        handleZoneInput(1, 'Flick Up -> Zone 2');
+        handleZoneInput(1, 'Flick Up -> Zone 2', thumbData);
       } else {
-        handleZoneInput(3, 'Flick Down -> Zone 4');
+        handleZoneInput(3, 'Flick Down -> Zone 4', thumbData);
       }
     } else {
       if (netDx > 0) {
-        handleZoneInput(2, 'Swipe Right -> Zone 3');
+        handleZoneInput(2, 'Swipe Right -> Zone 3', thumbData);
       } else {
-        handleZoneInput(4, 'Swipe Left -> Zone 5');
+        handleZoneInput(4, 'Swipe Left -> Zone 5', thumbData);
       }
     }
   }
@@ -2175,7 +2179,7 @@
     const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
     const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
     const totalDeduct = skillDeductSum + (isLandingActive ? landingDeduction : 0);
-    const showThumbnails = currentInterface === 'recognizer';
+    const showThumbnails = currentInterface === 'recognizer' || currentInterface === 'swipe';
     const maxBaseScore = skillsPerformed * 1.0;
     const netScore = Math.max(0, maxBaseScore - totalDeduct);
 
