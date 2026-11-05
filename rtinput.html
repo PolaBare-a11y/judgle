@@ -594,6 +594,17 @@
       border-radius: 8px;
       padding: 8px;
       text-align: center;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+    }
+
+    .num-guide-card:hover {
+      border-color: var(--fig-green);
+      background: rgba(155, 217, 139, 0.1);
+    }
+
+    .num-guide-card:active {
+      transform: scale(0.97);
     }
 
     .num-guide-digit {
@@ -605,6 +616,22 @@
     .num-guide-val {
       font-size: 0.7rem;
       color: var(--text-sub);
+    }
+
+    .num-guide-hint {
+      font-size: 0.65rem;
+      color: var(--fig-blue);
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .num-guide-tick {
+      color: var(--fig-green);
+      font-weight: 800;
+      font-size: 0.75rem;
     }
 
     /* STARTING PAGE FOOTNOTE */
@@ -836,6 +863,94 @@
       flex-shrink: 0;
     }
 
+    /* CUSTOM GESTURE TRAINER MODAL */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 15, 0.88);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .trainer-modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+
+    .trainer-header {
+      text-align: center;
+      width: 100%;
+    }
+
+    .trainer-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--fig-green);
+    }
+
+    .trainer-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .trainer-canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      background: #08080d;
+      border: 2px dashed var(--border-col);
+      border-radius: 10px;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .trainer-canvas {
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    .trainer-btn-group {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .trainer-btn {
+      flex: 1;
+      padding: 10px 0;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-align: center;
+      border: 1px solid var(--border-col);
+    }
+
+    .btn-clear { background: #1e1c2e; color: var(--text-sub); }
+    .btn-clear:active { background: var(--fig-purple); color: #fff; }
+    .btn-cancel { background: #2a1b24; border-color: var(--fig-pink); color: var(--fig-pink); }
+    .btn-cancel:active { background: var(--fig-pink); color: #fff; }
+    .btn-save { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; border: none; }
+    .btn-save:active { opacity: 0.9; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -873,31 +988,37 @@
         </div>
         <div class="section-desc">Unistroke handwriting recognition ($P Algorithm). Draw digits directly on screen per skill element.</div>
 
-        <div class="section-subtitle">Recognized Strokes</div>
+        <div class="section-subtitle">Recognized Strokes <span style="font-weight:normal; text-transform:none; color:var(--fig-blue);">(Click digit to train custom pattern)</span></div>
         <div class="num-guide-grid">
-          <div class="num-guide-card">
+          <div class="num-guide-card" onclick="openTemplateTrainer('0')">
             <div class="num-guide-digit">0</div>
             <div class="num-guide-val">-0.0 Deduct</div>
+            <div class="num-guide-hint" id="hint-0"><span>Tap to train</span></div>
           </div>
-          <div class="num-guide-card">
+          <div class="num-guide-card" onclick="openTemplateTrainer('1')">
             <div class="num-guide-digit">1</div>
             <div class="num-guide-val">-0.1 Deduct</div>
+            <div class="num-guide-hint" id="hint-1"><span>Tap to train</span></div>
           </div>
-          <div class="num-guide-card">
+          <div class="num-guide-card" onclick="openTemplateTrainer('2')">
             <div class="num-guide-digit">2</div>
             <div class="num-guide-val">-0.2 Deduct</div>
+            <div class="num-guide-hint" id="hint-2"><span>Tap to train</span></div>
           </div>
-          <div class="num-guide-card">
+          <div class="num-guide-card" onclick="openTemplateTrainer('3')">
             <div class="num-guide-digit">3</div>
             <div class="num-guide-val">-0.3 Deduct</div>
+            <div class="num-guide-hint" id="hint-3"><span>Tap to train</span></div>
           </div>
-          <div class="num-guide-card">
+          <div class="num-guide-card" onclick="openTemplateTrainer('4')">
             <div class="num-guide-digit">4</div>
             <div class="num-guide-val">-0.4 Deduct</div>
+            <div class="num-guide-hint" id="hint-4"><span>Tap to train</span></div>
           </div>
-          <div class="num-guide-card">
+          <div class="num-guide-card" onclick="openTemplateTrainer('5')">
             <div class="num-guide-digit">5</div>
             <div class="num-guide-val">-0.5 Deduct</div>
+            <div class="num-guide-hint" id="hint-5"><span>Tap to train</span></div>
           </div>
         </div>
 
@@ -1166,6 +1287,26 @@
       </div>
     </div>
 
+    <!-- 4. CUSTOM GESTURE TRAINER MODAL -->
+    <div id="trainerModal" class="modal-overlay hidden">
+      <div class="trainer-modal-card">
+        <div class="trainer-header">
+          <div class="trainer-title" id="trainerTitle">Train Digit "0"</div>
+          <div class="trainer-subtitle">Draw your custom stroke pattern below</div>
+        </div>
+
+        <div class="trainer-canvas-wrapper">
+          <canvas id="trainerCanvas" class="trainer-canvas"></canvas>
+        </div>
+
+        <div class="trainer-btn-group">
+          <button class="trainer-btn btn-clear" onclick="clearTrainerCanvas()">Clear</button>
+          <button class="trainer-btn btn-cancel" onclick="closeTemplateTrainer()">Cancel</button>
+          <button class="trainer-btn btn-save" onclick="saveCustomTemplate()">Save Pattern</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1429,6 +1570,7 @@
   let landingThumbnail = null;
   let landingMatchScore = null;
   let skillsPerformed = 10;
+  let customTrainedDigits = {};
 
   // DOM Elements
   const setupScreen      = document.getElementById('setupScreen');
@@ -1674,6 +1816,7 @@
   window.addEventListener('resize', () => {
     initCanvasSize();
     initRecCanvasSize();
+    initTrainerCanvas();
   });
 
   if (swipeScreen) {
@@ -1899,6 +2042,122 @@
     handleZoneInput(zoneIdx, `Quick ${deductionVal.toFixed(1)}`);
   }
 
+  /* ==========================================================================
+     CUSTOM GESTURE TRAINER LOGIC
+     ========================================================================== */
+  let currentTrainerDigit = null;
+  let trainerPoints = [];
+  let trainerStrokeId = 0;
+  let isTrainerPointerDown = false;
+
+  const trainerModal  = document.getElementById('trainerModal');
+  const trainerCanvas = document.getElementById('trainerCanvas');
+  const trainerCtx    = trainerCanvas ? trainerCanvas.getContext('2d') : null;
+
+  function openTemplateTrainer(digit) {
+    currentTrainerDigit = digit;
+    document.getElementById('trainerTitle').textContent = `Train Digit "${digit}"`;
+    trainerModal.classList.remove('hidden');
+    setTimeout(initTrainerCanvas, 50);
+  }
+
+  function initTrainerCanvas() {
+    if (!trainerCanvas || !trainerCanvas.parentElement) return;
+    const rect = trainerCanvas.parentElement.getBoundingClientRect();
+    trainerCanvas.width = rect.width;
+    trainerCanvas.height = rect.height;
+    clearTrainerCanvas();
+  }
+
+  function clearTrainerCanvas() {
+    trainerPoints = [];
+    trainerStrokeId = 0;
+    if (trainerCtx && trainerCanvas) {
+      trainerCtx.clearRect(0, 0, trainerCanvas.width, trainerCanvas.height);
+    }
+  }
+
+  function closeTemplateTrainer() {
+    clearTrainerCanvas();
+    trainerModal.classList.add('hidden');
+  }
+
+  function saveCustomTemplate() {
+    if (!trainerPoints || trainerPoints.length < 3) {
+      alert("Please draw a stroke pattern before saving.");
+      return;
+    }
+    dollarRecognizer.PointSets.push(new PDollarPointSet(currentTrainerDigit, trainerPoints));
+    customTrainedDigits[currentTrainerDigit] = true;
+    updateTrainedHints();
+    triggerFeedback('complete');
+    closeTemplateTrainer();
+  }
+
+  function updateTrainedHints() {
+    ['0','1','2','3','4','5'].forEach(digit => {
+      const hintEl = document.getElementById(`hint-${digit}`);
+      if (hintEl) {
+        if (customTrainedDigits[digit]) {
+          hintEl.innerHTML = '<span>Tap to train</span><span class="num-guide-tick">✓</span>';
+        } else {
+          hintEl.innerHTML = '<span>Tap to train</span>';
+        }
+      }
+    });
+  }
+
+  if (trainerCanvas) {
+    trainerCanvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      try { trainerCanvas.setPointerCapture(e.pointerId); } catch(err) {}
+      isTrainerPointerDown = true;
+      trainerStrokeId++;
+
+      const rect = trainerCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      trainerPoints.push(new Point(x, y, trainerStrokeId));
+
+      if (trainerCtx) {
+        trainerCtx.beginPath();
+        trainerCtx.moveTo(x, y);
+        trainerCtx.strokeStyle = '#9bd98b';
+        trainerCtx.lineWidth = 8;
+        trainerCtx.lineCap = 'round';
+        trainerCtx.lineJoin = 'round';
+      }
+    });
+
+    trainerCanvas.addEventListener('pointermove', (e) => {
+      if (!isTrainerPointerDown) return;
+      e.preventDefault();
+
+      const rect = trainerCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      trainerPoints.push(new Point(x, y, trainerStrokeId));
+
+      if (trainerCtx) {
+        trainerCtx.lineTo(x, y);
+        trainerCtx.stroke();
+      }
+    });
+
+    trainerCanvas.addEventListener('pointerup', (e) => {
+      if (!isTrainerPointerDown) return;
+      e.preventDefault();
+      isTrainerPointerDown = false;
+      try { trainerCanvas.releasePointerCapture(e.pointerId); } catch(err) {}
+    });
+
+    trainerCanvas.addEventListener('pointercancel', () => {
+      isTrainerPointerDown = false;
+    });
+  }
+
   // Adjust Skills Performed Count (0 to 10)
   function adjustSkillsCount(delta) {
     triggerFeedback('tap');
@@ -2015,6 +2274,7 @@
     phase = 'setup';
     skillsPerformed = 10;
     clearPendingRecognizerState();
+    closeTemplateTrainer();
     setupScreen.classList.remove('hidden');
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
