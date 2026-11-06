@@ -971,8 +971,8 @@
   <!-- Top Status Bar -->
   <div class="status-bar">
     <div class="status-title">
-      <span id="phaseBadge" class="phase-badge badge-routine">Routine</span>
-      <span id="skillCounter">Skill 1 / 10</span>
+      <span id="phaseBadge" class="phase-badge badge-routine">Setup</span>
+      <span id="skillCounter" class="hidden">Skill 1 / 10</span>
     </div>
     <div style="display:flex; gap:6px;">
       <button id="btnFinishRoutine" class="btn-header btn-finish-routine hidden" onclick="finishRoutineEarly()">Finish Routine</button>
@@ -998,7 +998,7 @@
           </svg>
           Number Recognition
         </div>
-        <div class="section-desc">Unistroke handwriting recognition ($P Algorithm). Draw digits directly on screen per skill element.</div>
+        <div class="section-desc">Handwriting recognition ($P Algorithm). Draw digits directly on screen per skill element.</div>
 
         <div class="section-subtitle">Recognized Strokes <span style="font-weight:normal; text-transform:none; color:var(--fig-blue);">(Click digit to train custom pattern)</span></div>
         <div class="num-guide-grid">
@@ -1080,32 +1080,32 @@
             <div class="swipe-guide-card">
               <div class="swipe-guide-icon">👆</div>
               <div class="swipe-guide-action">Tap</div>
-              <div class="swipe-guide-zone">Zone 1 (0.0)</div>
+              <div class="swipe-guide-zone">0</div>
             </div>
             <div class="swipe-guide-card">
               <div class="swipe-guide-icon">⬆️</div>
               <div class="swipe-guide-action">Flick Up</div>
-              <div class="swipe-guide-zone">Zone 2 (0.1)</div>
+              <div class="swipe-guide-zone">0.1</div>
             </div>
             <div class="swipe-guide-card">
               <div class="swipe-guide-icon">➡️</div>
               <div class="swipe-guide-action">Swipe Right</div>
-              <div class="swipe-guide-zone">Zone 3 (0.2)</div>
+              <div class="swipe-guide-zone">0.2</div>
             </div>
             <div class="swipe-guide-card">
               <div class="swipe-guide-icon">⬇️</div>
               <div class="swipe-guide-action">Flick Down</div>
-              <div class="swipe-guide-zone">Zone 4 (0.3)</div>
+              <div class="swipe-guide-zone">0.3</div>
             </div>
             <div class="swipe-guide-card">
               <div class="swipe-guide-icon">⬅️</div>
               <div class="swipe-guide-action">Swipe Left</div>
-              <div class="swipe-guide-zone">Zone 5 (0.4)</div>
+              <div class="swipe-guide-zone">0.4</div>
             </div>
             <div class="swipe-guide-card">
               <div class="swipe-guide-icon">🔄</div>
               <div class="swipe-guide-action">Circle</div>
-              <div class="swipe-guide-zone">Zone 6 (0.5)</div>
+              <div class="swipe-guide-zone">0</div>
             </div>
           </div>
 
@@ -1144,7 +1144,7 @@
 
       <!-- FOOTNOTE ON STARTING PAGE -->
       <div class="setup-footnote">
-        Created by <strong>Jed</strong> • In Development<br>
+        Vibe Coded/Created by <strong>Jed &#127462;&#127482;</strong> • In Development<br>
         Aiming to create an electronic judging input method that can be used to give real-time scoring for audiences.
       </div>
 
@@ -1153,16 +1153,17 @@
     <!-- 2A. ROUTINE & LANDING 2x3 GRID INPUT WITH ROW BANDING -->
     <div id="gridScreen" class="grid-container hidden">
       <!-- Top Row Band (FIG Green) -->
-      <div class="zone-btn zone-row-top" id="zone0"><span class="val">0.0</span><span class="zone-sub">Zone 1</span></div>
-      <div class="zone-btn zone-row-top" id="zone1"><span class="val">0.1</span><span class="zone-sub">Zone 2</span></div>
+      <div class="zone-btn zone-row-top" id="zone0"><span class="val">0.0</span><span class="zone-sub"></span></div>
+      <div class="zone-btn zone-row-top" id="zone1"><span class="val">0.1</span><span class="zone-sub"></span></div>
       
       <!-- Middle Row Band (FIG Blue) -->
-      <div class="zone-btn zone-row-mid" id="zone2"><span class="val">0.2</span><span class="zone-sub">Zone 3</span></div>
-      <div class="zone-btn zone-row-mid" id="zone3"><span class="val">0.3</span><span class="zone-sub">Zone 4</span></div>
+      <div class="zone-btn zone-row-mid" id="zone2"><span class="val">0.2</span><span class="zone-sub"></span></div>
+      <div class="zone-btn zone-row-mid" id="zone3"><span class="val">0.3</span><span class="zone-sub"></span></div>
       
       <!-- Bottom Row Band (Soft FIG Orange) -->
-      <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span><span class="zone-sub">Zone 5</span></div>
-      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><span class="zone-sub">Zone 6</span></div>
+      <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span><span class="zone-sub"></span></div>
+      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><span class="zone-sub"></span></div>
+      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><span class="zone-sub"></span></div>
     </div>
 
     <!-- 2B. SWIPE / GESTURE INPUT INTERFACE -->
@@ -1207,32 +1208,32 @@
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">👆</div>
           <div class="swipe-guide-action">Tap</div>
-          <div class="swipe-guide-zone">Zone 1</div>
+          <div class="swipe-guide-zone">0</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">⬆️</div>
           <div class="swipe-guide-action">Flick Up</div>
-          <div class="swipe-guide-zone">Zone 2</div>
+          <div class="swipe-guide-zone">0.1</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">➡️</div>
           <div class="swipe-guide-action">Swipe Right</div>
-          <div class="swipe-guide-zone">Zone 3</div>
+          <div class="swipe-guide-zone">0.2</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">⬇️</div>
           <div class="swipe-guide-action">Flick Down</div>
-          <div class="swipe-guide-zone">Zone 4</div>
+          <div class="swipe-guide-zone">0.3</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">⬅️</div>
           <div class="swipe-guide-action">Swipe Left</div>
-          <div class="swipe-guide-zone">Zone 5</div>
+          <div class="swipe-guide-zone">0.4</div>
         </div>
         <div class="swipe-guide-card">
           <div class="swipe-guide-icon">🔄</div>
           <div class="swipe-guide-action">Circle</div>
-          <div class="swipe-guide-zone">Zone 6</div>
+          <div class="swipe-guide-zone">0.5</div>
         </div>
       </div>
     </div>
@@ -1741,6 +1742,7 @@
     recognizerScreen.classList.add('hidden');
 
     if (btnFinishRoutine) btnFinishRoutine.classList.remove('hidden');
+	if (skillCounter) skillCounter.classList.remove('hidden');
 
     if (currentInterface === 'grid') {
       gridScreen.classList.remove('hidden');
@@ -2350,6 +2352,7 @@
     recognizerScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
     if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
+	if (skillCounter) skillCounter.classList.add('hidden');
     phaseBadge.textContent = 'Setup';
     phaseBadge.className = 'phase-badge badge-routine';
     skillCounter.textContent = 'Skill 1 / 10';
