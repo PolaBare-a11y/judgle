@@ -436,7 +436,7 @@
       color: #fff;
     }
 
-    /* SETUP SCREEN - THREE SECTIONS LAYOUT */
+    /* SETUP SCREEN LAYOUT */
     .setup-screen {
       padding: 16px;
       display: flex;
@@ -757,7 +757,7 @@
     .deduct-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
     .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
 
-    /* Dynamic flex-fill container for 11 squeezed rows */
+    /* Dynamic flex-fill container for squeezed rows */
     .review-list {
       flex: 1;
       display: flex;
@@ -1010,10 +1010,37 @@
   <!-- Main Canvas -->
   <div class="main-content">
 
-    <!-- 1. SETUP / CONFIGURATION SCREEN (THREE SECTIONS) -->
+    <!-- 1. SETUP / CONFIGURATION SCREEN -->
     <div id="setupScreen" class="setup-screen">
 
- <!-- SECTION 0: NUMBER RECOGNITION INTERFACE -->
+      <!-- TOP SECTION: GYMSPORT DISCIPLINE SELECTOR -->
+      <div class="setup-section-card">
+        <div class="section-title" style="color:var(--fig-purple);">
+          <svg class="section-title-icon" style="stroke:var(--fig-purple);" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          Gymsport Discipline
+        </div>
+        <div class="section-desc">Select routine length (TRP: 10 skills, DMT: 2 skills, TUM: 8 skills).</div>
+
+        <div class="preset-group" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="preset-card selected" id="discTrpCard" onclick="selectDiscipline('TRP', this)">
+            <h4>TRP</h4>
+            <p>10 Skills + Landing</p>
+          </div>
+          <div class="preset-card" id="discDmtCard" onclick="selectDiscipline('DMT', this)">
+            <h4>DMT</h4>
+            <p>2 Skills + Landing</p>
+          </div>
+          <div class="preset-card" id="discTumCard" onclick="selectDiscipline('TUM', this)">
+            <h4>TUM</h4>
+            <p>8 Skills + Landing</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 0: NUMBER RECOGNITION INTERFACE -->
       <div class="setup-section-card">
         <div class="section-title" style="color:var(--fig-green);">
           <svg class="section-title-icon" style="stroke:var(--fig-green);" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1315,7 +1342,7 @@
       </div>
 
       <div class="review-list" id="reviewList">
-        <!-- 11 Squeezed Rows generated dynamically with drawing thumbnails -->
+        <!-- Dynamic Rows generated with drawing thumbnails -->
       </div>
 
       <!-- BOTTOM ACTION BUTTONS BAR -->
@@ -1596,6 +1623,19 @@
 
   const LANDING_PRESET = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
 
+  // Gymsport Discipline Configuration
+  const DISCIPLINE_SKILLS = {
+    TRP: 10,
+    DMT: 2,
+    TUM: 8
+  };
+
+  let currentDiscipline = 'TRP';
+
+  function getMaxSkills() {
+    return DISCIPLINE_SKILLS[currentDiscipline] || 10;
+  }
+
   let currentInterface = 'grid'; // 'grid', 'swipe', or 'recognizer'
   let currentPresetKey = 'fig';
   let activeRoutineZones = [...PRESETS.fig];
@@ -1657,7 +1697,6 @@
       const now = audioCtx.currentTime;
 
       if (type === 'landing') {
-        // Double noise/beep for landing phase transition
         playBeep(880, now, 0.04);
         playBeep(1100, now + 0.07, 0.06);
       } else if (type === 'complete') {
@@ -1666,9 +1705,9 @@
       } else if (type === 'transition') {
         playBeep(520, now, 0.04);
       } else {
-        // 'tap' - Pitch steps upward from Skill 1 (440 Hz) to Skill 10 (845 Hz)
-        const step = Math.min(Math.max(currentSkillIndex, 0), 9);
-        const freq = 440 + (step * 45);
+        const maxSkills = getMaxSkills();
+        const step = Math.min(Math.max(currentSkillIndex, 0), maxSkills - 1);
+        const freq = 440 + (step * (400 / Math.max(1, maxSkills - 1)));
         playBeep(freq, now, 0.035);
       }
     } catch (e) { /* Catch browser audio restrictions */ }
@@ -1693,7 +1732,6 @@
      ========================================================================== */
   let lastTwoFingerTapTime = 0;
 
-  // Intercept multi-touch globally across judging screens
   document.addEventListener('touchstart', (e) => {
     if (phase !== 'routine' && phase !== 'landing') return;
 
@@ -1709,7 +1747,6 @@
     }
   }, { passive: false });
 
-  // Keyboard shortcut Ctrl+Z or Cmd+Z support for desktop testing
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
       if (phase === 'routine' || phase === 'landing') {
@@ -1721,17 +1758,18 @@
 
   function performUndo() {
     clearPendingRecognizerState();
+    const maxSkills = getMaxSkills();
 
     if (phase === 'landing') {
       phase = 'routine';
-      currentSkillIndex = 9;
+      currentSkillIndex = maxSkills - 1;
       landingDeduction = 0;
       landingThumbnail = null;
       landingMatchScore = null;
 
-      skillDeductions[9] = 0;
-      skillThumbnails[9] = null;
-      skillMatchScores[9] = null;
+      skillDeductions[maxSkills - 1] = 0;
+      skillThumbnails[maxSkills - 1] = null;
+      skillMatchScores[maxSkills - 1] = null;
 
       phaseBadge.textContent = 'Routine';
       phaseBadge.className = 'phase-badge badge-routine';
@@ -1739,14 +1777,14 @@
       if (currentInterface === 'grid') {
         renderGrid(activeRoutineZones);
       } else if (currentInterface === 'swipe') {
-        updateSwipeDisplay(0.0, 'Undone: Reverted to Skill 10');
+        updateSwipeDisplay(0.0, `Undone: Reverted to Skill ${maxSkills}`);
       } else if (currentInterface === 'recognizer') {
-        updateRecognizerDisplay(0.0, 'Undone: Reverted to Skill 10');
+        updateRecognizerDisplay(0.0, `Undone: Reverted to Skill ${maxSkills}`);
       }
 
       updateCounter();
       triggerFeedback('transition');
-      showUndoToast('Undone Landing -> Skill 10');
+      showUndoToast(`Undone Landing -> Skill ${maxSkills}`);
       return;
     }
 
@@ -1773,6 +1811,15 @@
     }
   }
 
+  // Discipline Selection
+  function selectDiscipline(discKey, el) {
+    currentDiscipline = discKey;
+    document.getElementById('discTrpCard').classList.remove('selected');
+    document.getElementById('discDmtCard').classList.remove('selected');
+    document.getElementById('discTumCard').classList.remove('selected');
+    el.classList.add('selected');
+  }
+
   // Preset Selection
   function selectPreset(key, el) {
     currentPresetKey = key;
@@ -1796,9 +1843,10 @@
     const feedbackLabel = document.getElementById('swipeFeedbackLabel');
     const feedbackVal   = document.getElementById('swipeFeedbackVal');
     const lastActionEl  = document.getElementById('swipeLastAction');
+    const maxSkills     = getMaxSkills();
 
     if (phase === 'routine') {
-      feedbackLabel.textContent = `Skill ${currentSkillIndex + 1} / 10`;
+      feedbackLabel.textContent = `Skill ${currentSkillIndex + 1} / ${maxSkills}`;
       feedbackVal.textContent = typeof recordedVal === 'number' ? `-${recordedVal.toFixed(1)}` : recordedVal;
     } else if (phase === 'landing') {
       feedbackLabel.textContent = `Landing Deduction`;
@@ -1815,9 +1863,10 @@
     const feedbackLabel = document.getElementById('recFeedbackLabel');
     const feedbackVal   = document.getElementById('recFeedbackVal');
     const lastActionEl  = document.getElementById('recLastAction');
+    const maxSkills     = getMaxSkills();
 
     if (phase === 'routine') {
-      feedbackLabel.textContent = `Skill ${currentSkillIndex + 1} / 10`;
+      feedbackLabel.textContent = `Skill ${currentSkillIndex + 1} / ${maxSkills}`;
       feedbackVal.textContent = typeof recordedVal === 'number' ? `-${recordedVal.toFixed(1)}` : recordedVal;
     } else if (phase === 'landing') {
       feedbackLabel.textContent = `Landing Deduction`;
@@ -1847,15 +1896,16 @@
     if (mode) {
       currentInterface = mode;
     }
+    const maxSkills = getMaxSkills();
     phase = 'routine';
     currentSkillIndex = 0;
-    skillDeductions = new Array(10).fill(0);
-    skillThumbnails = new Array(10).fill(null);
-    skillMatchScores = new Array(10).fill(null);
+    skillDeductions = new Array(maxSkills).fill(0);
+    skillThumbnails = new Array(maxSkills).fill(null);
+    skillMatchScores = new Array(maxSkills).fill(null);
     landingDeduction = 0;
     landingThumbnail = null;
     landingMatchScore = null;
-    skillsPerformed = 10;
+    skillsPerformed = maxSkills;
 
     clearPendingRecognizerState();
 
@@ -1914,8 +1964,9 @@
   }
 
   function updateCounter() {
+    const maxSkills = getMaxSkills();
     if (phase === 'routine') {
-      skillCounter.textContent = `Skill ${currentSkillIndex + 1} / 10`;
+      skillCounter.textContent = `Skill ${currentSkillIndex + 1} / ${maxSkills}`;
     } else if (phase === 'landing') {
       skillCounter.textContent = `Landing Deduction`;
     } else if (phase === 'review') {
@@ -1939,6 +1990,7 @@
   function handleZoneInput(zoneIndex, actionLabel = '', thumbnailData = null, matchScore = null) {
     const activeSet = (phase === 'landing') ? LANDING_PRESET : activeRoutineZones;
     const val = activeSet[zoneIndex];
+    const maxSkills = getMaxSkills();
 
     if (phase === 'routine') {
       triggerFeedback('tap');
@@ -1949,14 +2001,14 @@
 
       currentSkillIndex++;
 
-      if (currentSkillIndex >= 10) {
+      if (currentSkillIndex >= maxSkills) {
         phase = 'landing';
         if (currentInterface === 'grid') {
           renderGrid(LANDING_PRESET);
         } else if (currentInterface === 'swipe') {
-          updateSwipeDisplay(val, actionLabel ? `${actionLabel} (Skill 10)` : '');
+          updateSwipeDisplay(val, actionLabel ? `${actionLabel} (Skill ${maxSkills})` : '');
         } else if (currentInterface === 'recognizer') {
-          updateRecognizerDisplay(val, actionLabel ? `${actionLabel} (Skill 10)` : '');
+          updateRecognizerDisplay(val, actionLabel ? `${actionLabel} (Skill ${maxSkills})` : '');
         }
         phaseBadge.textContent = 'Landing';
         phaseBadge.className = 'phase-badge badge-landing';
@@ -2043,7 +2095,6 @@
       isPointerDown = false;
       try { swipeScreen.releasePointerCapture(e.pointerId); } catch(err) {}
 
-      // Capture drawing thumbnail before clearing
       const thumbData = canvas ? canvas.toDataURL('image/png') : null;
 
       if (ctx) {
@@ -2353,26 +2404,39 @@
     });
   }
 
-  // Adjust Skills Performed Count (0 to 10)
+  // Adjust Skills Performed Count (0 to maxSkills)
   function adjustSkillsCount(delta) {
     triggerFeedback('transition');
-    skillsPerformed = Math.min(10, Math.max(0, skillsPerformed + delta));
+    const maxSkills = getMaxSkills();
+    skillsPerformed = Math.min(maxSkills, Math.max(0, skillsPerformed + delta));
     renderReviewSummary();
   }
 
-  // Render Review Screen with Skills Performed & Landing Exclusion Calculation
+  // Render Review Screen with Dynamic Base Score & Landing Exclusion Calculation
   function renderReviewSummary() {
+    const maxSkills = getMaxSkills();
     document.getElementById('skillsCountDisplay').textContent = skillsPerformed;
 
-    const isLandingActive = (skillsPerformed === 10);
+    const isLandingActive = (skillsPerformed === maxSkills);
 
-    // Sum active performed skill deductions (+ landing ONLY if full 10-skill routine)
     const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
     const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
     const totalDeduct = skillDeductSum + (isLandingActive ? landingDeduction : 0);
     const showThumbnails = currentInterface === 'recognizer' || currentInterface === 'swipe';
-    const maxBaseScore = skillsPerformed * 1.0;
-    const netScore = Math.max(0, maxBaseScore - totalDeduct);
+
+    // Calculate Base Score according to Gymsport Discipline rules
+    let baseScore = 0.0;
+    if (currentDiscipline === 'TRP') {
+      baseScore = skillsPerformed * 1.0;
+    } else if (currentDiscipline === 'DMT') {
+      if (skillsPerformed === 2) baseScore = 10.0;
+      else if (skillsPerformed === 1) baseScore = 8.0;
+      else baseScore = 0.0;
+    } else if (currentDiscipline === 'TUM') {
+      baseScore = skillsPerformed > 0 ? (skillsPerformed + 2.0) : 0.0;
+    }
+
+    const netScore = Math.max(0, baseScore - totalDeduct);
 
     document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(1);
     document.getElementById('netScoreDisplay').textContent = netScore.toFixed(1);
@@ -2380,7 +2444,6 @@
     const listContainer = document.getElementById('reviewList');
     listContainer.innerHTML = '';
 
-    // Render Rows for Skills 1 to 10
     skillDeductions.forEach((val, i) => {
       const isPerformed = i < skillsPerformed;
       const row = document.createElement('div');
@@ -2409,7 +2472,6 @@
       listContainer.appendChild(row);
     });
 
-    // Render Row for Landing (Dimmed & Excluded if skillsPerformed < 10)
     const landingRow = document.createElement('div');
     landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
     const landingScoreStr = (landingMatchScore !== null && landingMatchScore !== undefined) ? `${landingMatchScore}%` : '';
@@ -2467,7 +2529,8 @@
 
   function resetToSetup() {
     phase = 'setup';
-    skillsPerformed = 10;
+    const maxSkills = getMaxSkills();
+    skillsPerformed = maxSkills;
     clearPendingRecognizerState();
     closeTemplateTrainer();
     setupScreen.classList.remove('hidden');
@@ -2479,7 +2542,7 @@
     if (skillCounter) skillCounter.classList.add('hidden');
     phaseBadge.textContent = 'Setup';
     phaseBadge.className = 'phase-badge badge-routine';
-    skillCounter.textContent = 'Skill 1 / 10';
+    skillCounter.textContent = `Skill 1 / ${maxSkills}`;
   }
 
   function toggleFullscreen() {
