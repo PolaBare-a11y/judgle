@@ -65,6 +65,32 @@
       width: 100vw;
       height: 100vh;
       height: 100dvh;
+      position: relative;
+    }
+
+    /* Undo Toast Banner */
+    .undo-toast {
+      position: absolute;
+      top: 54px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(244, 67, 54, 0.92);
+      color: #ffffff;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      z-index: 99;
+      pointer-events: none;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      animation: fadeInOut 1.2s ease forwards;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translate(-50%, -10px); }
+      15% { opacity: 1; transform: translate(-50%, 0); }
+      80% { opacity: 1; transform: translate(-50%, 0); }
+      100% { opacity: 0; transform: translate(-50%, -10px); }
     }
 
     /* Top Status Bar */
@@ -1163,7 +1189,6 @@
       <!-- Bottom Row Band (Soft FIG Orange) -->
       <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span><span class="zone-sub"></span></div>
       <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><span class="zone-sub"></span></div>
-      <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><span class="zone-sub"></span></div>
     </div>
 
     <!-- 2B. SWIPE / GESTURE INPUT INTERFACE -->
@@ -1649,6 +1674,105 @@
     } catch (e) { /* Catch browser audio restrictions */ }
   }
 
+  // Visual Undo Toast Display
+  function showUndoToast(msg) {
+    const existing = document.querySelector('.undo-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'undo-toast';
+    toast.textContent = `↩️ ${msg}`;
+    document.querySelector('.app-wrapper').appendChild(toast);
+    setTimeout(() => {
+      if (toast.parentNode) toast.remove();
+    }, 1250);
+  }
+
+  /* ==========================================================================
+     QUICK UNDO MECHANISM (TWO-FINGER DOUBLE TAP & CTRL+Z KEYBOARD SHORTCUT)
+     ========================================================================== */
+  let lastTwoFingerTapTime = 0;
+
+  // Intercept multi-touch globally across judging screens
+  document.addEventListener('touchstart', (e) => {
+    if (phase !== 'routine' && phase !== 'landing') return;
+
+    if (e.touches.length === 2) {
+      const now = Date.now();
+      if (now - lastTwoFingerTapTime < 450) {
+        e.preventDefault();
+        performUndo();
+        lastTwoFingerTapTime = 0;
+      } else {
+        lastTwoFingerTapTime = now;
+      }
+    }
+  }, { passive: false });
+
+  // Keyboard shortcut Ctrl+Z or Cmd+Z support for desktop testing
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      if (phase === 'routine' || phase === 'landing') {
+        e.preventDefault();
+        performUndo();
+      }
+    }
+  });
+
+  function performUndo() {
+    clearPendingRecognizerState();
+
+    if (phase === 'landing') {
+      phase = 'routine';
+      currentSkillIndex = 9;
+      landingDeduction = 0;
+      landingThumbnail = null;
+      landingMatchScore = null;
+
+      skillDeductions[9] = 0;
+      skillThumbnails[9] = null;
+      skillMatchScores[9] = null;
+
+      phaseBadge.textContent = 'Routine';
+      phaseBadge.className = 'phase-badge badge-routine';
+
+      if (currentInterface === 'grid') {
+        renderGrid(activeRoutineZones);
+      } else if (currentInterface === 'swipe') {
+        updateSwipeDisplay(0.0, 'Undone: Reverted to Skill 10');
+      } else if (currentInterface === 'recognizer') {
+        updateRecognizerDisplay(0.0, 'Undone: Reverted to Skill 10');
+      }
+
+      updateCounter();
+      triggerFeedback('transition');
+      showUndoToast('Undone Landing -> Skill 10');
+      return;
+    }
+
+    if (phase === 'routine') {
+      if (currentSkillIndex > 0) {
+        currentSkillIndex--;
+        const undoneSkillNum = currentSkillIndex + 1;
+        skillDeductions[currentSkillIndex] = 0;
+        skillThumbnails[currentSkillIndex] = null;
+        skillMatchScores[currentSkillIndex] = null;
+
+        if (currentInterface === 'swipe') {
+          updateSwipeDisplay(0.0, `Undone Skill ${undoneSkillNum}`);
+        } else if (currentInterface === 'recognizer') {
+          updateRecognizerDisplay(0.0, `Undone Skill ${undoneSkillNum}`);
+        }
+
+        updateCounter();
+        triggerFeedback('transition');
+        showUndoToast(`Undone Skill ${undoneSkillNum}`);
+      } else {
+        showUndoToast('Already at Skill 1');
+      }
+    }
+  }
+
   // Preset Selection
   function selectPreset(key, el) {
     currentPresetKey = key;
@@ -1742,7 +1866,7 @@
     recognizerScreen.classList.add('hidden');
 
     if (btnFinishRoutine) btnFinishRoutine.classList.remove('hidden');
-	if (skillCounter) skillCounter.classList.remove('hidden');
+    if (skillCounter) skillCounter.classList.remove('hidden');
 
     if (currentInterface === 'grid') {
       gridScreen.classList.remove('hidden');
@@ -2352,7 +2476,7 @@
     recognizerScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
     if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
-	if (skillCounter) skillCounter.classList.add('hidden');
+    if (skillCounter) skillCounter.classList.add('hidden');
     phaseBadge.textContent = 'Setup';
     phaseBadge.className = 'phase-badge badge-routine';
     skillCounter.textContent = 'Skill 1 / 10';
