@@ -1050,6 +1050,23 @@
       color: var(--text-sub);
     }
 
+    .btn-delete-log {
+      background: rgba(244, 67, 54, 0.15);
+      border: 1px solid var(--fig-red);
+      color: var(--fig-red);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-delete-log:hover, .btn-delete-log:active {
+      background: var(--fig-red);
+      color: #ffffff;
+    }
+
     .log-score-row {
       display: flex;
       align-items: center;
@@ -1896,7 +1913,7 @@
   // ROUTINE LOG STATE
   let routineLogHistory = [];
   let routineCounter = 1;
-  let currentViewingLogIndex = -1; // -1 means currently active routine, >= 0 means inspecting log index
+  let currentViewingLogIndex = -1; // -1 means working on an unsaved new routine, >= 0 means viewing/editing log entry
 
   // DOM Elements
   const setupScreen          = document.getElementById('setupScreen');
@@ -2216,18 +2233,15 @@
     phaseBadge.className = 'phase-badge badge-review';
     updateCounter();
 
-    saveOrUpdateCurrentLog();
-
-    if (currentViewingLogIndex === -1 && routineLogHistory.length > 0) {
-      currentViewingLogIndex = routineLogHistory.length - 1;
-    }
+    // Reset view index to -1 for fresh unsaved review
+    currentViewingLogIndex = -1;
 
     renderReviewSummary();
     triggerFeedback('complete');
   }
 
   function confirmAndNextRoutine() {
-    saveOrUpdateCurrentLog();
+    saveCurrentReviewToLog();
     routineCounter = routineLogHistory.length + 1;
     startRoutine();
   }
@@ -2666,7 +2680,6 @@
     const maxSkills = getMaxSkills();
     skillsPerformed = Math.min(maxSkills, Math.max(0, skillsPerformed + delta));
     renderReviewSummary();
-    saveOrUpdateCurrentLog();
   }
 
   // Render Review Screen with Dynamic Base Score & Landing Exclusion Calculation
@@ -2763,37 +2776,43 @@
     const logTitle = document.getElementById('logNavTitle');
 
     if (totalLogs === 0) {
-      logTitle.innerHTML = `<span>📋</span> Routine #1 of 1 (<span id="logNavDisc">${currentDiscipline}</span>)`;
+      logTitle.innerHTML = `<span>📋</span> Unsaved Routine (<span id="logNavDisc">${currentDiscipline}</span>)`;
       if (btnPrev) btnPrev.disabled = true;
       if (btnNext) btnNext.disabled = true;
       return;
     }
 
-    const currentIdx = (currentViewingLogIndex >= 0 && currentViewingLogIndex < totalLogs)
-      ? currentViewingLogIndex 
-      : (totalLogs - 1);
+    if (currentViewingLogIndex >= 0 && currentViewingLogIndex < totalLogs) {
+      const activeEntry = routineLogHistory[currentViewingLogIndex];
+      const displayNum = activeEntry ? activeEntry.routineNum : (currentViewingLogIndex + 1);
+      const disc = activeEntry ? activeEntry.discipline : currentDiscipline;
 
-    const activeEntry = routineLogHistory[currentIdx];
-    const displayNum = activeEntry ? activeEntry.routineNum : (currentIdx + 1);
-    const disc = activeEntry ? activeEntry.discipline : currentDiscipline;
-
-    logTitle.innerHTML = `<span>📋</span> Routine #${displayNum} of ${totalLogs} (${disc})`;
-
-    if (btnPrev) btnPrev.disabled = (currentIdx <= 0);
-    if (btnNext) btnNext.disabled = (currentIdx >= totalLogs - 1);
+      logTitle.innerHTML = `<span>📋</span> Routine #${displayNum} of ${totalLogs} (${disc})`;
+      if (btnPrev) btnPrev.disabled = (currentViewingLogIndex <= 0);
+      if (btnNext) btnNext.disabled = (currentViewingLogIndex >= totalLogs - 1);
+    } else {
+      logTitle.innerHTML = `<span>📋</span> Unsaved Routine (<span id="logNavDisc">${currentDiscipline}</span>)`;
+      if (btnPrev) btnPrev.disabled = (totalLogs === 0);
+      if (btnNext) btnNext.disabled = true;
+    }
   }
 
   // Cycle Through Loaded Routines in Review Screen
   function cycleLogEntry(delta) {
+    if (phase !== 'review') return;
+    saveCurrentReviewToLog();
+
     if (routineLogHistory.length === 0) return;
 
-    if (currentViewingLogIndex === -1) {
-      currentViewingLogIndex = routineLogHistory.length - 1;
+    let targetIndex = currentViewingLogIndex;
+    if (targetIndex === -1) {
+      targetIndex = routineLogHistory.length - 1;
+    } else {
+      targetIndex += delta;
     }
 
-    const newIndex = currentViewingLogIndex + delta;
-    if (newIndex >= 0 && newIndex < routineLogHistory.length) {
-      loadLogEntryToReview(newIndex, false);
+    if (targetIndex >= 0 && targetIndex < routineLogHistory.length) {
+      loadLogEntryToReview(targetIndex, false);
       triggerFeedback('transition');
     }
   }
@@ -2813,7 +2832,6 @@
       skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
     }
     renderReviewSummary();
-    saveOrUpdateCurrentLog();
   }
 
   // Step Landing Value through Discrete FIG Scale: [0.0, 0.1, 0.2, 0.3, 0.5, 1.0]
@@ -2829,7 +2847,6 @@
     landingDeduction = LANDING_PRESET[newIdx];
 
     renderReviewSummary();
-    saveOrUpdateCurrentLog();
   }
 
   /* ==========================================================================
@@ -2841,7 +2858,10 @@
     if (reviewLogCountBadge) reviewLogCountBadge.textContent = countStr;
   }
 
-  function saveOrUpdateCurrentLog() {
+  // Explicit Save Logic - called only when confirming, switching screens, or navigating logs
+  function saveCurrentReviewToLog() {
+    if (phase !== 'review') return;
+
     const maxSkills = getMaxSkills();
     const isLandingActive = (skillsPerformed === maxSkills);
     const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
@@ -2856,39 +2876,42 @@
     const netScore = Math.max(0, baseScore - totalDeduct);
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-    let activeNum = routineCounter;
     if (currentViewingLogIndex >= 0 && currentViewingLogIndex < routineLogHistory.length) {
-      activeNum = routineLogHistory[currentViewingLogIndex].routineNum;
-    }
-
-    const logEntry = {
-      routineNum: activeNum,
-      time: timeStr,
-      discipline: currentDiscipline,
-      interface: currentInterface.toUpperCase(),
-      skillsPerformed: skillsPerformed,
-      maxSkills: maxSkills,
-      skillDeductions: [...skillDeductions],
-      skillThumbnails: [...skillThumbnails],
-      skillMatchScores: [...skillMatchScores],
-      landingDeduction: isLandingActive ? landingDeduction : 0.0,
-      landingThumbnail: landingThumbnail,
-      landingMatchScore: landingMatchScore,
-      totalDeductions: totalDeduct,
-      netScore: netScore
-    };
-
-    let existingIndex = -1;
-    if (currentViewingLogIndex >= 0 && currentViewingLogIndex < routineLogHistory.length) {
-      existingIndex = currentViewingLogIndex;
+      // Updating existing entry in log
+      const existingEntry = routineLogHistory[currentViewingLogIndex];
+      routineLogHistory[currentViewingLogIndex] = {
+        ...existingEntry,
+        discipline: currentDiscipline,
+        skillsPerformed: skillsPerformed,
+        maxSkills: maxSkills,
+        skillDeductions: [...skillDeductions],
+        skillThumbnails: [...skillThumbnails],
+        skillMatchScores: [...skillMatchScores],
+        landingDeduction: isLandingActive ? landingDeduction : 0.0,
+        landingThumbnail: landingThumbnail,
+        landingMatchScore: landingMatchScore,
+        totalDeductions: totalDeduct,
+        netScore: netScore
+      };
     } else {
-      existingIndex = routineLogHistory.findIndex(entry => entry.routineNum === activeNum);
-    }
-
-    if (existingIndex !== -1) {
-      routineLogHistory[existingIndex] = logEntry;
-      currentViewingLogIndex = existingIndex;
-    } else {
+      // Saving brand-new routine entry
+      const nextNum = routineLogHistory.length > 0 ? (Math.max(...routineLogHistory.map(r => r.routineNum)) + 1) : 1;
+      const logEntry = {
+        routineNum: nextNum,
+        time: timeStr,
+        discipline: currentDiscipline,
+        interface: currentInterface.toUpperCase(),
+        skillsPerformed: skillsPerformed,
+        maxSkills: maxSkills,
+        skillDeductions: [...skillDeductions],
+        skillThumbnails: [...skillThumbnails],
+        skillMatchScores: [...skillMatchScores],
+        landingDeduction: isLandingActive ? landingDeduction : 0.0,
+        landingThumbnail: landingThumbnail,
+        landingMatchScore: landingMatchScore,
+        totalDeductions: totalDeduct,
+        netScore: netScore
+      };
       routineLogHistory.push(logEntry);
       currentViewingLogIndex = routineLogHistory.length - 1;
     }
@@ -2937,11 +2960,13 @@
     updateCounter();
 
     renderReviewSummary();
-    triggerFeedback('tap');
   }
 
   function openLogModal() {
     triggerFeedback('tap');
+    if (phase === 'review') {
+      saveCurrentReviewToLog();
+    }
     renderLogList();
     logModal.classList.remove('hidden');
   }
@@ -2976,7 +3001,10 @@
             <span>Routine #${entry.routineNum}</span>
             <span class="log-disc-tag">${entry.discipline}</span>
           </div>
-          <span class="log-time">🕒 ${entry.time}</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="log-time">🕒 ${entry.time}</span>
+            <button class="btn-delete-log" onclick="deleteLogEntry(event, ${actualIndex})" title="Delete routine">🗑️</button>
+          </div>
         </div>
         <div class="log-score-row">
           <div>
@@ -2997,6 +3025,31 @@
     });
   }
 
+  function deleteLogEntry(event, index) {
+    if (event) event.stopPropagation();
+
+    if (index < 0 || index >= routineLogHistory.length) return;
+
+    const removedNum = routineLogHistory[index].routineNum;
+    routineLogHistory.splice(index, 1);
+
+    if (currentViewingLogIndex === index) {
+      currentViewingLogIndex = -1;
+    } else if (currentViewingLogIndex > index) {
+      currentViewingLogIndex--;
+    }
+
+    updateLogBadges();
+    renderLogList();
+
+    if (phase === 'review') {
+      renderReviewSummary();
+    }
+
+    triggerFeedback('transition');
+    showUndoToast(`Routine #${removedNum} deleted`);
+  }
+
   function clearLogHistory() {
     if (routineLogHistory.length === 0) return;
     if (confirm("Are you sure you want to clear all routine logs?")) {
@@ -3005,12 +3058,19 @@
       currentViewingLogIndex = -1;
       updateLogBadges();
       renderLogList();
+      if (phase === 'review') {
+        renderReviewSummary();
+      }
       triggerFeedback('transition');
       showUndoToast("Log Cleared");
     }
   }
 
   function exportLogCSV() {
+    if (phase === 'review') {
+      saveCurrentReviewToLog();
+    }
+
     if (routineLogHistory.length === 0) {
       alert("No routine log entries available to export.");
       return;
@@ -3051,6 +3111,10 @@
   }
 
   function resetToSetup() {
+    if (phase === 'review') {
+      saveCurrentReviewToLog();
+    }
+
     phase = 'setup';
     currentViewingLogIndex = -1;
     const maxSkills = getMaxSkills();
