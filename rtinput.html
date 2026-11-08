@@ -1229,7 +1229,7 @@
     </div>
     <div style="display:flex; gap:6px; align-items:center;">
       <button id="btnFinishRoutine" class="btn-header btn-finish-routine hidden" onclick="finishRoutineEarly()">Finish Routine</button>
-      <button class="btn-header" onclick="openLogModal()">📋 Log (<span id="headerLogCountBadge">0</span>)</button>
+      <button id="btnHeaderLog" class="btn-header" onclick="openLogModal()">📋 Log (<span id="headerLogCountBadge">0</span>)</button>
       <button class="btn-header" onclick="toggleFullscreen()">Fullscreen</button>
       <button class="btn-header" onclick="resetToSetup()">Reset</button>
     </div>
@@ -1924,6 +1924,7 @@
   const phaseBadge           = document.getElementById('phaseBadge');
   const skillCounter         = document.getElementById('skillCounter');
   const btnFinishRoutine     = document.getElementById('btnFinishRoutine');
+  const btnHeaderLog         = document.getElementById('btnHeaderLog');
   const logModal             = document.getElementById('logModal');
   const logListContainer     = document.getElementById('logListContainer');
   const headerLogCountBadge  = document.getElementById('headerLogCountBadge');
@@ -2186,6 +2187,7 @@
     recognizerScreen.classList.add('hidden');
 
     if (btnFinishRoutine) btnFinishRoutine.classList.remove('hidden');
+    if (btnHeaderLog) btnHeaderLog.classList.add('hidden'); // Hide Log option while on input screen
     if (skillCounter) skillCounter.classList.remove('hidden');
 
     if (currentInterface === 'grid') {
@@ -2228,6 +2230,7 @@
     reviewScreen.classList.remove('hidden');
 
     if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
+    if (btnHeaderLog) btnHeaderLog.classList.remove('hidden'); // Reveal Log option on review screen
 
     phaseBadge.textContent = 'Review';
     phaseBadge.className = 'phase-badge badge-review';
@@ -2954,6 +2957,7 @@
     reviewScreen.classList.remove('hidden');
 
     if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
+    if (btnHeaderLog) btnHeaderLog.classList.remove('hidden'); // Reveal Log option on review screen
 
     phaseBadge.textContent = 'Review';
     phaseBadge.className = 'phase-badge badge-review';
@@ -3128,6 +3132,7 @@
     recognizerScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
     if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
+    if (btnHeaderLog) btnHeaderLog.classList.remove('hidden'); // Reveal Log option on setup screen
     if (skillCounter) skillCounter.classList.add('hidden');
     phaseBadge.textContent = 'Setup';
     phaseBadge.className = 'phase-badge badge-routine';
