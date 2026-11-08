@@ -134,6 +134,9 @@
       border-radius: 6px;
       font-size: 11px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .btn-header:active { background: var(--fig-purple); color: #fff; }
@@ -733,6 +736,54 @@
       overflow: hidden;
     }
 
+    /* REVIEW LOG NAVIGATION HEADER */
+    .review-log-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #141321;
+      border: 1px solid var(--border-col);
+      border-radius: 8px;
+      padding: 4px 8px;
+      margin-bottom: 6px;
+      flex-shrink: 0;
+    }
+
+    .log-nav-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--fig-purple);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-log-nav {
+      width: 32px;
+      height: 26px;
+      border-radius: 6px;
+      background: #1e1c2e;
+      border: 1px solid var(--border-col);
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-log-nav:disabled {
+      opacity: 0.25;
+      cursor: default;
+      border-color: #222;
+    }
+
+    .btn-log-nav:not(:disabled):active {
+      background: var(--fig-purple);
+      color: #fff;
+    }
+
     /* Combined Score Banner */
     .score-banner {
       background: var(--card-bg);
@@ -900,6 +951,165 @@
       flex-shrink: 0;
     }
 
+    .btn-log-trigger {
+      background: linear-gradient(135deg, #2b283d, #1a1829);
+      border: 1px solid var(--fig-purple);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* ROUTINE LOG MODAL & CARDS */
+    .log-modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 520px;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+    }
+
+    .log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-col);
+      padding-bottom: 10px;
+    }
+
+    .log-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--fig-blue);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .log-list-container {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 4px;
+    }
+
+    .log-entry-card {
+      background: #181726;
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .log-entry-card:hover {
+      border-color: var(--fig-purple);
+      background: #201e33;
+    }
+
+    .log-entry-card:active {
+      transform: scale(0.99);
+    }
+
+    .log-entry-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .log-num-badge {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--fig-green);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .log-disc-tag {
+      background: rgba(125, 95, 179, 0.25);
+      border: 1px solid var(--fig-purple);
+      color: #fff;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .log-time {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+    }
+
+    .log-score-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #11101a;
+      padding: 6px 10px;
+      border-radius: 6px;
+      margin-top: 2px;
+    }
+
+    .log-score-val {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--fig-green);
+    }
+
+    .log-deduct-val {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--fig-pink);
+    }
+
+    .log-breakdown {
+      font-size: 0.72rem;
+      color: var(--text-sub);
+      line-height: 1.4;
+      word-break: break-word;
+      margin-top: 2px;
+    }
+
+    .log-card-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .btn-load-log {
+      font-size: 0.75rem;
+      color: var(--fig-blue);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .log-actions-bar {
+      display: flex;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-col);
+    }
+
+    .log-empty-msg {
+      text-align: center;
+      color: var(--text-sub);
+      margin: auto 0;
+      font-size: 0.9rem;
+    }
+
     /* CUSTOM GESTURE TRAINER MODAL */
     .modal-overlay {
       position: absolute;
@@ -1000,8 +1210,9 @@
       <span id="phaseBadge" class="phase-badge badge-routine">Setup</span>
       <span id="skillCounter" class="hidden">Skill 1 / 10</span>
     </div>
-    <div style="display:flex; gap:6px;">
+    <div style="display:flex; gap:6px; align-items:center;">
       <button id="btnFinishRoutine" class="btn-header btn-finish-routine hidden" onclick="finishRoutineEarly()">Finish Routine</button>
+      <button class="btn-header" onclick="openLogModal()">📋 Log (<span id="headerLogCountBadge">0</span>)</button>
       <button class="btn-header" onclick="toggleFullscreen()">Fullscreen</button>
       <button class="btn-header" onclick="resetToSetup()">Reset</button>
     </div>
@@ -1317,6 +1528,16 @@
 
     <!-- 3. REVIEW & EDIT SCREEN -->
     <div id="reviewScreen" class="review-screen hidden">
+
+      <!-- LOG CYCLE NAVIGATION BAR ON REVIEW SCREEN -->
+      <div class="review-log-nav" id="reviewLogNav">
+        <button class="btn-log-nav" id="btnNavPrev" onclick="cycleLogEntry(-1)">◀</button>
+        <div class="log-nav-title" id="logNavTitle">
+          <span>📋</span> Routine #1 of 1 (<span id="logNavDisc">TRP</span>)
+        </div>
+        <button class="btn-log-nav" id="btnNavNext" onclick="cycleLogEntry(1)">▶</button>
+      </div>
+
       <div class="score-banner">
         <!-- Skills Performed Adjuster -->
         <div class="score-box">
@@ -1347,12 +1568,34 @@
 
       <!-- BOTTOM ACTION BUTTONS BAR -->
       <div class="review-action-bar">
-        <button class="btn-primary" onclick="startRoutine()" style="flex: 1.2;">Confirm & Next Routine</button>
+        <button class="btn-primary" onclick="confirmAndNextRoutine()" style="flex: 1.2;">Confirm & Next Routine</button>
+        <button class="btn-primary btn-log-trigger" onclick="openLogModal()" style="flex: 0.9;">📋 Log (<span id="reviewLogCountBadge">0</span>)</button>
         <button class="btn-primary btn-secondary" onclick="resetToSetup()" style="flex: 1;">Change Input Method</button>
       </div>
     </div>
 
-    <!-- 4. CUSTOM GESTURE TRAINER MODAL -->
+    <!-- 4. ROUTINE HISTORY LOG MODAL -->
+    <div id="logModal" class="modal-overlay hidden">
+      <div class="log-modal-card">
+        <div class="log-header">
+          <div class="log-title">
+            <span>📋</span> Routine History Log
+          </div>
+          <button class="btn-header" onclick="closeLogModal()">✕ Close</button>
+        </div>
+
+        <div class="log-list-container" id="logListContainer">
+          <!-- Log Entry Cards populated dynamically -->
+        </div>
+
+        <div class="log-actions-bar">
+          <button class="btn-primary btn-secondary" onclick="clearLogHistory()" style="flex: 1;">🗑️ Clear Log</button>
+          <button class="btn-primary" onclick="exportLogCSV()" style="flex: 1.2;">📥 Export Log (CSV)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. CUSTOM GESTURE TRAINER MODAL -->
     <div id="trainerModal" class="modal-overlay hidden">
       <div class="trainer-modal-card">
         <div class="trainer-header">
@@ -1650,21 +1893,30 @@
   let skillsPerformed = 10;
   let customTrainedDigits = {};
 
-  // DOM Elements
-  const setupScreen       = document.getElementById('setupScreen');
-  const gridScreen        = document.getElementById('gridScreen');
-  const swipeScreen       = document.getElementById('swipeScreen');
-  const recognizerScreen  = document.getElementById('recognizerScreen');
-  const reviewScreen      = document.getElementById('reviewScreen');
-  const phaseBadge        = document.getElementById('phaseBadge');
-  const skillCounter      = document.getElementById('skillCounter');
-  const btnFinishRoutine  = document.getElementById('btnFinishRoutine');
-  
-  const canvas            = document.getElementById('gestureCanvas');
-  const ctx               = canvas ? canvas.getContext('2d') : null;
+  // ROUTINE LOG STATE
+  let routineLogHistory = [];
+  let routineCounter = 1;
+  let currentViewingLogIndex = -1; // -1 means currently active routine, >= 0 means inspecting log index
 
-  const recCanvas         = document.getElementById('recognizerCanvas');
-  const recCtx            = recCanvas ? recCanvas.getContext('2d') : null;
+  // DOM Elements
+  const setupScreen          = document.getElementById('setupScreen');
+  const gridScreen           = document.getElementById('gridScreen');
+  const swipeScreen          = document.getElementById('swipeScreen');
+  const recognizerScreen     = document.getElementById('recognizerScreen');
+  const reviewScreen         = document.getElementById('reviewScreen');
+  const phaseBadge           = document.getElementById('phaseBadge');
+  const skillCounter         = document.getElementById('skillCounter');
+  const btnFinishRoutine     = document.getElementById('btnFinishRoutine');
+  const logModal             = document.getElementById('logModal');
+  const logListContainer     = document.getElementById('logListContainer');
+  const headerLogCountBadge  = document.getElementById('headerLogCountBadge');
+  const reviewLogCountBadge  = document.getElementById('reviewLogCountBadge');
+
+  const canvas               = document.getElementById('gestureCanvas');
+  const ctx                  = canvas ? canvas.getContext('2d') : null;
+
+  const recCanvas            = document.getElementById('recognizerCanvas');
+  const recCtx               = recCanvas ? recCanvas.getContext('2d') : null;
 
   /* ==========================================================================
      AUDIO SYNTHESIS FEEDBACK & PITCH STEPPING
@@ -1899,6 +2151,7 @@
     const maxSkills = getMaxSkills();
     phase = 'routine';
     currentSkillIndex = 0;
+    currentViewingLogIndex = -1;
     skillDeductions = new Array(maxSkills).fill(0);
     skillThumbnails = new Array(maxSkills).fill(null);
     skillMatchScores = new Array(maxSkills).fill(null);
@@ -1947,6 +2200,10 @@
       skillsPerformed = currentSkillIndex;
     }
 
+    enterReviewPhase();
+  }
+
+  function enterReviewPhase() {
     phase = 'review';
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
@@ -1959,8 +2216,20 @@
     phaseBadge.className = 'phase-badge badge-review';
     updateCounter();
 
+    saveOrUpdateCurrentLog();
+
+    if (currentViewingLogIndex === -1 && routineLogHistory.length > 0) {
+      currentViewingLogIndex = routineLogHistory.length - 1;
+    }
+
     renderReviewSummary();
     triggerFeedback('complete');
+  }
+
+  function confirmAndNextRoutine() {
+    saveOrUpdateCurrentLog();
+    routineCounter = routineLogHistory.length + 1;
+    startRoutine();
   }
 
   function updateCounter() {
@@ -2027,20 +2296,7 @@
       if (thumbnailData) landingThumbnail = thumbnailData;
       if (matchScore !== null && matchScore !== undefined) landingMatchScore = matchScore;
 
-      phase = 'review';
-      gridScreen.classList.add('hidden');
-      swipeScreen.classList.add('hidden');
-      recognizerScreen.classList.add('hidden');
-      reviewScreen.classList.remove('hidden');
-
-      if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
-
-      phaseBadge.textContent = 'Review';
-      phaseBadge.className = 'phase-badge badge-review';
-      updateCounter();
-
-      renderReviewSummary();
-      triggerFeedback('complete');
+      enterReviewPhase();
     }
   }
 
@@ -2410,6 +2666,7 @@
     const maxSkills = getMaxSkills();
     skillsPerformed = Math.min(maxSkills, Math.max(0, skillsPerformed + delta));
     renderReviewSummary();
+    saveOrUpdateCurrentLog();
   }
 
   // Render Review Screen with Dynamic Base Score & Landing Exclusion Calculation
@@ -2440,6 +2697,9 @@
 
     document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(1);
     document.getElementById('netScoreDisplay').textContent = netScore.toFixed(1);
+
+    // Update Log Navigation Header on Review Screen
+    updateReviewLogHeader();
 
     const listContainer = document.getElementById('reviewList');
     listContainer.innerHTML = '';
@@ -2495,6 +2755,49 @@
     listContainer.appendChild(landingRow);
   }
 
+  // Update Review Screen Log Navigator Banner
+  function updateReviewLogHeader() {
+    const totalLogs = routineLogHistory.length;
+    const btnPrev = document.getElementById('btnNavPrev');
+    const btnNext = document.getElementById('btnNavNext');
+    const logTitle = document.getElementById('logNavTitle');
+
+    if (totalLogs === 0) {
+      logTitle.innerHTML = `<span>📋</span> Routine #1 of 1 (<span id="logNavDisc">${currentDiscipline}</span>)`;
+      if (btnPrev) btnPrev.disabled = true;
+      if (btnNext) btnNext.disabled = true;
+      return;
+    }
+
+    const currentIdx = (currentViewingLogIndex >= 0 && currentViewingLogIndex < totalLogs)
+      ? currentViewingLogIndex 
+      : (totalLogs - 1);
+
+    const activeEntry = routineLogHistory[currentIdx];
+    const displayNum = activeEntry ? activeEntry.routineNum : (currentIdx + 1);
+    const disc = activeEntry ? activeEntry.discipline : currentDiscipline;
+
+    logTitle.innerHTML = `<span>📋</span> Routine #${displayNum} of ${totalLogs} (${disc})`;
+
+    if (btnPrev) btnPrev.disabled = (currentIdx <= 0);
+    if (btnNext) btnNext.disabled = (currentIdx >= totalLogs - 1);
+  }
+
+  // Cycle Through Loaded Routines in Review Screen
+  function cycleLogEntry(delta) {
+    if (routineLogHistory.length === 0) return;
+
+    if (currentViewingLogIndex === -1) {
+      currentViewingLogIndex = routineLogHistory.length - 1;
+    }
+
+    const newIndex = currentViewingLogIndex + delta;
+    if (newIndex >= 0 && newIndex < routineLogHistory.length) {
+      loadLogEntryToReview(newIndex, false);
+      triggerFeedback('transition');
+    }
+  }
+
   // Step Skill Value through Preset Scale or 0.1 Increments
   function stepSkillValue(index, direction) {
     triggerFeedback('transition');
@@ -2510,6 +2813,7 @@
       skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
     }
     renderReviewSummary();
+    saveOrUpdateCurrentLog();
   }
 
   // Step Landing Value through Discrete FIG Scale: [0.0, 0.1, 0.2, 0.3, 0.5, 1.0]
@@ -2525,14 +2829,235 @@
     landingDeduction = LANDING_PRESET[newIdx];
 
     renderReviewSummary();
+    saveOrUpdateCurrentLog();
+  }
+
+  /* ==========================================================================
+     ROUTINE LOG HISTORY MANAGEMENT
+     ========================================================================== */
+  function updateLogBadges() {
+    const countStr = routineLogHistory.length.toString();
+    if (headerLogCountBadge) headerLogCountBadge.textContent = countStr;
+    if (reviewLogCountBadge) reviewLogCountBadge.textContent = countStr;
+  }
+
+  function saveOrUpdateCurrentLog() {
+    const maxSkills = getMaxSkills();
+    const isLandingActive = (skillsPerformed === maxSkills);
+    const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
+    const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
+    const totalDeduct = skillDeductSum + (isLandingActive ? landingDeduction : 0);
+
+    let baseScore = 0.0;
+    if (currentDiscipline === 'TRP') baseScore = skillsPerformed * 1.0;
+    else if (currentDiscipline === 'DMT') baseScore = (skillsPerformed === 2) ? 10.0 : ((skillsPerformed === 1) ? 8.0 : 0.0);
+    else if (currentDiscipline === 'TUM') baseScore = skillsPerformed > 0 ? (skillsPerformed + 2.0) : 0.0;
+
+    const netScore = Math.max(0, baseScore - totalDeduct);
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    let activeNum = routineCounter;
+    if (currentViewingLogIndex >= 0 && currentViewingLogIndex < routineLogHistory.length) {
+      activeNum = routineLogHistory[currentViewingLogIndex].routineNum;
+    }
+
+    const logEntry = {
+      routineNum: activeNum,
+      time: timeStr,
+      discipline: currentDiscipline,
+      interface: currentInterface.toUpperCase(),
+      skillsPerformed: skillsPerformed,
+      maxSkills: maxSkills,
+      skillDeductions: [...skillDeductions],
+      skillThumbnails: [...skillThumbnails],
+      skillMatchScores: [...skillMatchScores],
+      landingDeduction: isLandingActive ? landingDeduction : 0.0,
+      landingThumbnail: landingThumbnail,
+      landingMatchScore: landingMatchScore,
+      totalDeductions: totalDeduct,
+      netScore: netScore
+    };
+
+    let existingIndex = -1;
+    if (currentViewingLogIndex >= 0 && currentViewingLogIndex < routineLogHistory.length) {
+      existingIndex = currentViewingLogIndex;
+    } else {
+      existingIndex = routineLogHistory.findIndex(entry => entry.routineNum === activeNum);
+    }
+
+    if (existingIndex !== -1) {
+      routineLogHistory[existingIndex] = logEntry;
+      currentViewingLogIndex = existingIndex;
+    } else {
+      routineLogHistory.push(logEntry);
+      currentViewingLogIndex = routineLogHistory.length - 1;
+    }
+
+    updateLogBadges();
+  }
+
+  function loadLogEntryToReview(logIndex, closeModal = true) {
+    if (logIndex < 0 || logIndex >= routineLogHistory.length) return;
+
+    const entry = routineLogHistory[logIndex];
+    currentViewingLogIndex = logIndex;
+    currentDiscipline = entry.discipline;
+    skillsPerformed = entry.skillsPerformed;
+
+    const maxSkills = getMaxSkills();
+    skillDeductions = new Array(maxSkills).fill(0);
+    skillThumbnails = new Array(maxSkills).fill(null);
+    skillMatchScores = new Array(maxSkills).fill(null);
+
+    for (let i = 0; i < Math.min(maxSkills, entry.skillDeductions.length); i++) {
+      skillDeductions[i] = entry.skillDeductions[i] || 0;
+      if (entry.skillThumbnails) skillThumbnails[i] = entry.skillThumbnails[i] || null;
+      if (entry.skillMatchScores) skillMatchScores[i] = entry.skillMatchScores[i] || null;
+    }
+
+    landingDeduction = entry.landingDeduction !== null ? entry.landingDeduction : 0.0;
+    landingThumbnail = entry.landingThumbnail || null;
+    landingMatchScore = entry.landingMatchScore || null;
+
+    if (closeModal) {
+      closeLogModal();
+    }
+
+    phase = 'review';
+    setupScreen.classList.add('hidden');
+    gridScreen.classList.add('hidden');
+    swipeScreen.classList.add('hidden');
+    recognizerScreen.classList.add('hidden');
+    reviewScreen.classList.remove('hidden');
+
+    if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
+
+    phaseBadge.textContent = 'Review';
+    phaseBadge.className = 'phase-badge badge-review';
+    updateCounter();
+
+    renderReviewSummary();
+    triggerFeedback('tap');
+  }
+
+  function openLogModal() {
+    triggerFeedback('tap');
+    renderLogList();
+    logModal.classList.remove('hidden');
+  }
+
+  function closeLogModal() {
+    logModal.classList.add('hidden');
+  }
+
+  function renderLogList() {
+    logListContainer.innerHTML = '';
+
+    if (routineLogHistory.length === 0) {
+      logListContainer.innerHTML = `<div class="log-empty-msg">No completed routines recorded yet.</div>`;
+      return;
+    }
+
+    // Render in reverse chronological order (newest routine first)
+    [...routineLogHistory].reverse().forEach((entry, reverseIdx) => {
+      const actualIndex = routineLogHistory.length - 1 - reverseIdx;
+      const card = document.createElement('div');
+      card.className = 'log-entry-card';
+      card.onclick = () => loadLogEntryToReview(actualIndex, true);
+
+      let breakdownStr = entry.skillDeductions.slice(0, entry.skillsPerformed).map((d, idx) => `S${idx+1}: -${d.toFixed(1)}`).join(' | ');
+      if (entry.skillsPerformed === entry.maxSkills && entry.landingDeduction !== null) {
+        breakdownStr += ` | L: -${entry.landingDeduction.toFixed(1)}`;
+      }
+
+      card.innerHTML = `
+        <div class="log-entry-header">
+          <div class="log-num-badge">
+            <span>Routine #${entry.routineNum}</span>
+            <span class="log-disc-tag">${entry.discipline}</span>
+          </div>
+          <span class="log-time">🕒 ${entry.time}</span>
+        </div>
+        <div class="log-score-row">
+          <div>
+            <div style="font-size:0.65rem; color:var(--text-sub); text-transform:uppercase;">Net Score</div>
+            <div class="log-score-val">${entry.netScore.toFixed(2)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.65rem; color:var(--text-sub); text-transform:uppercase;">Total Deductions</div>
+            <div class="log-deduct-val">-${entry.totalDeductions.toFixed(2)}</div>
+          </div>
+        </div>
+        <div class="log-breakdown">${breakdownStr}</div>
+        <div class="log-card-footer">
+          <span class="btn-load-log">Load into Review ➔</span>
+        </div>
+      `;
+      logListContainer.appendChild(card);
+    });
+  }
+
+  function clearLogHistory() {
+    if (routineLogHistory.length === 0) return;
+    if (confirm("Are you sure you want to clear all routine logs?")) {
+      routineLogHistory = [];
+      routineCounter = 1;
+      currentViewingLogIndex = -1;
+      updateLogBadges();
+      renderLogList();
+      triggerFeedback('transition');
+      showUndoToast("Log Cleared");
+    }
+  }
+
+  function exportLogCSV() {
+    if (routineLogHistory.length === 0) {
+      alert("No routine log entries available to export.");
+      return;
+    }
+
+    let csvContent = "Routine #,Time,Discipline,Interface,Skills Performed,Max Skills,Total Deductions,Net Score,Deduction Breakdown\n";
+
+    routineLogHistory.forEach(entry => {
+      let breakdownStr = entry.skillDeductions.slice(0, entry.skillsPerformed).map((d, idx) => `S${idx+1}:-${d.toFixed(1)}`).join(' ');
+      if (entry.skillsPerformed === entry.maxSkills && entry.landingDeduction !== null) {
+        breakdownStr += ` L:-${entry.landingDeduction.toFixed(1)}`;
+      }
+
+      const row = [
+        entry.routineNum,
+        `"${entry.time}"`,
+        entry.discipline,
+        entry.interface,
+        entry.skillsPerformed,
+        entry.maxSkills,
+        entry.totalDeductions.toFixed(2),
+        entry.netScore.toFixed(2),
+        `"${breakdownStr}"`
+      ];
+
+      csvContent += row.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `judgle_routine_log_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    triggerFeedback('complete');
   }
 
   function resetToSetup() {
     phase = 'setup';
+    currentViewingLogIndex = -1;
     const maxSkills = getMaxSkills();
     skillsPerformed = maxSkills;
     clearPendingRecognizerState();
     closeTemplateTrainer();
+    closeLogModal();
     setupScreen.classList.remove('hidden');
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
