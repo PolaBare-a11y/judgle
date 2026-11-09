@@ -25,18 +25,11 @@
       --text-main:  #ffffff;
       --text-sub:   #8a8a9e;
 
-      /* ==========================================================================
-         2x3 GRID ROW BANDING COLORS
-         ========================================================================== */
-      /* Top Band (Row 1: Zone 1 & 2 - Clean / Low Deductions) */
+      /* 2x3 GRID ROW BANDING COLORS */
       --band-top-color: #9bd98b;
       --band-top-bg:    rgba(155, 217, 139, 0.12);
-
-      /* Middle Band (Row 2: Zone 3 & 4 - Moderate Deductions) */
       --band-mid-color: #4495e5;
       --band-mid-bg:    rgba(68, 149, 229, 0.12);
-
-      /* Bottom Band (Row 3: Zone 5 & 6 - Higher Deductions / Landing) */
       --band-bot-color: #e68a00;
       --band-bot-bg:    rgba(230, 138, 0, 0.12);
     }
@@ -185,7 +178,6 @@
       position: relative;
     }
 
-    /* Row Banding Styles */
     .zone-row-top {
       border: 3px solid var(--band-top-color);
       color: var(--band-top-color);
@@ -218,8 +210,8 @@
       letter-spacing: 1px;
     }
 
-    /* SWIPE GESTURE INTERFACE */
-    .swipe-container {
+    /* SWIPE & MULTI-TOUCH INTERFACES */
+    .swipe-container, .multitouch-container {
       width: 100%;
       height: 100%;
       background: #08080d;
@@ -308,7 +300,6 @@
     }
 
     .compass-icon { font-size: 1.6rem; line-height: 1; }
-
     .compass-top { top: 0; left: 50%; transform: translateX(-50%); }
     .compass-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
     .compass-left { left: 0; top: 50%; transform: translateY(-50%); }
@@ -515,27 +506,47 @@
     .preset-card h4 { font-size: 0.9rem; margin-bottom: 2px; color: var(--text-main); }
     .preset-card p { font-size: 0.72rem; color: var(--text-sub); }
 
-    /* SETUP SWIPE INSTRUCTIONS WITH VISUAL GRADIENT DIAL & RED REFRESH CIRCLE GUIDE */
+    /* TWO-COLUMN GESTURE SETUP CARDS */
+    .gesture-split-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      width: 100%;
+    }
+
+    .gesture-subcard {
+      background: #181726;
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
     .swipe-setup-content {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
       width: 100%;
     }
 
     .visual-guide-column {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
+      justify-content: center;
+      gap: 14px;
+      width: 100%;
     }
 
     /* SMALL GRADIENT VISUAL COMPASS DIAL */
     .visual-compass-wrapper {
       position: relative;
-      width: 90px;
-      height: 90px;
+      width: 76px;
+      height: 76px;
       border-radius: 50%;
       background: conic-gradient(
         from 0deg, 
@@ -548,7 +559,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
     }
 
     .visual-compass-inner {
@@ -565,33 +576,32 @@
     .v-compass-node {
       position: absolute;
       font-weight: 800;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       display: flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
     }
 
-    .v-node-top    { top: 5px; left: 50%; transform: translateX(-50%); color: var(--band-top-color); }
-    .v-node-right  { right: 7px; top: 50%; transform: translateY(-50%); color: var(--band-mid-color); }
-    .v-node-bottom { bottom: 5px; left: 50%; transform: translateX(-50%); color: var(--band-mid-color); }
-    .v-node-left   { left: 7px; top: 50%; transform: translateY(-50%); color: var(--band-bot-color); }
+    .v-node-top    { top: 4px; left: 50%; transform: translateX(-50%); color: var(--band-top-color); }
+    .v-node-right  { right: 5px; top: 50%; transform: translateY(-50%); color: var(--band-mid-color); }
+    .v-node-bottom { bottom: 4px; left: 50%; transform: translateX(-50%); color: var(--band-mid-color); }
+    .v-node-left   { left: 5px; top: 50%; transform: translateY(-50%); color: var(--band-bot-color); }
 
     .v-node-center {
-      width: 26px;
-      height: 26px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       background: var(--band-top-bg);
       border: 2px solid var(--band-top-color);
       color: var(--band-top-color);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    /* RED REFRESH ICON & 0.5 CIRCLE GUIDE BELOW DIAL */
     .visual-circle-guide {
       display: flex;
       flex-direction: column;
@@ -601,14 +611,14 @@
     }
 
     .red-refresh-svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       stroke: var(--fig-red);
       filter: drop-shadow(0px 0px 4px rgba(244, 67, 54, 0.4));
     }
 
     .circle-val-label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 800;
       color: var(--fig-red);
       line-height: 1;
@@ -616,7 +626,7 @@
 
     .setup-guide-grid {
       margin-bottom: 0;
-      flex: 1;
+      width: 100%;
       pointer-events: auto;
     }
 
@@ -719,6 +729,11 @@
       background: linear-gradient(135deg, var(--fig-purple), var(--fig-pink));
     }
 
+    .btn-multitouch-start {
+      background: linear-gradient(135deg, var(--fig-orange), var(--fig-pink));
+      color: #fff;
+    }
+
     .btn-recognizer-start {
       background: linear-gradient(135deg, var(--fig-green), var(--fig-blue));
       color: #111;
@@ -736,7 +751,6 @@
       overflow: hidden;
     }
 
-    /* REVIEW LOG NAVIGATION HEADER */
     .review-log-nav {
       display: flex;
       align-items: center;
@@ -784,7 +798,6 @@
       color: #fff;
     }
 
-    /* Combined Score Banner */
     .score-banner {
       background: var(--card-bg);
       border: 1px solid var(--border-col);
@@ -808,7 +821,6 @@
     .deduct-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
     .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
 
-    /* Dynamic flex-fill container for squeezed rows */
     .review-list {
       flex: 1;
       display: flex;
@@ -819,7 +831,6 @@
       overflow-y: auto;
     }
 
-    /* Single Row Format */
     .review-row {
       flex: 1;
       min-height: 38px;
@@ -865,7 +876,6 @@
       color: #555566;
     }
 
-    /* Thumbnail Box for Stroke Drawing - Light Background */
     .review-thumb-box {
       width: 38px;
       height: 32px;
@@ -898,7 +908,6 @@
       min-width: 32px;
     }
 
-    /* Value and +/- controls grouped tightly together */
     .value-controls-group {
       display: flex;
       align-items: center;
@@ -943,7 +952,6 @@
       color: #fff;
     }
 
-    /* REVIEW BOTTOM ACTION BUTTON BAR */
     .review-action-bar {
       display: flex;
       gap: 8px;
@@ -958,7 +966,6 @@
       font-weight: 700;
     }
 
-    /* ROUTINE LOG MODAL & CARDS */
     .log-modal-card {
       background: var(--card-bg);
       border: 1px solid var(--border-col);
@@ -1127,7 +1134,6 @@
       font-size: 0.9rem;
     }
 
-    /* CUSTOM GESTURE TRAINER MODAL */
     .modal-overlay {
       position: absolute;
       top: 0;
@@ -1245,23 +1251,18 @@
       <div class="setup-section-card">
         <div class="section-title" style="color:var(--fig-purple);">
           <!-- Square Olympic Trampoline SVG Icon -->
-<svg class="section-title-icon" style="stroke:var(--fig-purple);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Outer Trampoline Steel Frame -->
-    <rect x="3" y="3" width="18" height="16" rx="1.5"></rect>
-    
-    <!-- Inner Trampoline Bed -->
-    <rect x="6" y="7" width="12" height="8" rx="0.5"></rect>
-    
-    <!-- Corner Springs / Suspension Attachments -->
-    <line x1="3" y1="3" x2="6" y2="7"></line>
-    <line x1="21" y1="3" x2="18" y2="7"></line>
-    <line x1="3" y1="19" x2="6" y2="15"></line>
-    <line x1="21" y1="19" x2="18" y2="15"></line>
-    
-    <!-- Center Red/Target Markings on Bed -->
-    <line x1="12" y1="9" x2="12" y2="13"></line>
-    <line x1="10" y1="11" x2="14" y2="11"></line>
-</svg>
+          <svg class="section-title-icon" style="stroke:var(--fig-purple);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="6" width="18" height="8" rx="1.5"></rect>
+            <rect x="6" y="8" width="12" height="4" rx="0.5"></rect>
+            <line x1="3" y1="6" x2="6" y2="8"></line>
+            <line x1="21" y1="6" x2="18" y2="8"></line>
+            <line x1="3" y1="14" x2="6" y2="12"></line>
+            <line x1="21" y1="14" x2="18" y2="12"></line>
+            <line x1="12" y1="9" x2="12" y2="11"></line>
+            <line x1="10" y1="10" x2="14" y2="10"></line>
+            <path d="M 5 14 L 3 20 M 8 14 L 10 20 M 3 20 H 10"></path>
+            <path d="M 19 14 L 21 20 M 16 14 L 14 20 M 14 20 H 21"></path>
+          </svg>
           Gymsport Discipline
         </div>
         <div class="section-desc">Select routine length (TRP: 10 skills, DMT: 2 skills, TUM: 8 skills).</div>
@@ -1332,7 +1333,7 @@
         <button class="btn-primary btn-recognizer-start" onclick="startRoutine('recognizer')" style="width:100%; margin-top:4px;">Start Number Recognition Judging</button>
       </div>
 
-      <!-- SECTION 1: SWIPE INTERFACE & DEDUCTION GUIDE -->
+      <!-- SECTION 1: GESTURE INTERFACE SECTION (SWIPE + MULTI-TOUCH SIDE-BY-SIDE) -->
       <div class="setup-section-card">
         <div class="section-title" style="color:var(--fig-pink);">
           <svg class="section-title-icon" style="stroke:var(--fig-pink);" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1341,72 +1342,68 @@
             <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
             <path d="M18 8a2 2 0 0 1 2 2v4a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.8-5.6-2.4L2.5 15a1.2 1.2 0 0 1 .4-1.7v0a1.2 1.2 0 0 1 1.6.4l2.5 3.8"></path>
           </svg>
-          Swipe Interface
+          Gesture Interfaces
         </div>
-        <div class="section-desc">Full-screen gesture input. Perform gestures anywhere on screen to record deductions.</div>
+        <div class="section-desc">Full-screen eyes-free touch gesture interfaces. Choose directional swipes or multi-finger taps.</div>
 
-        <div class="section-subtitle">Gesture Guide</div>
-        <div class="swipe-setup-content">
+        <div class="gesture-split-container">
           
-          <!-- Visual Compass Dial + Red Refresh Circle Guide Column -->
-          <div class="visual-guide-column">
-            <div class="visual-compass-wrapper">
-              <div class="visual-compass-inner">
-                <div class="v-compass-node v-node-top">1</div>
-                <div class="v-compass-node v-node-right">2</div>
-                <div class="v-compass-node v-node-bottom">3</div>
-                <div class="v-compass-node v-node-left">4</div>
-                <div class="v-compass-node v-node-center">0</div>
+          <!-- LEFT SUB-CARD: DIRECTIONAL SWIPE INTERFACE -->
+          <div class="gesture-subcard">
+            <div>
+              <div class="section-subtitle" style="color:var(--fig-pink); margin-bottom:8px;">1. Directional Swipe</div>
+              <div class="swipe-setup-content">
+                <div class="visual-guide-column">
+                  <div class="visual-compass-wrapper">
+                    <div class="visual-compass-inner">
+                      <div class="v-compass-node v-node-top">1</div>
+                      <div class="v-compass-node v-node-right">2</div>
+                      <div class="v-compass-node v-node-bottom">3</div>
+                      <div class="v-compass-node v-node-left">4</div>
+                      <div class="v-compass-node v-node-center">0</div>
+                    </div>
+                  </div>
+                  <div class="visual-circle-guide">
+                    <svg class="red-refresh-svg" viewBox="0 0 24 24" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="23 4 23 10 17 10"></polyline>
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                    </svg>
+                    <span class="circle-val-label">0.5</span>
+                  </div>
+                </div>
+
+                <div class="swipe-guide-grid setup-guide-grid" style="grid-template-columns: repeat(2, 1fr); gap:6px;">
+                  <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">👆</div><div class="swipe-guide-action">Tap</div><div class="swipe-guide-zone">0.0</div></div>
+                  <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">⬆️</div><div class="swipe-guide-action">Flick Up</div><div class="swipe-guide-zone">0.1</div></div>
+                  <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">➡️</div><div class="swipe-guide-action">Right</div><div class="swipe-guide-zone">0.2</div></div>
+                  <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">⬇️</div><div class="swipe-guide-action">Down</div><div class="swipe-guide-zone">0.3</div></div>
+                  <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">⬅️</div><div class="swipe-guide-action">Left</div><div class="swipe-guide-zone">0.4</div></div>
+                  <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">🔄</div><div class="swipe-guide-action">Circle</div><div class="swipe-guide-zone">0.5</div></div>
+                </div>
               </div>
             </div>
 
-            <!-- Red Refresh Icon + 0.5 underneath -->
-            <div class="visual-circle-guide">
-              <svg class="red-refresh-svg" viewBox="0 0 24 24" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="23 4 23 10 17 10"></polyline>
-                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-              </svg>
-              <span class="circle-val-label">0.5</span>
-            </div>
+            <button class="btn-primary btn-swipe-start" onclick="startRoutine('swipe')" style="width:100%;">Start Swipe Judging</button>
           </div>
 
-          <!-- Gesture Cards Grid -->
-          <div class="swipe-guide-grid setup-guide-grid">
-            <div class="swipe-guide-card">
-              <div class="swipe-guide-icon">👆</div>
-              <div class="swipe-guide-action">Tap</div>
-              <div class="swipe-guide-zone">0</div>
+          <!-- RIGHT SUB-CARD: MULTI-TOUCH RECOGNITION INTERFACE -->
+          <div class="gesture-subcard">
+            <div>
+              <div class="section-subtitle" style="color:var(--fig-orange); margin-bottom:8px;">2. Multi-Touch Recognition</div>
+              <div class="swipe-guide-grid setup-guide-grid" style="grid-template-columns: repeat(2, 1fr); gap:6px;">
+                <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">🖐️</div><div class="swipe-guide-action">Any Swipe</div><div class="swipe-guide-zone">0.0</div></div>
+                <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">☝️</div><div class="swipe-guide-action">1 Finger</div><div class="swipe-guide-zone">0.1</div></div>
+                <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">✌️</div><div class="swipe-guide-action">2 Fingers</div><div class="swipe-guide-zone">0.2</div></div>
+                <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">🤟</div><div class="swipe-guide-action">3 Fingers</div><div class="swipe-guide-zone">0.3</div></div>
+                <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">🖖</div><div class="swipe-guide-action">4 Fingers</div><div class="swipe-guide-zone">0.4</div></div>
+                <div class="swipe-guide-card" style="padding:6px;"><div class="swipe-guide-icon" style="font-size:1.1rem;">🖐️</div><div class="swipe-guide-action">5 Fingers</div><div class="swipe-guide-zone">0.5</div></div>
+              </div>
             </div>
-            <div class="swipe-guide-card">
-              <div class="swipe-guide-icon">⬆️</div>
-              <div class="swipe-guide-action">Flick Up</div>
-              <div class="swipe-guide-zone">0.1</div>
-            </div>
-            <div class="swipe-guide-card">
-              <div class="swipe-guide-icon">➡️</div>
-              <div class="swipe-guide-action">Swipe Right</div>
-              <div class="swipe-guide-zone">0.2</div>
-            </div>
-            <div class="swipe-guide-card">
-              <div class="swipe-guide-icon">⬇️</div>
-              <div class="swipe-guide-action">Flick Down</div>
-              <div class="swipe-guide-zone">0.3</div>
-            </div>
-            <div class="swipe-guide-card">
-              <div class="swipe-guide-icon">⬅️</div>
-              <div class="swipe-guide-action">Swipe Left</div>
-              <div class="swipe-guide-zone">0.4</div>
-            </div>
-            <div class="swipe-guide-card">
-              <div class="swipe-guide-icon">🔄</div>
-              <div class="swipe-guide-action">Circle</div>
-              <div class="swipe-guide-zone">0.5</div>
-            </div>
+
+            <button class="btn-primary btn-multitouch-start" onclick="startRoutine('multitouch')" style="width:100%;">Start Multi-Touch Judging</button>
           </div>
 
         </div>
-
-        <button class="btn-primary btn-swipe-start" onclick="startRoutine('swipe')" style="width:100%; margin-top:4px;">Start Swipe Judging</button>
       </div>
 
       <!-- SECTION 2: GRID INTERFACE & PRESETS -->
@@ -1447,15 +1444,12 @@
 
     <!-- 2A. ROUTINE & LANDING 2x3 GRID INPUT WITH ROW BANDING -->
     <div id="gridScreen" class="grid-container hidden">
-      <!-- Top Row Band (FIG Green) -->
       <div class="zone-btn zone-row-top" id="zone0"><span class="val">0.0</span><span class="zone-sub"></span></div>
       <div class="zone-btn zone-row-top" id="zone1"><span class="val">0.1</span><span class="zone-sub"></span></div>
       
-      <!-- Middle Row Band (FIG Blue) -->
       <div class="zone-btn zone-row-mid" id="zone2"><span class="val">0.2</span><span class="zone-sub"></span></div>
       <div class="zone-btn zone-row-mid" id="zone3"><span class="val">0.3</span><span class="zone-sub"></span></div>
       
-      <!-- Bottom Row Band (Soft FIG Orange) -->
       <div class="zone-btn zone-row-bot" id="zone4"><span class="val">0.4</span><span class="zone-sub"></span></div>
       <div class="zone-btn zone-row-bot" id="zone5"><span class="val">0.5</span><span class="zone-sub"></span></div>
     </div>
@@ -1464,7 +1458,6 @@
     <div id="swipeScreen" class="swipe-container hidden">
       <canvas id="gestureCanvas" class="gesture-canvas"></canvas>
 
-      <!-- Faint Background Watermark Compass Guide -->
       <div class="swipe-bg-overlay">
         <div class="bg-compass">
           <div class="compass-ring"></div>
@@ -1532,7 +1525,51 @@
       </div>
     </div>
 
-    <!-- 2C. NUMBER RECOGNITION INTERFACE -->
+    <!-- 2C. MULTI-TOUCH RECOGNITION INTERFACE -->
+    <div id="multiTouchScreen" class="multitouch-container hidden">
+      <canvas id="multiTouchCanvas" class="gesture-canvas"></canvas>
+
+      <div class="swipe-feedback-area">
+        <div class="swipe-feedback-label" id="mtFeedbackLabel">Skill 1 / 10</div>
+        <div class="swipe-feedback-val" id="mtFeedbackVal">0.0</div>
+        <div class="swipe-last-action" id="mtLastAction" style="color:var(--fig-orange);">Tap with 1 to 5 fingers or swipe for 0.0</div>
+      </div>
+
+      <div class="swipe-guide-grid">
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">🖐️</div>
+          <div class="swipe-guide-action">Swipe</div>
+          <div class="swipe-guide-zone">0.0</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">☝️</div>
+          <div class="swipe-guide-action">1 Finger</div>
+          <div class="swipe-guide-zone">0.1</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">✌️</div>
+          <div class="swipe-guide-action">2 Fingers</div>
+          <div class="swipe-guide-zone">0.2</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">🤟</div>
+          <div class="swipe-guide-action">3 Fingers</div>
+          <div class="swipe-guide-zone">0.3</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">🖖</div>
+          <div class="swipe-guide-action">4 Fingers</div>
+          <div class="swipe-guide-zone">0.4</div>
+        </div>
+        <div class="swipe-guide-card">
+          <div class="swipe-guide-icon">🖐️</div>
+          <div class="swipe-guide-action">5 Fingers</div>
+          <div class="swipe-guide-zone">0.5</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2D. NUMBER RECOGNITION INTERFACE -->
     <div id="recognizerScreen" class="recognizer-container hidden">
       <canvas id="recognizerCanvas" class="recognizer-canvas"></canvas>
 
@@ -1560,7 +1597,6 @@
     <!-- 3. REVIEW & EDIT SCREEN -->
     <div id="reviewScreen" class="review-screen hidden">
 
-      <!-- LOG CYCLE NAVIGATION BAR ON REVIEW SCREEN -->
       <div class="review-log-nav" id="reviewLogNav">
         <button class="btn-log-nav" id="btnNavPrev" onclick="cycleLogEntry(-1)">◀</button>
         <div class="log-nav-title" id="logNavTitle">
@@ -1570,7 +1606,6 @@
       </div>
 
       <div class="score-banner">
-        <!-- Skills Performed Adjuster -->
         <div class="score-box">
           <span class="score-lbl">Skills</span>
           <div class="value-controls-group">
@@ -1580,24 +1615,19 @@
           </div>
         </div>
 
-        <!-- Total Deductions Accumulator -->
         <div class="score-box">
           <span class="score-lbl">Total Deductions</span>
           <div class="deduct-val" id="totalDeductDisplay">0.00</div>
         </div>
 
-        <!-- Net E-Score Calculation -->
         <div class="score-box">
           <span class="score-lbl">Net E-Score</span>
           <div class="score-val" id="netScoreDisplay">10.00</div>
         </div>
       </div>
 
-      <div class="review-list" id="reviewList">
-        <!-- Dynamic Rows generated with drawing thumbnails -->
-      </div>
+      <div class="review-list" id="reviewList"></div>
 
-      <!-- BOTTOM ACTION BUTTONS BAR -->
       <div class="review-action-bar">
         <button class="btn-primary" onclick="confirmAndNextRoutine()" style="flex: 1.2;">Confirm & Next Routine</button>
         <button class="btn-primary btn-log-trigger" onclick="openLogModal()" style="flex: 0.9;">📋 Log (<span id="reviewLogCountBadge">0</span>)</button>
@@ -1615,9 +1645,7 @@
           <button class="btn-header" onclick="closeLogModal()">✕ Close</button>
         </div>
 
-        <div class="log-list-container" id="logListContainer">
-          <!-- Log Entry Cards populated dynamically -->
-        </div>
+        <div class="log-list-container" id="logListContainer"></div>
 
         <div class="log-actions-bar">
           <button class="btn-primary btn-secondary" onclick="clearLogHistory()" style="flex: 1;">🗑️ Clear Log</button>
@@ -1702,7 +1730,6 @@
     }
 
     initTemplates() {
-      // Helper to generate polyline points
       const makePolyline = (keyPoints, strokeId = 1) => {
         let pts = [];
         for (let i = 0; i < keyPoints.length - 1; i++) {
@@ -1719,7 +1746,6 @@
         return pts;
       };
 
-      // Helper to generate circle points
       const makeCircle = (cx, cy, r, strokeId = 1, counterClockwise = false) => {
         let pts = [];
         let steps = 32;
@@ -1730,28 +1756,21 @@
         return pts;
       };
 
-      // Digit "0" (Clockwise and Counter-Clockwise)
       this.PointSets.push(new PDollarPointSet("0", makeCircle(0.5, 0.5, 0.4, 1, false)));
       this.PointSets.push(new PDollarPointSet("0", makeCircle(0.5, 0.5, 0.4, 1, true)));
 
-      // Digit "1" (Straight down and slanted)
       this.PointSets.push(new PDollarPointSet("1", makePolyline([{x:0.5, y:0.1}, {x:0.5, y:0.9}], 1)));
       this.PointSets.push(new PDollarPointSet("1", makePolyline([{x:0.35, y:0.25}, {x:0.5, y:0.1}, {x:0.5, y:0.9}], 1)));
 
-      // Digit "2"
       this.PointSets.push(new PDollarPointSet("2", makePolyline([{x:0.2, y:0.25}, {x:0.5, y:0.1}, {x:0.8, y:0.25}, {x:0.5, y:0.5}, {x:0.2, y:0.85}, {x:0.8, y:0.85}], 1)));
 
-      // Digit "3"
       this.PointSets.push(new PDollarPointSet("3", makePolyline([{x:0.25, y:0.15}, {x:0.75, y:0.15}, {x:0.45, y:0.45}, {x:0.8, y:0.65}, {x:0.25, y:0.85}], 1)));
 
-      // Digit "4" (1-stroke and 2-stroke)
       this.PointSets.push(new PDollarPointSet("4", makePolyline([{x:0.7, y:0.85}, {x:0.7, y:0.15}, {x:0.2, y:0.6}, {x:0.85, y:0.6}], 1)));
       this.PointSets.push(new PDollarPointSet("4", makePolyline([{x:0.7, y:0.15}, {x:0.2, y:0.6}, {x:0.85, y:0.6}], 1).concat(makePolyline([{x:0.7, y:0.4}, {x:0.7, y:0.9}], 2))));
 
-      // Digit "5"
       this.PointSets.push(new PDollarPointSet("5", makePolyline([{x:0.8, y:0.15}, {x:0.3, y:0.15}, {x:0.3, y:0.45}, {x:0.75, y:0.55}, {x:0.6, y:0.85}, {x:0.25, y:0.85}], 1)));
 
-      // Digit "10" (2-stroke: '1' + '0')
       let stroke1_10 = makePolyline([{x:0.25, y:0.15}, {x:0.25, y:0.85}], 1);
       let stroke2_10 = makeCircle(0.7, 0.5, 0.35, 2, false);
       let stroke2_10_ccw = makeCircle(0.7, 0.5, 0.35, 2, true);
@@ -1761,7 +1780,6 @@
     }
   }
 
-  // $P Algorithm Supporting Functions
   function pDistance(p1, p2) {
     let dx = p1.x - p2.x;
     let dy = p1.y - p2.y;
@@ -1897,7 +1915,6 @@
 
   const LANDING_PRESET = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
 
-  // Gymsport Discipline Configuration
   const DISCIPLINE_SKILLS = {
     TRP: 10,
     DMT: 2,
@@ -1910,7 +1927,7 @@
     return DISCIPLINE_SKILLS[currentDiscipline] || 10;
   }
 
-  let currentInterface = 'grid'; // 'grid', 'swipe', or 'recognizer'
+  let currentInterface = 'grid'; // 'grid', 'swipe', 'multitouch', or 'recognizer'
   let currentPresetKey = 'fig';
   let activeRoutineZones = [...PRESETS.fig];
   let phase = 'setup';
@@ -1924,15 +1941,15 @@
   let skillsPerformed = 10;
   let customTrainedDigits = {};
 
-  // ROUTINE LOG STATE
   let routineLogHistory = [];
   let routineCounter = 1;
-  let currentViewingLogIndex = -1; // -1 means working on an unsaved new routine, >= 0 means viewing/editing log entry
+  let currentViewingLogIndex = -1;
 
   // DOM Elements
   const setupScreen          = document.getElementById('setupScreen');
   const gridScreen           = document.getElementById('gridScreen');
   const swipeScreen          = document.getElementById('swipeScreen');
+  const multiTouchScreen     = document.getElementById('multiTouchScreen');
   const recognizerScreen     = document.getElementById('recognizerScreen');
   const reviewScreen         = document.getElementById('reviewScreen');
   const phaseBadge           = document.getElementById('phaseBadge');
@@ -1946,6 +1963,9 @@
 
   const canvas               = document.getElementById('gestureCanvas');
   const ctx                  = canvas ? canvas.getContext('2d') : null;
+
+  const mtCanvas             = document.getElementById('multiTouchCanvas');
+  const mtCtx                = mtCanvas ? mtCanvas.getContext('2d') : null;
 
   const recCanvas            = document.getElementById('recognizerCanvas');
   const recCtx               = recCanvas ? recCanvas.getContext('2d') : null;
@@ -1994,10 +2014,9 @@
         const freq = 440 + (step * (400 / Math.max(1, maxSkills - 1)));
         playBeep(freq, now, 0.035);
       }
-    } catch (e) { /* Catch browser audio restrictions */ }
+    } catch (e) { }
   }
 
-  // Visual Undo Toast Display
   function showUndoToast(msg) {
     const existing = document.querySelector('.undo-toast');
     if (existing) existing.remove();
@@ -2012,12 +2031,13 @@
   }
 
   /* ==========================================================================
-     QUICK UNDO MECHANISM (TWO-FINGER DOUBLE TAP & CTRL+Z KEYBOARD SHORTCUT)
+     QUICK UNDO MECHANISM
      ========================================================================== */
   let lastTwoFingerTapTime = 0;
 
   document.addEventListener('touchstart', (e) => {
     if (phase !== 'routine' && phase !== 'landing') return;
+    if (currentInterface === 'multitouch') return; // Multi-touch interface handles 2-finger tap as deduction 0.2
 
     if (e.touches.length === 2) {
       const now = Date.now();
@@ -2062,6 +2082,8 @@
         renderGrid(activeRoutineZones);
       } else if (currentInterface === 'swipe') {
         updateSwipeDisplay(0.0, `Undone: Reverted to Skill ${maxSkills}`);
+      } else if (currentInterface === 'multitouch') {
+        updateMultiTouchDisplay(0.0, `Undone: Reverted to Skill ${maxSkills}`);
       } else if (currentInterface === 'recognizer') {
         updateRecognizerDisplay(0.0, `Undone: Reverted to Skill ${maxSkills}`);
       }
@@ -2082,6 +2104,8 @@
 
         if (currentInterface === 'swipe') {
           updateSwipeDisplay(0.0, `Undone Skill ${undoneSkillNum}`);
+        } else if (currentInterface === 'multitouch') {
+          updateMultiTouchDisplay(0.0, `Undone Skill ${undoneSkillNum}`);
         } else if (currentInterface === 'recognizer') {
           updateRecognizerDisplay(0.0, `Undone Skill ${undoneSkillNum}`);
         }
@@ -2095,7 +2119,6 @@
     }
   }
 
-  // Discipline Selection
   function selectDiscipline(discKey, el) {
     currentDiscipline = discKey;
     document.getElementById('discTrpCard').classList.remove('selected');
@@ -2104,7 +2127,6 @@
     el.classList.add('selected');
   }
 
-  // Preset Selection
   function selectPreset(key, el) {
     currentPresetKey = key;
     activeRoutineZones = [...PRESETS[key]];
@@ -2113,7 +2135,6 @@
     el.classList.add('selected');
   }
 
-  // Render Grid Values
   function renderGrid(values) {
     for (let i = 0; i < 6; i++) {
       const btn = document.getElementById(`zone${i}`);
@@ -2122,7 +2143,6 @@
     }
   }
 
-  // Update Swipe Screen Feedback
   function updateSwipeDisplay(recordedVal = 0, lastActionName = '') {
     const feedbackLabel = document.getElementById('swipeFeedbackLabel');
     const feedbackVal   = document.getElementById('swipeFeedbackVal');
@@ -2142,7 +2162,25 @@
     }
   }
 
-  // Update Recognizer Screen Feedback
+  function updateMultiTouchDisplay(recordedVal = 0, lastActionName = '') {
+    const feedbackLabel = document.getElementById('mtFeedbackLabel');
+    const feedbackVal   = document.getElementById('mtFeedbackVal');
+    const lastActionEl  = document.getElementById('mtLastAction');
+    const maxSkills     = getMaxSkills();
+
+    if (phase === 'routine') {
+      feedbackLabel.textContent = `Skill ${currentSkillIndex + 1} / ${maxSkills}`;
+      feedbackVal.textContent = typeof recordedVal === 'number' ? `-${recordedVal.toFixed(1)}` : recordedVal;
+    } else if (phase === 'landing') {
+      feedbackLabel.textContent = `Landing Deduction`;
+      feedbackVal.textContent = typeof recordedVal === 'number' ? `-${recordedVal.toFixed(1)}` : recordedVal;
+    }
+
+    if (lastActionName) {
+      lastActionEl.textContent = lastActionName;
+    }
+  }
+
   function updateRecognizerDisplay(recordedVal = 0, lastActionName = '') {
     const feedbackLabel = document.getElementById('recFeedbackLabel');
     const feedbackVal   = document.getElementById('recFeedbackVal');
@@ -2162,7 +2200,6 @@
     }
   }
 
-  // Clear pending recognizer state
   function clearPendingRecognizerState() {
     if (recognizerTimer) {
       clearTimeout(recognizerTimer);
@@ -2175,7 +2212,6 @@
     }
   }
 
-  // Start Routine
   function startRoutine(mode) {
     if (mode) {
       currentInterface = mode;
@@ -2198,10 +2234,11 @@
     reviewScreen.classList.add('hidden');
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
+    multiTouchScreen.classList.add('hidden');
     recognizerScreen.classList.add('hidden');
 
     if (btnFinishRoutine) btnFinishRoutine.classList.remove('hidden');
-    if (btnHeaderLog) btnHeaderLog.classList.add('hidden'); // Hide Log option while on input screen
+    if (btnHeaderLog) btnHeaderLog.classList.add('hidden');
     if (skillCounter) skillCounter.classList.remove('hidden');
 
     if (currentInterface === 'grid') {
@@ -2211,6 +2248,10 @@
       swipeScreen.classList.remove('hidden');
       updateSwipeDisplay(0.0, 'Ready for gesture input');
       setTimeout(initCanvasSize, 50);
+    } else if (currentInterface === 'multitouch') {
+      multiTouchScreen.classList.remove('hidden');
+      updateMultiTouchDisplay(0.0, 'Tap with 1 to 5 fingers or swipe for 0.0');
+      setTimeout(initMtCanvasSize, 50);
     } else if (currentInterface === 'recognizer') {
       recognizerScreen.classList.remove('hidden');
       updateRecognizerDisplay(0.0, 'Draw digit on canvas');
@@ -2224,7 +2265,6 @@
     triggerFeedback('transition');
   }
 
-  // Finish Routine Early Action
   function finishRoutineEarly() {
     triggerFeedback('tap');
     clearPendingRecognizerState();
@@ -2240,17 +2280,17 @@
     phase = 'review';
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
+    multiTouchScreen.classList.add('hidden');
     recognizerScreen.classList.add('hidden');
     reviewScreen.classList.remove('hidden');
 
     if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
-    if (btnHeaderLog) btnHeaderLog.classList.remove('hidden'); // Reveal Log option on review screen
+    if (btnHeaderLog) btnHeaderLog.classList.remove('hidden');
 
     phaseBadge.textContent = 'Review';
     phaseBadge.className = 'phase-badge badge-review';
     updateCounter();
 
-    // Reset view index to -1 for fresh unsaved review
     currentViewingLogIndex = -1;
 
     renderReviewSummary();
@@ -2274,7 +2314,6 @@
     }
   }
 
-  // Touch Event Listeners for 2x3 Grid
   const zoneButtons = document.querySelectorAll('.zone-btn');
   zoneButtons.forEach((btn, index) => {
     btn.addEventListener('pointerdown', (e) => {
@@ -2307,6 +2346,8 @@
           renderGrid(LANDING_PRESET);
         } else if (currentInterface === 'swipe') {
           updateSwipeDisplay(val, actionLabel ? `${actionLabel} (Skill ${maxSkills})` : '');
+        } else if (currentInterface === 'multitouch') {
+          updateMultiTouchDisplay(val, actionLabel ? `${actionLabel} (Skill ${maxSkills})` : '');
         } else if (currentInterface === 'recognizer') {
           updateRecognizerDisplay(val, actionLabel ? `${actionLabel} (Skill ${maxSkills})` : '');
         }
@@ -2316,6 +2357,8 @@
       } else {
         if (currentInterface === 'swipe') {
           updateSwipeDisplay(val, actionLabel ? `${actionLabel} (Skill ${currentSkillIndex})` : '');
+        } else if (currentInterface === 'multitouch') {
+          updateMultiTouchDisplay(val, actionLabel ? `${actionLabel} (Skill ${currentSkillIndex})` : '');
         } else if (currentInterface === 'recognizer') {
           updateRecognizerDisplay(val, actionLabel ? `${actionLabel} (Skill ${currentSkillIndex})` : '');
         }
@@ -2345,6 +2388,7 @@
 
   window.addEventListener('resize', () => {
     initCanvasSize();
+    initMtCanvasSize();
     initRecCanvasSize();
     initTrainerCanvas();
   });
@@ -2443,6 +2487,100 @@
         handleZoneInput(4, 'Swipe Left -> Zone 5', thumbData);
       }
     }
+  }
+
+  /* ==========================================================================
+     MULTI-TOUCH RECOGNITION ENGINE (SWIPE=0, 1 FINGER=.1, 2 FINGERS=.2, etc.)
+     ========================================================================== */
+  let mtMaxFingers = 0;
+  let mtIsSwiped = false;
+  let mtStartTouches = [];
+  let mtActive = false;
+
+  function initMtCanvasSize() {
+    if (!mtCanvas || !multiTouchScreen) return;
+    mtCanvas.width = multiTouchScreen.offsetWidth || window.innerWidth;
+    mtCanvas.height = multiTouchScreen.offsetHeight || window.innerHeight;
+  }
+
+  if (multiTouchScreen) {
+    multiTouchScreen.addEventListener('touchstart', (e) => {
+      if (phase !== 'routine' && phase !== 'landing') return;
+      e.preventDefault();
+
+      if (!mtActive) {
+        mtActive = true;
+        mtMaxFingers = e.touches.length;
+        mtIsSwiped = false;
+        mtStartTouches = Array.from(e.touches).map(t => ({ x: t.clientX, y: t.clientY }));
+        if (mtCtx) mtCtx.clearRect(0, 0, mtCanvas.width, mtCanvas.height);
+      } else {
+        mtMaxFingers = Math.max(mtMaxFingers, e.touches.length);
+        Array.from(e.touches).forEach(t => {
+          mtStartTouches.push({ x: t.clientX, y: t.clientY });
+        });
+      }
+
+      if (mtCtx) {
+        mtCtx.fillStyle = '#e68a00';
+        Array.from(e.touches).forEach(t => {
+          const rect = mtCanvas.getBoundingClientRect();
+          mtCtx.beginPath();
+          mtCtx.arc(t.clientX - rect.left, t.clientY - rect.top, 24, 0, 2 * Math.PI);
+          mtCtx.fill();
+        });
+      }
+    }, { passive: false });
+
+    multiTouchScreen.addEventListener('touchmove', (e) => {
+      if (!mtActive) return;
+      e.preventDefault();
+
+      Array.from(e.touches).forEach(t => {
+        mtStartTouches.forEach(st => {
+          const dx = t.clientX - st.x;
+          const dy = t.clientY - st.y;
+          if (Math.sqrt(dx * dx + dy * dy) > 32) {
+            mtIsSwiped = true;
+          }
+        });
+      });
+    }, { passive: false });
+
+    multiTouchScreen.addEventListener('touchend', (e) => {
+      if (!mtActive) return;
+      e.preventDefault();
+
+      if (e.touches.length === 0) {
+        mtActive = false;
+        const thumbData = mtCanvas ? mtCanvas.toDataURL('image/png') : null;
+        if (mtCtx) mtCtx.clearRect(0, 0, mtCanvas.width, mtCanvas.height);
+
+        processMultiTouchInput(mtIsSwiped, mtMaxFingers, thumbData);
+      }
+    }, { passive: false });
+
+    multiTouchScreen.addEventListener('touchcancel', () => {
+      mtActive = false;
+      if (mtCtx) mtCtx.clearRect(0, 0, mtCanvas.width, mtCanvas.height);
+    });
+  }
+
+  function processMultiTouchInput(isSwiped, fingerCount, thumbData) {
+    let zoneIdx = 0;
+    let label = '';
+
+    if (isSwiped) {
+      zoneIdx = 0;
+      label = 'Swipe (-0.0)';
+    } else {
+      const count = Math.min(5, Math.max(1, fingerCount));
+      zoneIdx = count; // 1 finger = zone 1 (0.1), 2 fingers = zone 2 (0.2), ..., 5 fingers = zone 5 (0.5)
+      const deductVal = (count * 0.1).toFixed(1);
+      label = `${count} Finger Tap (-${deductVal})`;
+    }
+
+    handleZoneInput(zoneIdx, label, thumbData);
   }
 
   /* ==========================================================================
@@ -2691,7 +2829,6 @@
     });
   }
 
-  // Adjust Skills Performed Count (0 to maxSkills)
   function adjustSkillsCount(delta) {
     triggerFeedback('transition');
     const maxSkills = getMaxSkills();
@@ -2699,7 +2836,6 @@
     renderReviewSummary();
   }
 
-  // Render Review Screen with Dynamic Base Score & Landing Exclusion Calculation
   function renderReviewSummary() {
     const maxSkills = getMaxSkills();
     document.getElementById('skillsCountDisplay').textContent = skillsPerformed;
@@ -2709,9 +2845,8 @@
     const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
     const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
     const totalDeduct = skillDeductSum + (isLandingActive ? landingDeduction : 0);
-    const showThumbnails = currentInterface === 'recognizer' || currentInterface === 'swipe';
+    const showThumbnails = currentInterface === 'recognizer' || currentInterface === 'swipe' || currentInterface === 'multitouch';
 
-    // Calculate Base Score according to Gymsport Discipline rules
     let baseScore = 0.0;
     if (currentDiscipline === 'TRP') {
       baseScore = skillsPerformed * 1.0;
@@ -2728,7 +2863,6 @@
     document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(1);
     document.getElementById('netScoreDisplay').textContent = netScore.toFixed(1);
 
-    // Update Log Navigation Header on Review Screen
     updateReviewLogHeader();
 
     const listContainer = document.getElementById('reviewList');
@@ -2785,7 +2919,6 @@
     listContainer.appendChild(landingRow);
   }
 
-  // Update Review Screen Log Navigator Banner
   function updateReviewLogHeader() {
     const totalLogs = routineLogHistory.length;
     const btnPrev = document.getElementById('btnNavPrev');
@@ -2814,7 +2947,6 @@
     }
   }
 
-  // Cycle Through Loaded Routines in Review Screen
   function cycleLogEntry(delta) {
     if (phase !== 'review') return;
     saveCurrentReviewToLog();
@@ -2834,7 +2966,6 @@
     }
   }
 
-  // Step Skill Value through Preset Scale or 0.1 Increments
   function stepSkillValue(index, direction) {
     triggerFeedback('transition');
     let currentVal = skillDeductions[index];
@@ -2851,7 +2982,6 @@
     renderReviewSummary();
   }
 
-  // Step Landing Value through Discrete FIG Scale: [0.0, 0.1, 0.2, 0.3, 0.5, 1.0]
   function stepLandingValue(direction) {
     triggerFeedback('transition');
     let currentIdx = LANDING_PRESET.indexOf(landingDeduction);
@@ -2875,7 +3005,6 @@
     if (reviewLogCountBadge) reviewLogCountBadge.textContent = countStr;
   }
 
-  // Explicit Save Logic - called only when confirming, switching screens, or navigating logs
   function saveCurrentReviewToLog() {
     if (phase !== 'review') return;
 
@@ -2894,7 +3023,6 @@
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     if (currentViewingLogIndex >= 0 && currentViewingLogIndex < routineLogHistory.length) {
-      // Updating existing entry in log
       const existingEntry = routineLogHistory[currentViewingLogIndex];
       routineLogHistory[currentViewingLogIndex] = {
         ...existingEntry,
@@ -2911,7 +3039,6 @@
         netScore: netScore
       };
     } else {
-      // Saving brand-new routine entry
       const nextNum = routineLogHistory.length > 0 ? (Math.max(...routineLogHistory.map(r => r.routineNum)) + 1) : 1;
       const logEntry = {
         routineNum: nextNum,
@@ -2967,11 +3094,12 @@
     setupScreen.classList.add('hidden');
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
+    multiTouchScreen.classList.add('hidden');
     recognizerScreen.classList.add('hidden');
     reviewScreen.classList.remove('hidden');
 
     if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
-    if (btnHeaderLog) btnHeaderLog.classList.remove('hidden'); // Reveal Log option on review screen
+    if (btnHeaderLog) btnHeaderLog.classList.remove('hidden');
 
     phaseBadge.textContent = 'Review';
     phaseBadge.className = 'phase-badge badge-review';
@@ -3001,7 +3129,6 @@
       return;
     }
 
-    // Render in reverse chronological order (newest routine first)
     [...routineLogHistory].reverse().forEach((entry, reverseIdx) => {
       const actualIndex = routineLogHistory.length - 1 - reverseIdx;
       const card = document.createElement('div');
@@ -3143,10 +3270,11 @@
     setupScreen.classList.remove('hidden');
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
+    multiTouchScreen.classList.add('hidden');
     recognizerScreen.classList.add('hidden');
     reviewScreen.classList.add('hidden');
     if (btnFinishRoutine) btnFinishRoutine.classList.add('hidden');
-    if (btnHeaderLog) btnHeaderLog.classList.remove('hidden'); // Reveal Log option on setup screen
+    if (btnHeaderLog) btnHeaderLog.classList.remove('hidden');
     if (skillCounter) skillCounter.classList.add('hidden');
     phaseBadge.textContent = 'Setup';
     phaseBadge.className = 'phase-badge badge-routine';
