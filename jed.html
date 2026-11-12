@@ -2277,7 +2277,7 @@
   }
 
   function updateSkillDD(index, rawValue) {
-    skillDDs[index] = String(rawValue || '').slice(0, 20);
+    skillDDs[index] = String(rawValue || '').slice(0, 8);
   }
 
   function renderReviewSummary() {
@@ -2315,7 +2315,7 @@
           </div>
           <div class="dd-input-wrapper">
             <span class="dd-prefix-lbl">DD</span>
-            <input type="text" maxlength="20" class="dd-text-input" placeholder="—" value="${ddValue}" ${isPerformed ? '' : 'disabled'} oninput="updateSkillDD(${i}, this.value)">
+            <input type="text" maxlength="8" class="dd-text-input" placeholder="—" value="${ddValue}" ${isPerformed ? '' : 'disabled'} oninput="updateSkillDD(${i}, this.value)">
           </div>
         </div>
 
