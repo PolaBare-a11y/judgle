@@ -879,7 +879,7 @@
     .review-thumb-box {
       width: 38px;
       height: 32px;
-      background: #DCE0DC;
+      background: #08080d;
       border: 1px solid #3c3954;
       border-radius: 4px;
       display: flex;
@@ -887,6 +887,7 @@
       justify-content: center;
       overflow: hidden;
       flex-shrink: 0;
+      padding: 2px;
     }
 
     .review-thumb-img {
@@ -1971,6 +1972,38 @@
   const recCtx               = recCanvas ? recCanvas.getContext('2d') : null;
 
   /* ==========================================================================
+     CANVAS BOUNDING BOX CROPPING UTILITY
+     ========================================================================== */
+  function createCroppedThumbnail(sourceCanvas, minX, minY, maxX, maxY, padding = 20) {
+    if (!sourceCanvas || !isFinite(minX) || !isFinite(maxX) || !isFinite(minY) || !isFinite(maxY)) {
+      return sourceCanvas ? sourceCanvas.toDataURL('image/png') : null;
+    }
+
+    const width = sourceCanvas.width;
+    const height = sourceCanvas.height;
+
+    let x1 = Math.max(0, Math.floor(minX - padding));
+    let y1 = Math.max(0, Math.floor(minY - padding));
+    let x2 = Math.min(width, Math.ceil(maxX + padding));
+    let y2 = Math.min(height, Math.ceil(maxY + padding));
+
+    let cropWidth = x2 - x1;
+    let cropHeight = y2 - y1;
+
+    if (cropWidth <= 5 || cropHeight <= 5) {
+      return sourceCanvas.toDataURL('image/png');
+    }
+
+    const cropCanvas = document.createElement('canvas');
+    cropCanvas.width = cropWidth;
+    cropCanvas.height = cropHeight;
+    const cropCtx = cropCanvas.getContext('2d');
+
+    cropCtx.drawImage(sourceCanvas, x1, y1, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+    return cropCanvas.toDataURL('image/png');
+  }
+
+  /* ==========================================================================
      AUDIO SYNTHESIS FEEDBACK & PITCH STEPPING
      ========================================================================== */
   let audioCtx = null;
@@ -2404,8 +2437,8 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
         ctx.moveTo(e.clientX, e.clientY);
-        ctx.strokeStyle = '#7d5fb3';
-        ctx.lineWidth = 9;
+        ctx.strokeStyle = '#e68a00';
+        ctx.lineWidth = 6;
         ctx.lineCap = 'round';
       }
     });
@@ -2426,7 +2459,15 @@
       isPointerDown = false;
       try { swipeScreen.releasePointerCapture(e.pointerId); } catch(err) {}
 
-      const thumbData = canvas ? canvas.toDataURL('image/png') : null;
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      pointerPoints.forEach(p => {
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      });
+
+      const thumbData = createCroppedThumbnail(canvas, minX, minY, maxX, maxY, 20);
 
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -2495,9 +2536,9 @@
   let mtMaxFingers = 0;
   let mtIsSwiped = false;
   let mtStartTouchesMap = {};
+  let mtTouchPoints = [];
   let mtActive = false;
 
-  // Longer swipe threshold to prevent accidental zero deduction triggers during multi-finger taps
   const MULTITOUCH_SWIPE_THRESHOLD_PX = 85;
 
   function initMtCanvasSize() {
@@ -2511,13 +2552,17 @@
       if (phase !== 'routine' && phase !== 'landing') return;
       e.preventDefault();
 
+      const rect = mtCanvas.getBoundingClientRect();
+
       if (!mtActive) {
         mtActive = true;
         mtMaxFingers = e.touches.length;
         mtIsSwiped = false;
         mtStartTouchesMap = {};
+        mtTouchPoints = [];
         Array.from(e.touches).forEach(t => {
           mtStartTouchesMap[t.identifier] = { x: t.clientX, y: t.clientY };
+          mtTouchPoints.push({ x: t.clientX - rect.left, y: t.clientY - rect.top });
         });
         if (mtCtx) mtCtx.clearRect(0, 0, mtCanvas.width, mtCanvas.height);
       } else {
@@ -2526,13 +2571,13 @@
           if (!mtStartTouchesMap[t.identifier]) {
             mtStartTouchesMap[t.identifier] = { x: t.clientX, y: t.clientY };
           }
+          mtTouchPoints.push({ x: t.clientX - rect.left, y: t.clientY - rect.top });
         });
       }
 
       if (mtCtx) {
         mtCtx.fillStyle = '#e68a00';
         Array.from(e.touches).forEach(t => {
-          const rect = mtCanvas.getBoundingClientRect();
           mtCtx.beginPath();
           mtCtx.arc(t.clientX - rect.left, t.clientY - rect.top, 24, 0, 2 * Math.PI);
           mtCtx.fill();
@@ -2544,12 +2589,13 @@
       if (!mtActive) return;
       e.preventDefault();
 
+      const rect = mtCanvas.getBoundingClientRect();
       Array.from(e.touches).forEach(t => {
+        mtTouchPoints.push({ x: t.clientX - rect.left, y: t.clientY - rect.top });
         const start = mtStartTouchesMap[t.identifier];
         if (start) {
           const dx = t.clientX - start.x;
           const dy = t.clientY - start.y;
-          // Requires deliberate drag beyond threshold to classify as swipe
           if (Math.sqrt(dx * dx + dy * dy) > MULTITOUCH_SWIPE_THRESHOLD_PX) {
             mtIsSwiped = true;
           }
@@ -2563,7 +2609,16 @@
 
       if (e.touches.length === 0) {
         mtActive = false;
-        const thumbData = mtCanvas ? mtCanvas.toDataURL('image/png') : null;
+
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        mtTouchPoints.forEach(p => {
+          if (p.x < minX) minX = p.x;
+          if (p.x > maxX) maxX = p.x;
+          if (p.y < minY) minY = p.y;
+          if (p.y > maxY) maxY = p.y;
+        });
+
+        const thumbData = createCroppedThumbnail(mtCanvas, minX, minY, maxX, maxY, 30);
         if (mtCtx) mtCtx.clearRect(0, 0, mtCanvas.width, mtCanvas.height);
 
         processMultiTouchInput(mtIsSwiped, mtMaxFingers, thumbData);
@@ -2630,8 +2685,8 @@
       if (recCtx) {
         recCtx.beginPath();
         recCtx.moveTo(x, y);
-        recCtx.strokeStyle = '#7d5fb3';
-        recCtx.lineWidth = 9;
+        recCtx.strokeStyle = '#e68a00';
+        recCtx.lineWidth = 8;
         recCtx.lineCap = 'round';
         recCtx.lineJoin = 'round';
       }
@@ -2677,7 +2732,15 @@
       return;
     }
 
-    const thumbData = recCanvas.toDataURL('image/png');
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    accumulatedRecPoints.forEach(p => {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    });
+
+    const thumbData = createCroppedThumbnail(recCanvas, minX, minY, maxX, maxY, 24);
 
     if (recCtx) {
       recCtx.clearRect(0, 0, recCanvas.width, recCanvas.height);
