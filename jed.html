@@ -1,0 +1,2989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trampoline Judging Video Overlay Tool</title>
+  <style>
+    /* ==========================================================================
+       COLOR PALETTE & STYLING CUSTOMIZATION
+       ========================================================================== */
+
+    :root {
+      /* World Gymnastics Ribbon Palette */
+      --fig-blue:   #4495e5;
+      --fig-purple: #7d5fb3;
+      --fig-pink:   #dc5183;
+      --fig-green:  #9bd98b;
+      --fig-orange: #e68a00;
+      --fig-red:    #f44336;
+
+      /* Dark Mode Surfaces */
+      --bg-dark:    #0a0a0f;
+      --card-bg:    #14141f;
+      --border-col: #2c2940;
+      --text-main:  #ffffff;
+      --text-sub:   #8a8a9e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .app-wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      position: relative;
+    }
+
+    /* Top Status Bar */
+    .status-bar {
+      height: 44px;
+      flex-shrink: 0;
+      background: #111118;
+      border-bottom: 1px solid var(--border-col);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-weight: 600;
+      font-size: 13px;
+      z-index: 10;
+    }
+
+    .status-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .phase-badge {
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .badge-setup   { background: var(--fig-purple); color: #fff; }
+    .badge-routine { background: var(--fig-blue); color: #fff; }
+    .badge-landing { background: var(--fig-pink); color: #fff; }
+    .badge-review  { background: var(--fig-green); color: #111; }
+    .badge-overlay { background: var(--fig-orange); color: #fff; }
+
+    .btn-header {
+      background: #1d1b2a;
+      border: 1px solid var(--border-col);
+      color: #ccc;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-header:active { background: var(--fig-purple); color: #fff; }
+
+    .btn-finish-routine {
+      background: linear-gradient(135deg, var(--fig-pink), var(--fig-purple));
+      color: #ffffff;
+      border: none;
+      font-weight: 700;
+    }
+
+    .main-content {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: calc(100% - 44px);
+      overflow: hidden;
+    }
+
+    /* SETUP SCREEN LAYOUT */
+    .setup-screen {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+      overflow-y: auto;
+      background: var(--bg-dark);
+    }
+
+    .setup-section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--fig-blue);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title-icon {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      flex-shrink: 0;
+    }
+
+    .section-desc {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      line-height: 1.3;
+    }
+
+    .section-subtitle {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    .preset-group {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .preset-card {
+      background: #1a1926;
+      border: 2px solid var(--border-col);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .preset-card.selected {
+      border-color: var(--fig-blue);
+      background: rgba(68, 149, 229, 0.15);
+    }
+
+    .preset-card h4 { font-size: 0.9rem; margin-bottom: 2px; color: var(--text-main); }
+    .preset-card p { font-size: 0.72rem; color: var(--text-sub); }
+
+    /* NUMBER RECOGNITION PATTERN TRAINER CARDS */
+    .num-guide-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+
+    .num-guide-card {
+      background: #1a1926;
+      border: 1px solid var(--border-col);
+      border-radius: 8px;
+      padding: 8px 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+    }
+
+    .num-guide-card:hover {
+      border-color: var(--fig-green);
+      background: rgba(155, 217, 139, 0.1);
+    }
+
+    .num-guide-card:active { transform: scale(0.97); }
+
+    .num-guide-digit {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--fig-green);
+    }
+
+    .num-guide-val {
+      font-size: 0.68rem;
+      color: var(--text-sub);
+    }
+
+    .num-guide-hint {
+      font-size: 0.62rem;
+      color: var(--fig-blue);
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .num-guide-tick {
+      color: var(--fig-green);
+      font-weight: 800;
+      font-size: 0.75rem;
+    }
+
+    .btn-reset-patterns {
+      background: #2a1b24;
+      border: 1px solid var(--fig-pink);
+      color: var(--fig-pink);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-left: auto;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .btn-reset-patterns:active {
+      background: var(--fig-pink);
+      color: #fff;
+    }
+
+    /* VIDEO UPLOAD DROP ZONE */
+    .video-file-dropzone {
+      border: 2px dashed var(--fig-blue);
+      background: rgba(68, 149, 229, 0.05);
+      border-radius: 12px;
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .video-file-dropzone:hover {
+      background: rgba(68, 149, 229, 0.12);
+      border-color: var(--fig-green);
+    }
+
+    .dropzone-icon { font-size: 2.2rem; }
+    .dropzone-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+    .dropzone-sub { font-size: 0.75rem; color: var(--text-sub); }
+
+    .selected-video-badge {
+      margin-top: 6px;
+      padding: 4px 10px;
+      background: var(--fig-green);
+      color: #111;
+      font-weight: 700;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* BUTTON STYLING */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple));
+      color: white;
+      border: none;
+      padding: 12px 10px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary:active { opacity: 0.9; transform: scale(0.99); }
+    .btn-secondary { background: #1e1c2e; border: 1px solid var(--border-col); color: var(--text-sub); }
+    .btn-secondary:active { background: var(--fig-purple); color: var(--text-main); }
+    .btn-download { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; font-weight: 800; }
+    .btn-training { background: linear-gradient(135deg, var(--fig-purple), var(--fig-blue)); color: #fff; font-weight: 800; }
+    .btn-swipe-start { background: linear-gradient(135deg, var(--fig-purple), var(--fig-pink)); }
+    .btn-recognizer-start { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; }
+
+    /* LIVE VIDEO JUDGING CONTAINER */
+    .video-judging-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .video-player-element {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .gesture-overlay-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    /* LIVE JUDGING FEEDBACK HUD OVERLAY */
+    .judging-hud-overlay {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 15;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .hud-card {
+      background: rgba(10, 10, 15, 0.85);
+      border: 1px solid var(--border-col);
+      backdrop-filter: blur(6px);
+      padding: 8px 14px;
+      border-radius: 8px;
+    }
+
+    .hud-skill-lbl { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; font-weight: 700; }
+    .hud-deduct-val { font-size: 2.2rem; font-weight: 800; color: var(--fig-orange); line-height: 1; }
+    .hud-time-val { font-size: 0.75rem; color: var(--fig-green); font-weight: 700; margin-top: 2px; }
+
+    .video-live-controls {
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      display: flex;
+      gap: 10px;
+      background: rgba(10, 10, 15, 0.85);
+      border: 1px solid var(--border-col);
+      backdrop-filter: blur(6px);
+      padding: 6px 14px;
+      border-radius: 30px;
+    }
+
+    .btn-hud-ctrl {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+    }
+
+    .btn-hud-ctrl:active { color: var(--fig-blue); }
+
+    /* REVIEW SCREEN */
+    .review-screen {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: var(--bg-dark);
+      overflow: hidden;
+    }
+
+    .score-banner {
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-shrink: 0;
+      margin-bottom: 10px;
+    }
+
+    .score-box { 
+      text-align: center; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .score-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
+    .deduct-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
+    .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+
+    .value-controls-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-step {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #1e1c2e;
+      border: 1px solid var(--fig-purple);
+      color: var(--text-main);
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .btn-step:active {
+      background: var(--fig-blue);
+      border-color: var(--fig-blue);
+      color: #fff;
+    }
+
+    .review-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 0;
+      margin-bottom: 10px;
+      overflow-y: auto;
+    }
+
+    .review-row {
+      min-height: 42px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 8px;
+      padding: 4px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .review-row.disabled-row {
+      opacity: 0.35;
+      background: #0d0d14;
+      border-color: #1a1a26;
+    }
+
+    .review-row.landing-row {
+      border-color: var(--fig-pink);
+      background: rgba(220, 81, 131, 0.08);
+    }
+
+    .sk-lbl {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      font-weight: 700;
+      width: 70px;
+      flex-shrink: 0;
+    }
+
+    .review-thumb-box {
+      width: 44px;
+      height: 36px;
+      background: #DCE0DC;
+      border: 1px solid #3c3954;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      padding: 2px;
+    }
+
+    .review-thumb-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .review-thumb-empty {
+      font-size: 0.6rem;
+      color: #888899;
+      text-transform: uppercase;
+    }
+
+    .review-score-tag {
+      font-size: 0.7rem;
+      color: var(--text-sub);
+      font-weight: 600;
+      min-width: 30px;
+    }
+
+    .sk-time-tag {
+      font-size: 0.72rem;
+      color: var(--fig-green);
+      font-family: monospace;
+      font-weight: 700;
+      background: rgba(155, 217, 139, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .sk-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      min-width: 44px;
+      text-align: center;
+    }
+
+    .review-action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       FINAL SYNCHRONIZED VIDEO PLAYBACK & OVERLAY STAGE
+       ========================================================================== */
+    .playback-overlay-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .playback-video-container {
+      position: relative;
+      flex: 1;
+      height: 100%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* TOP-RIGHT ACTIVE DEDUCTION BADGE OVERLAY */
+    .overlay-top-right-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 25;
+      background: rgba(10, 10, 15, 0.88);
+      border: 2px solid var(--fig-orange);
+      border-radius: 12px;
+      padding: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease, border-color 0.2s ease;
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+    }
+
+    .overlay-top-right-badge.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .overlay-badge-skill {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--fig-blue);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .overlay-badge-val {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--fig-orange);
+      line-height: 1.05;
+      transition: color 0.2s ease;
+    }
+
+    /* RUNNING LIST DOWN RIGHT SIDE (APPEARS 150MS AFTER LANDING DEDUCTION) */
+    .overlay-right-list-panel {
+      position: absolute;
+      top: 110px;
+      right: 16px;
+      bottom: 70px;
+      width: 180px;
+      z-index: 24;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      pointer-events: none;
+      padding-right: 2px;
+      opacity: 0;
+      transform: translateX(20px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .overlay-right-list-panel.visible {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .overlay-right-list-panel::-webkit-scrollbar {
+      display: none;
+    }
+
+    .running-list-item {
+      background: rgba(20, 20, 31, 0.82);
+      border: 1px solid var(--border-col);
+      backdrop-filter: blur(6px);
+      border-radius: 8px;
+      padding: 6px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #ffffff;
+      transition: border-color 0.2s ease, background 0.2s ease;
+      cursor: pointer;
+    }
+
+    .running-list-item.current-speaking {
+      border-color: var(--fig-orange);
+      background: rgba(230, 138, 0, 0.22);
+    }
+
+    .item-skill-lbl { color: var(--text-sub); }
+    .item-deduct-val { color: var(--fig-pink); font-weight: 800; }
+
+    /* END OF ROUTINE SCORE CARD OVERLAY (POSITIONED BOTTOM RIGHT) */
+    .overlay-summary-card {
+      position: absolute;
+      bottom: 70px;
+      right: 16px;
+      z-index: 30;
+      background: rgba(14, 14, 22, 0.95);
+      border: 2px solid var(--fig-green);
+      backdrop-filter: blur(12px);
+      border-radius: 14px;
+      padding: 14px 18px;
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px) scale(0.95);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .overlay-summary-card.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .summary-card-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--fig-green);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .summary-card-score {
+      font-size: 2.6rem;
+      font-weight: 900;
+      color: var(--fig-green);
+      line-height: 1;
+    }
+
+    .summary-card-sub {
+      font-size: 0.78rem;
+      color: var(--fig-pink);
+      font-weight: 700;
+    }
+
+    /* END OF REPLAY CENTERED BOTTOM NAVIGATION BOX */
+    .overlay-end-nav-box {
+      position: absolute;
+      bottom: 70px;
+      left: 50%;
+      z-index: 31;
+      background: rgba(14, 14, 22, 0.95);
+      border: 1px solid var(--border-col);
+      backdrop-filter: blur(12px);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-50%) translateY(10px) scale(0.95);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      max-width: calc(100% - 32px);
+    }
+
+    .overlay-end-nav-box.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .btn-summary-action {
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 1px solid var(--border-col);
+      background: #1e1c2e;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .btn-summary-action:active { opacity: 0.85; transform: scale(0.98); }
+
+    /* PLAYBACK BOTTOM BAR CONTROLS */
+    .playback-controls-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 16px;
+      right: 16px;
+      height: 46px;
+      background: rgba(14, 14, 22, 0.9);
+      border: 1px solid var(--border-col);
+      backdrop-filter: blur(8px);
+      border-radius: 10px;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 12px;
+    }
+
+    .scrubber-track-wrapper {
+      position: relative;
+      flex: 1;
+      height: 24px;
+      display: flex;
+      align-items: center;
+    }
+
+    .playback-scrubber {
+      width: 100%;
+      height: 6px;
+      accent-color: var(--fig-orange);
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+    }
+
+    .scrubber-dots-layer {
+      position: absolute;
+      left: 7px;
+      right: 7px;
+      top: 50%;
+      height: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .scrubber-skill-dot {
+      position: absolute;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--fig-purple);
+      border: 1.5px solid #111118;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 4px rgba(125, 95, 179, 0.8);
+    }
+
+    /* MODAL OVERLAYS, TRAINER, FILENAME & VIDEO EXPORT PROGRESS */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 15, 0.88);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .trainer-modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-col);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+
+    .trainer-header { text-align: center; width: 100%; }
+    .trainer-title { font-size: 1.1rem; font-weight: 800; color: var(--fig-green); }
+    .trainer-subtitle { font-size: 0.75rem; color: var(--text-sub); margin-top: 2px; line-height: 1.35; }
+
+    .trainer-canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      background: #08080d;
+      border: 2px dashed var(--border-col);
+      border-radius: 10px;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .trainer-canvas { width: 100%; height: 100%; cursor: crosshair; }
+    .trainer-btn-group { display: flex; gap: 8px; width: 100%; }
+
+    .trainer-btn {
+      flex: 1;
+      padding: 10px 0;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-align: center;
+      border: 1px solid var(--border-col);
+    }
+
+    .btn-clear { background: #1e1c2e; color: var(--text-sub); }
+    .btn-clear:active { background: var(--fig-purple); color: #fff; }
+    .btn-cancel { background: #2a1b24; border-color: var(--fig-pink); color: var(--fig-pink); }
+    .btn-cancel:active { background: var(--fig-pink); color: #fff; }
+    .btn-save { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; border: none; }
+    .btn-save:active { opacity: 0.9; }
+
+    /* FILENAME INPUT BOX */
+    .filename-input-group {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background: #08080d;
+      border: 1px solid var(--fig-blue);
+      border-radius: 8px;
+      padding: 0 12px;
+      height: 44px;
+    }
+
+    .filename-text-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-weight: 600;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .filename-ext-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--fig-green);
+      font-family: monospace;
+      padding-left: 8px;
+    }
+
+    /* EXPORT PROGRESS BAR */
+    .export-progress-track {
+      width: 100%;
+      height: 12px;
+      background: #08080d;
+      border: 1px solid var(--border-col);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .export-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--fig-green), var(--fig-blue));
+      transition: width 0.1s linear;
+    }
+
+    .export-pct-label {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--fig-green);
+      font-family: monospace;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+  <!-- Top Status Bar -->
+  <div class="status-bar">
+    <div class="status-title">
+      <!-- Square Olympic Trampoline SVG Icon -->
+      <svg width="20" height="20" style="stroke:var(--fig-orange);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="6" width="18" height="8" rx="1.5"></rect>
+        <rect x="6" y="8" width="12" height="4" rx="0.5"></rect>
+        <line x1="3" y1="6" x2="6" y2="8"></line>
+        <line x1="21" y1="6" x2="18" y2="8"></line>
+        <line x1="3" y1="14" x2="6" y2="12"></line>
+        <line x1="21" y1="14" x2="18" y2="12"></line>
+        <line x1="12" y1="9" x2="12" y2="11"></line>
+        <line x1="10" y1="10" x2="14" y2="10"></line>
+      </svg>
+      <span id="phaseBadge" class="phase-badge badge-setup">Setup Video</span>
+      <span id="skillCounter" class="hidden">Skill 1 / 10</span>
+    </div>
+    <div style="display:flex; gap:6px; align-items:center;">
+      <button id="btnFinishRoutine" class="btn-header btn-finish-routine hidden" onclick="finishRoutineEarly()">Finish Early</button>
+      <button class="btn-header" onclick="toggleFullscreen()">Fullscreen</button>
+      <button class="btn-header" onclick="resetToSetup()">New Video</button>
+    </div>
+  </div>
+
+  <!-- Main Work Area -->
+  <div class="main-content">
+
+    <!-- 1. SETUP / CONFIGURATION SCREEN -->
+    <div id="setupScreen" class="setup-screen">
+
+      <!-- STEP 1: VIDEO FILE SELECTOR -->
+      <div class="setup-section-card">
+        <div class="section-title">
+          <svg class="section-title-icon" style="stroke:var(--fig-blue);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="23 7 16 12 23 17 23 7"></polygon>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+          </svg>
+          1. Select Routine Video
+        </div>
+        <div class="section-desc">Choose a video file from your device to record timestamped deductions.</div>
+
+        <div class="video-file-dropzone" onclick="document.getElementById('videoFileInput').click()">
+          <div class="dropzone-icon">🎬</div>
+          <div class="dropzone-title">Click to Load Routine Video</div>
+          <div class="dropzone-sub">Supports MP4, MOV, WebM video files</div>
+          <div id="selectedVideoName" class="selected-video-badge hidden">No File Loaded</div>
+        </div>
+        <input type="file" id="videoFileInput" accept="video/*" class="hidden" onchange="handleVideoFileSelected(event)">
+      </div>
+
+      <!-- STEP 2: DISCIPLINE SELECTOR -->
+      <div class="setup-section-card">
+        <div class="section-title" style="color:var(--fig-purple);">
+          <svg class="section-title-icon" style="stroke:var(--fig-purple);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 6v6l4 2"></path>
+          </svg>
+          2. Discipline & Routine Rules
+        </div>
+        <div class="preset-group">
+          <div class="preset-card selected" id="discTrpCard" onclick="selectDiscipline('TRP', this)">
+            <h4>TRP</h4>
+            <p>10 Skills + Landing</p>
+          </div>
+          <div class="preset-card" id="discDmtCard" onclick="selectDiscipline('DMT', this)">
+            <h4>DMT</h4>
+            <p>2 Skills + Landing</p>
+          </div>
+          <div class="preset-card" id="discTumCard" onclick="selectDiscipline('TUM', this)">
+            <h4>TUM</h4>
+            <p>8 Skills + Landing</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: PATTERN TRAINER FOR NUMBER RECOGNISER -->
+      <div class="setup-section-card">
+        <div class="section-title" style="color:var(--fig-green);">
+          <svg class="section-title-icon" style="stroke:var(--fig-green);" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+            <path d="M2 2l7.58 7.58"></path>
+            <circle cx="11" cy="11" r="2"></circle>
+          </svg>
+          Number Recogniser Pattern Trainer
+          <button id="btnResetPatterns" class="btn-reset-patterns hidden" onclick="resetSavedTemplates()">Reset Saved</button>
+        </div>
+        <div class="section-desc">Train custom stroke handwriting styles (saved automatically in browser storage). Landing scale uses 0, 1, 2, 3, 5, 10 (-0.0 to -1.0).</div>
+
+        <div class="section-subtitle">Recognized Strokes <span style="font-weight:normal; text-transform:none; color:var(--fig-blue);">(Click digit to train custom pattern)</span></div>
+        <div class="num-guide-grid">
+          <div class="num-guide-card" onclick="openTemplateTrainer('0')">
+            <div class="num-guide-digit">0</div>
+            <div class="num-guide-val">-0.0 Deduct</div>
+            <div class="num-guide-hint" id="hint-0"><span>Tap to train</span></div>
+          </div>
+          <div class="num-guide-card" onclick="openTemplateTrainer('1')">
+            <div class="num-guide-digit">1</div>
+            <div class="num-guide-val">-0.1 Deduct</div>
+            <div class="num-guide-hint" id="hint-1"><span>Tap to train</span></div>
+          </div>
+          <div class="num-guide-card" onclick="openTemplateTrainer('2')">
+            <div class="num-guide-digit">2</div>
+            <div class="num-guide-val">-0.2 Deduct</div>
+            <div class="num-guide-hint" id="hint-2"><span>Tap to train</span></div>
+          </div>
+          <div class="num-guide-card" onclick="openTemplateTrainer('3')">
+            <div class="num-guide-digit">3</div>
+            <div class="num-guide-val">-0.3 Deduct</div>
+            <div class="num-guide-hint" id="hint-3"><span>Tap to train</span></div>
+          </div>
+          <div class="num-guide-card" onclick="openTemplateTrainer('4')">
+            <div class="num-guide-digit">4</div>
+            <div class="num-guide-val">-0.4 (Skill)</div>
+            <div class="num-guide-hint" id="hint-4"><span>Tap to train</span></div>
+          </div>
+          <div class="num-guide-card" onclick="openTemplateTrainer('5')">
+            <div class="num-guide-digit">5</div>
+            <div class="num-guide-val">-0.5 Deduct</div>
+            <div class="num-guide-hint" id="hint-5"><span>Tap to train</span></div>
+          </div>
+          <div class="num-guide-card" onclick="openTemplateTrainer('10')" style="grid-column: span 2;">
+            <div class="num-guide-digit" style="color:var(--fig-pink);">10</div>
+            <div class="num-guide-val">-1.0 (Landing)</div>
+            <div class="num-guide-hint" id="hint-10"><span>Tap to train</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: INPUT METHOD SELECTOR & LAUNCH -->
+      <div class="setup-section-card">
+        <div class="section-title" style="color:var(--fig-orange);">
+          <svg class="section-title-icon" style="stroke:var(--fig-orange);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"></path>
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
+          </svg>
+          4. Choose Live Gesture Interface
+        </div>
+        <div class="section-desc">Perform gesture swipes or write digits over the playing video. Timestamps and cropped drawing thumbnails lock in automatically per gesture.</div>
+
+        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-top:4px;">
+          <button class="btn-primary btn-swipe-start" onclick="startVideoJudging('swipe')">Start Directional Swipe</button>
+          <button class="btn-primary btn-recognizer-start" onclick="startVideoJudging('recognizer')">Start Number Recognizer</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 2. LIVE VIDEO JUDGING STAGE -->
+    <div id="judgingStage" class="video-judging-wrapper hidden">
+      <video id="judgingVideo" class="video-player-element" playsinline></video>
+      <canvas id="gestureOverlayCanvas" class="gesture-overlay-canvas"></canvas>
+
+      <!-- LIVE HUD -->
+      <div class="judging-hud-overlay">
+        <div class="hud-card">
+          <div class="hud-skill-lbl" id="hudSkillLabel">Skill 1 / 10</div>
+          <div class="hud-deduct-val" id="hudDeductVal">-0.0</div>
+          <div class="hud-time-val" id="hudTimeVal">00:00.0</div>
+        </div>
+      </div>
+
+      <!-- BOTTOM VIDEO CONTROLS -->
+      <div class="video-live-controls">
+        <button class="btn-hud-ctrl" onclick="togglePlayPauseLiveVideo()"><span id="playPauseIcon">⏸️</span> Pause</button>
+        <button class="btn-hud-ctrl" onclick="restartLiveVideo()">🔄 Restart</button>
+      </div>
+    </div>
+
+    <!-- 3. REVIEW & EDIT CHECKPOINT SCREEN -->
+    <div id="reviewScreen" class="review-screen hidden">
+      <div class="score-banner">
+        <div class="score-box">
+          <span class="score-lbl">Skills</span>
+          <div class="value-controls-group">
+            <button class="btn-step" onclick="adjustSkillsCount(-1)">−</button>
+            <span class="sk-val" id="skillsCountDisplay" style="color:var(--fig-blue);">10</span>
+            <button class="btn-step" onclick="adjustSkillsCount(1)">+</button>
+          </div>
+        </div>
+
+        <div class="score-box">
+          <span class="score-lbl">Total Deductions</span>
+          <div class="deduct-val" id="totalDeductDisplay">0.00</div>
+        </div>
+
+        <div class="score-box">
+          <span class="score-lbl">Net E-Score</span>
+          <div class="score-val" id="netScoreDisplay">10.00</div>
+        </div>
+      </div>
+
+      <div class="review-list" id="reviewList"></div>
+
+      <div class="review-action-bar">
+        <button class="btn-primary" onclick="confirmAndEnterOverlayPlayback()" style="flex: 1.3; background: linear-gradient(135deg, var(--fig-orange), var(--fig-pink));">▶ Apply Overlay & Play</button>
+        <button class="btn-primary btn-download" onclick="openFilenameModal('standard')" style="flex: 1;">🎬 Download Video</button>
+        <button class="btn-primary btn-training" onclick="openFilenameModal('training')" style="flex: 1.15;">🎓 Create Training Video</button>
+        <button class="btn-primary btn-secondary" onclick="resetToSetup()" style="flex: 0.85;">New Video</button>
+      </div>
+    </div>
+
+    <!-- 4. SYNCHRONIZED VIDEO PLAYBACK & OVERLAY STAGE -->
+    <div id="playbackOverlayStage" class="playback-overlay-wrapper hidden">
+      <div class="playback-video-container">
+        <video id="playbackVideo" class="video-player-element" playsinline></video>
+
+        <!-- TOP RIGHT ACTIVE DEDUCTION BADGE -->
+        <div id="overlayTopRightBadge" class="overlay-top-right-badge">
+          <span id="overlayBadgeSkill" class="overlay-badge-skill">SKILL 1</span>
+          <span id="overlayBadgeVal" class="overlay-badge-val">-0.2</span>
+        </div>
+
+        <!-- RUNNING LIST DOWN RIGHT SIDE (APPEARS 150MS AFTER LANDING DEDUCTION) -->
+        <div id="overlayRightListPanel" class="overlay-right-list-panel"></div>
+
+        <!-- END OF ROUTINE SCORE CARD OVERLAY (POSITIONED BOTTOM RIGHT) -->
+        <div id="overlaySummaryCard" class="overlay-summary-card">
+          <div class="summary-card-title">Routine Score</div>
+          <div id="summaryCardNet" class="summary-card-score">9.50</div>
+          <div id="summaryCardDeduct" class="summary-card-sub">Total Deductions: -0.50</div>
+        </div>
+
+        <!-- END OF REPLAY CENTERED BOTTOM NAVIGATION BOX -->
+        <div id="overlayEndNavBox" class="overlay-end-nav-box">
+          <button class="btn-summary-action" style="background:linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color:#111; border:none;" onclick="openFilenameModal('standard')">🎬 Download Video</button>
+          <button class="btn-summary-action" style="background:linear-gradient(135deg, var(--fig-purple), var(--fig-blue)); color:#fff; border:none;" onclick="openFilenameModal('training')">🎓 Create Training Video</button>
+          <button class="btn-summary-action" onclick="exitOverlayToReview()">✏️ Adjust Deductions</button>
+          <button class="btn-summary-action" onclick="restartOverlayPlayback()">🔁 Replay Video</button>
+          <button class="btn-summary-action" style="background:#2a1b24; border-color:var(--fig-pink); color:var(--fig-pink);" onclick="resetToSetup()">🏠 Start Screen</button>
+        </div>
+
+        <!-- BOTTOM PLAYBACK BAR -->
+        <div class="playback-controls-bar">
+          <button class="btn-hud-ctrl" onclick="togglePlayPausePlayback()"><span id="pbPlayIcon">▶</span></button>
+          <div class="scrubber-track-wrapper">
+            <input type="range" id="pbScrubber" class="playback-scrubber" min="0" max="100" value="0" step="0.1" oninput="scrubPlaybackVideo(this.value)">
+            <div id="scrubberDotsLayer" class="scrubber-dots-layer"></div>
+          </div>
+          <span id="pbTimeDisplay" style="font-size:0.75rem; font-family:monospace; color:var(--text-sub);">00:00 / 00:00</span>
+          <button class="btn-header" onclick="exitOverlayToReview()">Edit Deductions</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. CUSTOM GESTURE TRAINER MODAL -->
+    <div id="trainerModal" class="modal-overlay hidden">
+      <div class="trainer-modal-card">
+        <div class="trainer-header">
+          <div class="trainer-title" id="trainerTitle">Train Digit "0"</div>
+          <div class="trainer-subtitle">Draw your custom stroke pattern below</div>
+        </div>
+
+        <div class="trainer-canvas-wrapper">
+          <canvas id="trainerCanvas" class="trainer-canvas"></canvas>
+        </div>
+
+        <div class="trainer-btn-group">
+          <button class="trainer-btn btn-clear" onclick="clearTrainerCanvas()">Clear</button>
+          <button class="trainer-btn btn-cancel" onclick="closeTemplateTrainer()">Cancel</button>
+          <button class="trainer-btn btn-save" onclick="saveCustomTemplate()">Save Pattern</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. FILENAME PROMPT MODAL -->
+    <div id="filenameModal" class="modal-overlay hidden">
+      <div class="trainer-modal-card">
+        <div class="trainer-header">
+          <div class="trainer-title" id="filenameModalTitle">Export Burned Video</div>
+          <div class="trainer-subtitle" id="filenameModalSubtitle">Enter a filename for your downloaded video</div>
+        </div>
+
+        <div class="filename-input-group">
+          <input type="text" id="exportFilenameInput" class="filename-text-input" placeholder="Routine_Judging_Video" onkeydown="if(event.key==='Enter') confirmFilenameAndExport()">
+          <span id="exportFileExtBadge" class="filename-ext-badge">.mp4</span>
+        </div>
+
+        <div class="trainer-btn-group">
+          <button class="trainer-btn btn-cancel" onclick="closeFilenameModal()">Cancel</button>
+          <button class="trainer-btn btn-save" onclick="confirmFilenameAndExport()">Render & Download</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. BURNED VIDEO EXPORT PROGRESS MODAL -->
+    <div id="exportModal" class="modal-overlay hidden">
+      <div class="trainer-modal-card">
+        <div class="trainer-header">
+          <div class="trainer-title" id="exportModalTitle">Rendering Burned Overlay Video</div>
+          <div class="trainer-subtitle" id="exportStatusText">Compositing frames & audio... Keep this tab active.</div>
+        </div>
+
+        <div class="export-pct-label" id="exportPctLabel">0%</div>
+
+        <div class="export-progress-track">
+          <div class="export-progress-fill" id="exportProgressFill"></div>
+        </div>
+
+        <div class="trainer-btn-group" style="margin-top:4px;">
+          <button class="trainer-btn btn-cancel" onclick="cancelVideoExport()">Cancel Export</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  /* ==========================================================================
+     $P POINT SPACE RECOGNIZER CLASS IMPLEMENTATION
+     ========================================================================== */
+  class Point {
+    constructor(x, y, strokeId = 1) {
+      this.x = x;
+      this.y = y;
+      this.strokeId = strokeId;
+    }
+  }
+
+  class PDollarPointSet {
+    constructor(name, points) {
+      this.Name = name;
+      this.Points = pResample(points, 32);
+      this.Points = pScale(this.Points);
+      this.Points = pTranslateToOrigin(this.Points);
+    }
+  }
+
+  class PDollarRecognizer {
+    constructor() {
+      this.PointSets = [];
+      this.initTemplates();
+    }
+
+    Recognize(points) {
+      if (!points || points.length === 0) return { Name: "0", Score: 0 };
+      let candidate = pResample(points, 32);
+      candidate = pScale(candidate);
+      candidate = pTranslateToOrigin(candidate);
+
+      let bestDistance = Infinity;
+      let bestTemplate = null;
+
+      for (let i = 0; i < this.PointSets.length; i++) {
+        let dist = pGreedyMatch(candidate, this.PointSets[i].Points);
+        if (dist < bestDistance) {
+          bestDistance = dist;
+          bestTemplate = this.PointSets[i];
+        }
+      }
+
+      let score = bestTemplate ? Math.max(0, (2.0 - bestDistance) / 2.0) : 0;
+      return {
+        Name: bestTemplate ? bestTemplate.Name : "0",
+        Score: score
+      };
+    }
+
+    initTemplates() {
+      this.PointSets = [];
+      const makePolyline = (keyPoints, strokeId = 1) => {
+        let pts = [];
+        for (let i = 0; i < keyPoints.length - 1; i++) {
+          let p1 = keyPoints[i];
+          let p2 = keyPoints[i + 1];
+          let steps = 10;
+          for (let s = 0; s < steps; s++) {
+            let t = s / steps;
+            pts.push(new Point(p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y), strokeId));
+          }
+        }
+        let last = keyPoints[keyPoints.length - 1];
+        pts.push(new Point(last.x, last.y, strokeId));
+        return pts;
+      };
+
+      const makeCircle = (cx, cy, r, strokeId = 1, counterClockwise = false) => {
+        let pts = [];
+        let steps = 32;
+        for (let i = 0; i <= steps; i++) {
+          let angle = (i / steps) * 2 * Math.PI * (counterClockwise ? -1 : 1) - Math.PI / 2;
+          pts.push(new Point(cx + r * Math.cos(angle), cy + r * Math.sin(angle), strokeId));
+        }
+        return pts;
+      };
+
+      this.PointSets.push(new PDollarPointSet("0", makeCircle(0.5, 0.5, 0.4, 1, false)));
+      this.PointSets.push(new PDollarPointSet("0", makeCircle(0.5, 0.5, 0.4, 1, true)));
+      this.PointSets.push(new PDollarPointSet("1", makePolyline([{x:0.5, y:0.1}, {x:0.5, y:0.9}], 1)));
+      this.PointSets.push(new PDollarPointSet("2", makePolyline([{x:0.2, y:0.25}, {x:0.5, y:0.1}, {x:0.8, y:0.25}, {x:0.5, y:0.5}, {x:0.2, y:0.85}, {x:0.8, y:0.85}], 1)));
+      this.PointSets.push(new PDollarPointSet("3", makePolyline([{x:0.25, y:0.15}, {x:0.75, y:0.15}, {x:0.45, y:0.45}, {x:0.8, y:0.65}, {x:0.25, y:0.85}], 1)));
+      this.PointSets.push(new PDollarPointSet("4", makePolyline([{x:0.7, y:0.85}, {x:0.7, y:0.15}, {x:0.2, y:0.6}, {x:0.85, y:0.6}], 1)));
+      this.PointSets.push(new PDollarPointSet("5", makePolyline([{x:0.8, y:0.15}, {x:0.3, y:0.15}, {x:0.3, y:0.45}, {x:0.75, y:0.55}, {x:0.6, y:0.85}, {x:0.25, y:0.85}], 1)));
+      
+      const tenPts = [
+        ...makePolyline([{x:0.25, y:0.15}, {x:0.25, y:0.85}], 1),
+        ...makeCircle(0.68, 0.5, 0.35, 2, false)
+      ];
+      this.PointSets.push(new PDollarPointSet("10", tenPts));
+    }
+  }
+
+  function pDistance(p1, p2) { return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2); }
+  function pPathLength(points) {
+    let d = 0;
+    for (let i = 1; i < points.length; i++) {
+      if (points[i].strokeId === points[i - 1].strokeId) d += pDistance(points[i - 1], points[i]);
+    }
+    return d;
+  }
+
+  function pResample(points, n) {
+    const I = pPathLength(points) / (n - 1);
+    if (I === 0 || !isFinite(I)) {
+      let pts = [];
+      for (let i = 0; i < n; i++) pts.push(new Point(points[0].x, points[0].y, points[0].strokeId));
+      return pts;
+    }
+    let D = 0.0;
+    let newPoints = [new Point(points[0].x, points[0].y, points[0].strokeId)];
+    let ptsCopy = [...points];
+
+    for (let i = 1; i < ptsCopy.length; i++) {
+      if (ptsCopy[i].strokeId === ptsCopy[i - 1].strokeId) {
+        let d = pDistance(ptsCopy[i - 1], ptsCopy[i]);
+        if (D + d >= I) {
+          let qx = ptsCopy[i - 1].x + ((I - D) / d) * (ptsCopy[i].x - ptsCopy[i - 1].x);
+          let qy = ptsCopy[i - 1].y + ((I - D) / d) * (ptsCopy[i].y - ptsCopy[i - 1].y);
+          let q = new Point(qx, qy, ptsCopy[i].strokeId);
+          newPoints.push(q);
+          ptsCopy.splice(i, 0, q);
+          D = 0.0;
+        } else { D += d; }
+      }
+    }
+    while (newPoints.length < n) {
+      newPoints.push(new Point(points[points.length - 1].x, points[points.length - 1].y, points[points.length - 1].strokeId));
+    }
+    return newPoints.slice(0, n);
+  }
+
+  function pScale(points) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (let p of points) {
+      minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+    }
+    let size = Math.max(maxX - minX, maxY - minY) || 1;
+    return points.map(p => new Point((p.x - minX) / size, (p.y - minY) / size, p.strokeId));
+  }
+
+  function pTranslateToOrigin(points) {
+    let c = pCentroid(points);
+    return points.map(p => new Point(p.x - c.x, p.y - c.y, p.strokeId));
+  }
+
+  function pCentroid(points) {
+    let x = 0, y = 0;
+    for (let p of points) { x += p.x; y += p.y; }
+    return { x: x / points.length, y: y / points.length };
+  }
+
+  function pGreedyMatch(points1, points2) {
+    let n = points1.length;
+    let step = Math.floor(Math.pow(n, 0.5));
+    let minDistance = Infinity;
+    for (let i = 0; i < n; i += step) {
+      let d1 = pCloudDistance(points1, points2, i);
+      let d2 = pCloudDistance(points2, points1, i);
+      minDistance = Math.min(minDistance, d1, d2);
+    }
+    return minDistance;
+  }
+
+  function pCloudDistance(pts1, pts2, start) {
+    let n = pts1.length;
+    let matched = new Array(n).fill(false);
+    let sum = 0;
+    let i = start;
+    do {
+      let index = -1, minD = Infinity;
+      for (let j = 0; j < n; j++) {
+        if (!matched[j]) {
+          let d = pDistance(pts1[i], pts2[j]);
+          if (d < minD) { minD = d; index = j; }
+        }
+      }
+      matched[index] = true;
+      let weight = 1 - ((i - start + n) % n) / n;
+      sum += weight * minD;
+      i = (i + 1) % n;
+    } while (i !== start);
+    return sum;
+  }
+
+  const dollarRecognizer = new PDollarRecognizer();
+
+  /* ==========================================================================
+     LOCAL STORAGE PERSISTENCE FOR CUSTOM TRAINED PATTERNS
+     ========================================================================== */
+  const CUSTOM_TEMPLATES_STORAGE_KEY = 'judgle_custom_pdollar_templates_v1';
+  let savedCustomTemplatesList = [];
+  let customTrainedDigits = {};
+
+  function loadSavedTemplatesFromStorage() {
+    try {
+      const raw = localStorage.getItem(CUSTOM_TEMPLATES_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return;
+
+      savedCustomTemplatesList = parsed;
+      parsed.forEach(item => {
+        if (item && item.name && Array.isArray(item.points) && item.points.length >= 3) {
+          const pts = item.points.map(p => new Point(p.x, p.y, p.strokeId || 1));
+          dollarRecognizer.PointSets.push(new PDollarPointSet(item.name, pts));
+          customTrainedDigits[item.name] = true;
+        }
+      });
+    } catch (e) {
+      console.warn('Could not load saved custom patterns from localStorage:', e);
+    }
+  }
+
+  function persistTemplateToStorage(digit, points) {
+    try {
+      savedCustomTemplatesList.push({
+        name: digit,
+        points: points.map(p => ({ x: p.x, y: p.y, strokeId: p.strokeId }))
+      });
+      localStorage.setItem(CUSTOM_TEMPLATES_STORAGE_KEY, JSON.stringify(savedCustomTemplatesList));
+    } catch (e) {
+      console.warn('Could not save custom pattern to localStorage:', e);
+    }
+  }
+
+  function resetSavedTemplates() {
+    if (!confirm('Clear all saved custom handwriting patterns and revert to defaults?')) return;
+    try {
+      localStorage.removeItem(CUSTOM_TEMPLATES_STORAGE_KEY);
+    } catch (e) {}
+    savedCustomTemplatesList = [];
+    customTrainedDigits = {};
+    dollarRecognizer.initTemplates();
+    updateTrainedHints();
+    triggerFeedback('tap');
+  }
+
+  /* ==========================================================================
+     BOUNDING-BOX THUMBNAIL CROPPING HELPER
+     ========================================================================== */
+  function getCroppedThumbnailFromPoints(points, sourceCanvas, padding = 20) {
+    if (!points || points.length === 0 || !sourceCanvas) return null;
+
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    points.forEach(p => {
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y);
+      maxY = Math.max(maxY, p.y);
+    });
+
+    let w = maxX - minX;
+    let h = maxY - minY;
+    if (w < 10) { minX -= 15; maxX += 15; }
+    if (h < 10) { minY -= 15; maxY += 15; }
+
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(sourceCanvas.width, maxX + padding);
+    maxY = Math.min(sourceCanvas.height, maxY + padding);
+
+    const cropW = Math.max(1, maxX - minX);
+    const cropH = Math.max(1, maxY - minY);
+
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = cropW;
+    tempCanvas.height = cropH;
+    const tempCtx = tempCanvas.getContext('2d');
+
+    tempCtx.fillStyle = '#DCE0DC';
+    tempCtx.fillRect(0, 0, cropW, cropH);
+
+    tempCtx.drawImage(sourceCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+    return tempCanvas.toDataURL('image/png');
+  }
+
+  /* ==========================================================================
+     APP STATE & CONFIGURATION
+     ========================================================================== */
+  const DISCIPLINE_SKILLS = { TRP: 10, DMT: 2, TUM: 8 };
+  const LANDING_DEDUCTION_SCALE = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
+
+  let currentDiscipline = 'TRP';
+  let videoObjectUrl = null;
+  let loadedVideoBaseName = '';
+  let currentInterface = 'swipe';
+  let phase = 'setup';
+
+  let currentSkillIndex = 0;
+  let skillDeductions = new Array(10).fill(0);
+  let skillTimestamps = new Array(10).fill(0);
+  let skillThumbnails = new Array(10).fill(null);
+  let skillMatchScores = new Array(10).fill(null);
+
+  let landingDeduction = 0;
+  let landingTimestamp = 0;
+  let landingThumbnail = null;
+  let landingMatchScore = null;
+
+  let skillsPerformed = 10;
+
+  // DOM Elements
+  const setupScreen          = document.getElementById('setupScreen');
+  const judgingStage         = document.getElementById('judgingStage');
+  const reviewScreen         = document.getElementById('reviewScreen');
+  const playbackOverlayStage = document.getElementById('playbackOverlayStage');
+
+  const judgingVideo         = document.getElementById('judgingVideo');
+  const playbackVideo        = document.getElementById('playbackVideo');
+  const gestureOverlayCanvas = document.getElementById('gestureOverlayCanvas');
+  const overlayCtx           = gestureOverlayCanvas ? gestureOverlayCanvas.getContext('2d') : null;
+
+  const phaseBadge           = document.getElementById('phaseBadge');
+  const skillCounter         = document.getElementById('skillCounter');
+  const btnFinishRoutine     = document.getElementById('btnFinishRoutine');
+
+  /* ==========================================================================
+     AUDIO SYNTHESIS FEEDBACK
+     ========================================================================== */
+  let audioCtx = null;
+  function playBeep(freq, startTime, duration = 0.035) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, startTime);
+    gain.gain.setValueAtTime(0.12, startTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+  }
+
+  function triggerFeedback(type = 'tap') {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const now = audioCtx.currentTime;
+      if (type === 'landing') { playBeep(880, now, 0.04); playBeep(1100, now + 0.07, 0.06); }
+      else if (type === 'complete') { playBeep(660, now, 0.04); playBeep(880, now + 0.06, 0.08); }
+      else { playBeep(520, now, 0.035); }
+    } catch (e) {}
+  }
+
+  function getMaxSkills() { return DISCIPLINE_SKILLS[currentDiscipline] || 10; }
+
+  function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return "00:00.0";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    const ms = Math.floor((seconds % 1) * 10);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms}`;
+  }
+
+  function getDeductionBadgeColor(deductionVal) {
+    const tenths = Math.round(deductionVal * 10);
+    if (tenths <= 1) return 'var(--fig-green)';
+    if (tenths <= 3) return 'var(--fig-orange)';
+    return 'var(--fig-red)';
+  }
+
+  function getDeductionHexColor(deductionVal) {
+    const tenths = Math.round(deductionVal * 10);
+    if (tenths <= 1) return '#9bd98b';
+    if (tenths <= 3) return '#e68a00';
+    return '#f44336';
+  }
+
+  /* ==========================================================================
+     VIDEO FILE LOADING
+     ========================================================================== */
+  function handleVideoFileSelected(event) {
+    const file = event.target.files[0];
+    if (file) {
+      if (videoObjectUrl) URL.revokeObjectURL(videoObjectUrl);
+      videoObjectUrl = URL.createObjectURL(file);
+      loadedVideoBaseName = file.name.replace(/\.[^/.]+$/, '');
+      judgingVideo.src = videoObjectUrl;
+      playbackVideo.src = videoObjectUrl;
+
+      const badge = document.getElementById('selectedVideoName');
+      badge.textContent = `✓ Loaded: ${file.name}`;
+      badge.classList.remove('hidden');
+    }
+  }
+
+  function selectDiscipline(discKey, el) {
+    currentDiscipline = discKey;
+    document.getElementById('discTrpCard').classList.remove('selected');
+    document.getElementById('discDmtCard').classList.remove('selected');
+    document.getElementById('discTumCard').classList.remove('selected');
+    el.classList.add('selected');
+  }
+
+  /* ==========================================================================
+     PATTERN TRAINER FOR NUMBER RECOGNISER
+     ========================================================================== */
+  let currentTrainerDigit = null;
+  let trainerPoints = [];
+  let trainerStrokeId = 0;
+  let isTrainerPointerDown = false;
+
+  const trainerModal  = document.getElementById('trainerModal');
+  const trainerCanvas = document.getElementById('trainerCanvas');
+  const trainerCtx    = trainerCanvas ? trainerCanvas.getContext('2d') : null;
+
+  function openTemplateTrainer(digit) {
+    currentTrainerDigit = digit;
+    document.getElementById('trainerTitle').textContent = `Train Digit "${digit}"`;
+    trainerModal.classList.remove('hidden');
+    setTimeout(initTrainerCanvas, 50);
+  }
+
+  function initTrainerCanvas() {
+    if (!trainerCanvas || !trainerCanvas.parentElement) return;
+    const rect = trainerCanvas.parentElement.getBoundingClientRect();
+    trainerCanvas.width = rect.width;
+    trainerCanvas.height = rect.height;
+    clearTrainerCanvas();
+  }
+
+  function clearTrainerCanvas() {
+    trainerPoints = [];
+    trainerStrokeId = 0;
+    if (trainerCtx && trainerCanvas) {
+      trainerCtx.clearRect(0, 0, trainerCanvas.width, trainerCanvas.height);
+    }
+  }
+
+  function closeTemplateTrainer() {
+    clearTrainerCanvas();
+    trainerModal.classList.add('hidden');
+  }
+
+  function saveCustomTemplate() {
+    if (!trainerPoints || trainerPoints.length < 3) {
+      alert("Please draw a stroke pattern before saving.");
+      return;
+    }
+    dollarRecognizer.PointSets.push(new PDollarPointSet(currentTrainerDigit, trainerPoints));
+    persistTemplateToStorage(currentTrainerDigit, trainerPoints);
+    customTrainedDigits[currentTrainerDigit] = true;
+    updateTrainedHints();
+    triggerFeedback('complete');
+    closeTemplateTrainer();
+  }
+
+  function updateTrainedHints() {
+    let anyCustom = false;
+    ['0','1','2','3','4','5','10'].forEach(digit => {
+      const hintEl = document.getElementById(`hint-${digit}`);
+      if (hintEl) {
+        if (customTrainedDigits[digit]) {
+          anyCustom = true;
+          hintEl.innerHTML = '<span>Tap to train</span><span class="num-guide-tick">✓</span>';
+        } else {
+          hintEl.innerHTML = '<span>Tap to train</span>';
+        }
+      }
+    });
+
+    const resetBtn = document.getElementById('btnResetPatterns');
+    if (resetBtn) {
+      if (anyCustom) resetBtn.classList.remove('hidden');
+      else resetBtn.classList.add('hidden');
+    }
+  }
+
+  // Hydrate persisted patterns from localStorage on initial load
+  loadSavedTemplatesFromStorage();
+  updateTrainedHints();
+
+  if (trainerCanvas) {
+    trainerCanvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      try { trainerCanvas.setPointerCapture(e.pointerId); } catch(err) {}
+      isTrainerPointerDown = true;
+      trainerStrokeId++;
+
+      const rect = trainerCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      trainerPoints.push(new Point(x, y, trainerStrokeId));
+
+      if (trainerCtx) {
+        trainerCtx.beginPath();
+        trainerCtx.moveTo(x, y);
+        trainerCtx.strokeStyle = '#9bd98b';
+        trainerCtx.lineWidth = 8;
+        trainerCtx.lineCap = 'round';
+        trainerCtx.lineJoin = 'round';
+      }
+    });
+
+    trainerCanvas.addEventListener('pointermove', (e) => {
+      if (!isTrainerPointerDown) return;
+      e.preventDefault();
+
+      const rect = trainerCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      trainerPoints.push(new Point(x, y, trainerStrokeId));
+
+      if (trainerCtx) {
+        trainerCtx.lineTo(x, y);
+        trainerCtx.stroke();
+      }
+    });
+
+    trainerCanvas.addEventListener('pointerup', (e) => {
+      if (!isTrainerPointerDown) return;
+      e.preventDefault();
+      isTrainerPointerDown = false;
+      try { trainerCanvas.releasePointerCapture(e.pointerId); } catch(err) {}
+    });
+  }
+
+  /* ==========================================================================
+     LIVE VIDEO JUDGING PHASE
+     ========================================================================== */
+  function startVideoJudging(mode) {
+    if (!videoObjectUrl) {
+      alert("Please select a video file first.");
+      return;
+    }
+
+    currentInterface = mode;
+    const maxSkills = getMaxSkills();
+    phase = 'routine';
+    currentSkillIndex = 0;
+    skillDeductions = new Array(maxSkills).fill(0);
+    skillTimestamps = new Array(maxSkills).fill(0);
+    skillThumbnails = new Array(maxSkills).fill(null);
+    skillMatchScores = new Array(maxSkills).fill(null);
+
+    landingDeduction = 0;
+    landingTimestamp = 0;
+    landingThumbnail = null;
+    landingMatchScore = null;
+    skillsPerformed = maxSkills;
+
+    setupScreen.classList.add('hidden');
+    reviewScreen.classList.add('hidden');
+    playbackOverlayStage.classList.add('hidden');
+    judgingStage.classList.remove('hidden');
+    btnFinishRoutine.classList.remove('hidden');
+    skillCounter.classList.remove('hidden');
+
+    phaseBadge.textContent = 'Live Video';
+    phaseBadge.className = 'phase-badge badge-routine';
+    updateCounter();
+
+    initCanvasOverlaySize();
+
+    judgingVideo.currentTime = 0;
+    judgingVideo.play().catch(() => {});
+    document.getElementById('playPauseIcon').textContent = '⏸️';
+
+    updateLiveHud(0.0, "Ready for input");
+  }
+
+  function initCanvasOverlaySize() {
+    if (!gestureOverlayCanvas || !judgingStage) return;
+    gestureOverlayCanvas.width = judgingStage.offsetWidth;
+    gestureOverlayCanvas.height = judgingStage.offsetHeight;
+  }
+
+  window.addEventListener('resize', () => {
+    initCanvasOverlaySize();
+    initTrainerCanvas();
+  });
+
+  function togglePlayPauseLiveVideo() {
+    if (judgingVideo.paused) {
+      judgingVideo.play();
+      document.getElementById('playPauseIcon').textContent = '⏸️';
+    } else {
+      judgingVideo.pause();
+      document.getElementById('playPauseIcon').textContent = '▶';
+    }
+  }
+
+  function restartLiveVideo() {
+    judgingVideo.currentTime = 0;
+    judgingVideo.play();
+    document.getElementById('playPauseIcon').textContent = '⏸️';
+  }
+
+  function updateCounter() {
+    const maxSkills = getMaxSkills();
+    if (phase === 'routine') {
+      skillCounter.textContent = `Skill ${currentSkillIndex + 1} / ${maxSkills}`;
+    } else if (phase === 'landing') {
+      skillCounter.textContent = `Landing Deduction`;
+    }
+  }
+
+  function updateLiveHud(val, actionName = '') {
+    const maxSkills = getMaxSkills();
+    const lbl = (phase === 'landing') ? 'Landing' : `Skill ${currentSkillIndex + 1} / ${maxSkills}`;
+    document.getElementById('hudSkillLabel').textContent = lbl;
+    document.getElementById('hudDeductVal').textContent = `-${val.toFixed(1)}`;
+    document.getElementById('hudTimeVal').textContent = formatTime(judgingVideo.currentTime);
+  }
+
+  function recordLiveDeduction(val, actionLabel = '', thumbData = null, matchScore = null, exactTimestamp = null) {
+    const currentTime = (exactTimestamp !== null) ? exactTimestamp : judgingVideo.currentTime;
+    const maxSkills = getMaxSkills();
+
+    if (phase === 'routine') {
+      triggerFeedback('tap');
+      skillDeductions[currentSkillIndex] = val;
+      skillTimestamps[currentSkillIndex] = currentTime;
+      if (thumbData) skillThumbnails[currentSkillIndex] = thumbData;
+      if (matchScore !== null) skillMatchScores[currentSkillIndex] = matchScore;
+
+      currentSkillIndex++;
+
+      if (currentSkillIndex >= maxSkills) {
+        phase = 'landing';
+        phaseBadge.textContent = 'Landing';
+        phaseBadge.className = 'phase-badge badge-landing';
+        triggerFeedback('landing');
+      }
+      updateCounter();
+      updateLiveHud(val, actionLabel);
+
+    } else if (phase === 'landing') {
+      landingDeduction = val;
+      landingTimestamp = currentTime;
+      if (thumbData) landingThumbnail = thumbData;
+      if (matchScore !== null) landingMatchScore = matchScore;
+
+      judgingVideo.pause();
+      enterReviewPhase();
+    }
+  }
+
+  function finishRoutineEarly() {
+    judgingVideo.pause();
+    skillsPerformed = currentSkillIndex;
+    enterReviewPhase();
+  }
+
+  /* ==========================================================================
+     GESTURE RECOGNITION (SWIPE & 300MS DEBOUNCED MULTI-STROKE RECOGNITION)
+     ========================================================================== */
+  let pointerPoints = [];
+  let isPointerDown = false;
+  let recognizerTimer = null;
+  let accumulatedRecPoints = [];
+  let currentStrokeId = 0;
+  let gestureStartTime = 0;
+
+  if (gestureOverlayCanvas) {
+    gestureOverlayCanvas.addEventListener('pointerdown', (e) => {
+      if (phase !== 'routine' && phase !== 'landing') return;
+      e.preventDefault();
+      try { gestureOverlayCanvas.setPointerCapture(e.pointerId); } catch(err) {}
+
+      isPointerDown = true;
+      const rect = gestureOverlayCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      if (currentInterface === 'swipe') {
+        pointerPoints = [{ x: e.clientX, y: e.clientY, t: Date.now() }];
+        gestureStartTime = judgingVideo.currentTime;
+      } else {
+        if (accumulatedRecPoints.length === 0) {
+          gestureStartTime = judgingVideo.currentTime;
+        }
+        if (recognizerTimer) { clearTimeout(recognizerTimer); recognizerTimer = null; }
+        currentStrokeId++;
+        accumulatedRecPoints.push(new Point(x, y, currentStrokeId));
+      }
+
+      if (overlayCtx) {
+        if (currentInterface === 'swipe') {
+          overlayCtx.clearRect(0, 0, gestureOverlayCanvas.width, gestureOverlayCanvas.height);
+        }
+        overlayCtx.beginPath();
+        overlayCtx.moveTo(x, y);
+        overlayCtx.strokeStyle = '#e68a00';
+        overlayCtx.lineWidth = 8;
+        overlayCtx.lineCap = 'round';
+        overlayCtx.lineJoin = 'round';
+      }
+    });
+
+    gestureOverlayCanvas.addEventListener('pointermove', (e) => {
+      if (!isPointerDown) return;
+      e.preventDefault();
+      const rect = gestureOverlayCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      if (currentInterface === 'swipe') {
+        pointerPoints.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+      } else {
+        accumulatedRecPoints.push(new Point(x, y, currentStrokeId));
+      }
+
+      if (overlayCtx) {
+        overlayCtx.lineTo(x, y);
+        overlayCtx.stroke();
+      }
+    });
+
+    gestureOverlayCanvas.addEventListener('pointerup', (e) => {
+      if (!isPointerDown) return;
+      e.preventDefault();
+      isPointerDown = false;
+      try { gestureOverlayCanvas.releasePointerCapture(e.pointerId); } catch(err) {}
+
+      if (currentInterface === 'swipe') {
+        const croppedThumb = getCroppedThumbnailFromPoints(pointerPoints, gestureOverlayCanvas);
+        if (overlayCtx) overlayCtx.clearRect(0, 0, gestureOverlayCanvas.width, gestureOverlayCanvas.height);
+        processSwipePoints(pointerPoints, croppedThumb, gestureStartTime);
+      } else {
+        recognizerTimer = setTimeout(() => {
+          const croppedThumb = getCroppedThumbnailFromPoints(accumulatedRecPoints, gestureOverlayCanvas);
+          if (overlayCtx) overlayCtx.clearRect(0, 0, gestureOverlayCanvas.width, gestureOverlayCanvas.height);
+          processNumberRecognitionPoints(accumulatedRecPoints, croppedThumb, gestureStartTime);
+          accumulatedRecPoints = [];
+          currentStrokeId = 0;
+        }, 300);
+      }
+    });
+  }
+
+  function processSwipePoints(points, thumbData, exactTime) {
+    if (!points || points.length === 0) return;
+    const start = points[0];
+    const end = points[points.length - 1];
+    let pathLength = 0;
+    for (let i = 1; i < points.length; i++) {
+      let dx = points[i].x - points[i-1].x;
+      let dy = points[i].y - points[i-1].y;
+      pathLength += Math.sqrt(dx * dx + dy * dy);
+    }
+    const netDx = end.x - start.x;
+    const netDy = end.y - start.y;
+    const netDist = Math.sqrt(netDx * netDx + netDy * netDy);
+
+    const isLanding = (phase === 'landing');
+
+    if (pathLength < 30) {
+      recordLiveDeduction(0.0, 'Tap (0.0)', thumbData, null, exactTime);
+      return;
+    }
+    if (pathLength > 90 && netDist < 70) {
+      const circleVal = isLanding ? 1.0 : 0.5;
+      recordLiveDeduction(circleVal, `Circle (${circleVal.toFixed(1)})`, thumbData, null, exactTime);
+      return;
+    }
+
+    if (Math.abs(netDy) >= Math.abs(netDx)) {
+      if (netDy < 0) {
+        recordLiveDeduction(0.1, 'Up (0.1)', thumbData, null, exactTime);
+      } else {
+        recordLiveDeduction(0.3, 'Down (0.3)', thumbData, null, exactTime);
+      }
+    } else {
+      if (netDx > 0) {
+        recordLiveDeduction(0.2, 'Right (0.2)', thumbData, null, exactTime);
+      } else {
+        const leftVal = isLanding ? 0.5 : 0.4;
+        recordLiveDeduction(leftVal, `Left (${leftVal.toFixed(1)})`, thumbData, null, exactTime);
+      }
+    }
+  }
+
+  function processNumberRecognitionPoints(points, thumbData, exactTime) {
+    if (!points || points.length < 3) return;
+    const result = dollarRecognizer.Recognize(points);
+    const digit = result ? result.Name : "0";
+    const matchScore = result ? Math.round(result.Score * 100) : null;
+
+    const isLanding = (phase === 'landing');
+    let val = 0.0;
+
+    if (digit === "10") {
+      val = isLanding ? 1.0 : 0.5;
+    } else {
+      val = parseFloat(digit) * 0.1;
+      if (digit === "0") val = 0.0;
+      if (isLanding) {
+        if (val === 0.4) val = 0.5;
+      } else {
+        if (val > 0.5) val = 0.5;
+      }
+    }
+
+    recordLiveDeduction(val, `Digit "${digit}"`, thumbData, matchScore, exactTime);
+  }
+
+  /* ==========================================================================
+     REVIEW SCREEN & CHECKPOINT
+     ========================================================================== */
+  function enterReviewPhase() {
+    phase = 'review';
+    judgingStage.classList.add('hidden');
+    playbackOverlayStage.classList.add('hidden');
+    reviewScreen.classList.remove('hidden');
+    btnFinishRoutine.classList.add('hidden');
+
+    phaseBadge.textContent = 'Review & Edit';
+    phaseBadge.className = 'phase-badge badge-review';
+
+    renderReviewSummary();
+    triggerFeedback('complete');
+  }
+
+  function renderReviewSummary() {
+    const maxSkills = getMaxSkills();
+    document.getElementById('skillsCountDisplay').textContent = skillsPerformed;
+
+    const isLandingActive = (skillsPerformed === maxSkills);
+    const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
+    const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
+    const totalDeduct = skillDeductSum + (isLandingActive ? landingDeduction : 0);
+
+    let baseScore = (currentDiscipline === 'TRP') ? skillsPerformed * 1.0 : (currentDiscipline === 'DMT' ? (skillsPerformed === 2 ? 10.0 : 8.0) : (skillsPerformed + 2.0));
+    const netScore = Math.max(0, baseScore - totalDeduct);
+
+    document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(1);
+    document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
+
+    const listContainer = document.getElementById('reviewList');
+    listContainer.innerHTML = '';
+
+    skillDeductions.forEach((val, i) => {
+      const isPerformed = i < skillsPerformed;
+      const row = document.createElement('div');
+      row.className = `review-row ${isPerformed ? '' : 'disabled-row'}`;
+
+      const thumbUrl = skillThumbnails[i];
+      const matchScore = skillMatchScores[i];
+      const scoreTagStr = (matchScore !== null && matchScore !== undefined) ? `${matchScore}%` : '';
+
+      row.innerHTML = `
+        <span class="sk-lbl">Skill ${i + 1}</span>
+        
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="review-thumb-box">
+            ${thumbUrl ? `<img src="${thumbUrl}" class="review-thumb-img" alt="S${i+1}">` : '<span class="review-thumb-empty">—</span>'}
+          </div>
+          ${scoreTagStr ? `<span class="review-score-tag">${scoreTagStr}</span>` : ''}
+          <span class="sk-time-tag">⏱️ ${formatTime(skillTimestamps[i])}</span>
+        </div>
+
+        <div class="value-controls-group">
+          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>` : ''}
+          <span class="sk-val">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
+          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, 1)">+</button>` : ''}
+        </div>
+      `;
+      listContainer.appendChild(row);
+    });
+
+    const landingRow = document.createElement('div');
+    landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
+    const landingScoreTagStr = (landingMatchScore !== null && landingMatchScore !== undefined) ? `${landingMatchScore}%` : '';
+
+    landingRow.innerHTML = `
+      <span class="sk-lbl">Landing</span>
+      
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="review-thumb-box">
+          ${landingThumbnail ? `<img src="${landingThumbnail}" class="review-thumb-img" alt="Landing">` : '<span class="review-thumb-empty">—</span>'}
+        </div>
+        ${landingScoreTagStr ? `<span class="review-score-tag">${landingScoreTagStr}</span>` : ''}
+        <span class="sk-time-tag">⏱️ ${formatTime(landingTimestamp)}</span>
+      </div>
+
+      <div class="value-controls-group">
+        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(-1)">−</button>` : ''}
+        <span class="sk-val">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
+        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(1)">+</button>` : ''}
+      </div>
+    `;
+    listContainer.appendChild(landingRow);
+  }
+
+  function adjustSkillsCount(delta) {
+    const maxSkills = getMaxSkills();
+    skillsPerformed = Math.min(maxSkills, Math.max(0, skillsPerformed + delta));
+    renderReviewSummary();
+  }
+
+  function stepSkillValue(index, direction) {
+    let currentVal = skillDeductions[index];
+    let updated = Math.round((currentVal + (direction * 0.1)) * 10) / 10;
+    skillDeductions[index] = Math.min(0.5, Math.max(0.0, updated));
+    renderReviewSummary();
+  }
+
+  function stepLandingValue(direction) {
+    let idx = LANDING_DEDUCTION_SCALE.findIndex(v => Math.abs(v - landingDeduction) < 0.01);
+    if (idx === -1) idx = 0;
+    let nextIdx = Math.min(LANDING_DEDUCTION_SCALE.length - 1, Math.max(0, idx + direction));
+    landingDeduction = LANDING_DEDUCTION_SCALE[nextIdx];
+    renderReviewSummary();
+  }
+
+  /* ==========================================================================
+     RUNNING LIST VISIBILITY TIMING HELPER
+     Shows running list only 150ms after landing deduction is shown
+     ========================================================================== */
+  function shouldShowRunningList(currentTime, isEnded) {
+    const isLandingActive = (skillsPerformed === getMaxSkills());
+    if (isLandingActive && landingTimestamp > 0) {
+      return currentTime >= (landingTimestamp + 0.15);
+    }
+    return isEnded;
+  }
+
+  /* ==========================================================================
+     PHASE 2: FILENAME PROMPT & BURNED OVERLAY VIDEO EXPORTER
+     Supports both 'standard' (single pass w/ overlay) and
+     'training' (full clean pass -> fade to black -> 1s pause -> fade in -> overlay pass)
+     ========================================================================== */
+  let activeExportVideo = null;
+  let activeExportRecorder = null;
+  let isExportCancelled = false;
+  let currentExportMode = 'standard'; // 'standard' | 'training'
+
+  function getBestExportMime() {
+    const mimeCandidates = [
+      'video/mp4;codecs=avc1',
+      'video/mp4',
+      'video/webm;codecs=vp9',
+      'video/webm;codecs=vp8',
+      'video/webm'
+    ];
+    return mimeCandidates.find(m => MediaRecorder.isTypeSupported(m)) || '';
+  }
+
+  function openFilenameModal(mode = 'standard') {
+    if (!videoObjectUrl) {
+      alert("No video loaded to export.");
+      return;
+    }
+
+    if (typeof MediaRecorder === 'undefined') {
+      alert("Your browser does not support video recording export.");
+      return;
+    }
+
+    currentExportMode = mode;
+    const isTraining = (mode === 'training');
+
+    document.getElementById('filenameModalTitle').textContent = isTraining
+      ? 'Create Training Video'
+      : 'Export Burned Video';
+    document.getElementById('filenameModalSubtitle').textContent = isTraining
+      ? 'Plays clean routine first to judge, fades to black for 1s, then fades in with overlays.'
+      : 'Enter a filename for your downloaded video';
+
+    const selectedMime = getBestExportMime();
+    const fileExt = selectedMime.includes('mp4') ? 'mp4' : 'webm';
+    document.getElementById('exportFileExtBadge').textContent = `.${fileExt}`;
+
+    const basePrefix = loadedVideoBaseName ? `${loadedVideoBaseName}_` : '';
+    const suffix = isTraining ? `Training_${currentDiscipline}` : `Judging_${currentDiscipline}`;
+    const defaultName = `${basePrefix}${suffix}`;
+    const inputEl = document.getElementById('exportFilenameInput');
+    inputEl.value = defaultName;
+
+    document.getElementById('filenameModal').classList.remove('hidden');
+    setTimeout(() => {
+      inputEl.focus();
+      inputEl.select();
+    }, 50);
+  }
+
+  function closeFilenameModal() {
+    document.getElementById('filenameModal').classList.add('hidden');
+  }
+
+  function confirmFilenameAndExport() {
+    const inputEl = document.getElementById('exportFilenameInput');
+    let rawName = (inputEl.value || '').trim();
+    rawName = rawName.replace(/\.(mp4|webm|mov)$/i, '').replace(/[\\/:*?"<>|]/g, '_');
+    if (!rawName) {
+      rawName = currentExportMode === 'training'
+        ? `Training_Video_${currentDiscipline}_${Date.now()}`
+        : `Judging_Video_${currentDiscipline}_${Date.now()}`;
+    }
+    closeFilenameModal();
+    exportBurnedVideo(rawName, currentExportMode);
+  }
+
+  function drawRoundedRect(ctx, x, y, width, height, radius) {
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + width, y, x + width, y + height, r);
+    ctx.arcTo(x + width, y + height, x, y + height, r);
+    ctx.arcTo(x, y + height, x, y, r);
+    ctx.arcTo(x, y, x + width, y, r);
+    ctx.closePath();
+  }
+
+  function drawBurnedOverlays(ctx, w, h, currentTime, isEnded) {
+    const scale = Math.max(0.5, h / 720);
+    const pad = 20 * scale;
+    const fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+    ctx.save();
+    ctx.textBaseline = 'top';
+
+    // 1. TOP-RIGHT ACTIVE DEDUCTION BADGE
+    let activeLabel = null;
+    let activeVal = 0;
+
+    for (let i = 0; i < skillsPerformed; i++) {
+      const t = skillTimestamps[i];
+      if (t > 0 && currentTime >= t && currentTime <= (t + 1.8)) {
+        activeLabel = `SKILL ${i + 1}`;
+        activeVal = skillDeductions[i];
+        break;
+      }
+    }
+
+    if (!activeLabel && skillsPerformed === getMaxSkills()) {
+      const t = landingTimestamp;
+      if (t > 0 && currentTime >= t && currentTime <= (t + 2.2)) {
+        activeLabel = 'LANDING';
+        activeVal = landingDeduction;
+      }
+    }
+
+    if (activeLabel) {
+      const badgeColor = getDeductionHexColor(activeVal);
+      const badgeW = 148 * scale;
+      const badgeH = 78 * scale;
+      const badgeX = w - pad - badgeW;
+      const badgeY = pad;
+
+      ctx.fillStyle = 'rgba(10, 10, 15, 0.88)';
+      drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, 14 * scale);
+      ctx.fill();
+
+      ctx.lineWidth = 2.5 * scale;
+      ctx.strokeStyle = badgeColor;
+      ctx.stroke();
+
+      ctx.textAlign = 'right';
+      ctx.font = `800 ${13 * scale}px ${fontFamily}`;
+      ctx.fillStyle = '#4495e5';
+      ctx.fillText(activeLabel, badgeX + badgeW - 14 * scale, badgeY + 11 * scale);
+
+      ctx.font = `900 ${36 * scale}px ${fontFamily}`;
+      ctx.fillStyle = badgeColor;
+      ctx.fillText(`-${activeVal.toFixed(1)}`, badgeX + badgeW - 14 * scale, badgeY + 29 * scale);
+    }
+
+    // 2. RUNNING LIST DOWN RIGHT SIDE (SHOWN ONLY 150MS AFTER LANDING DEDUCTION)
+    if (shouldShowRunningList(currentTime, isEnded)) {
+      const listTop = pad + 92 * scale;
+      const itemW = 185 * scale;
+      const itemH = 31 * scale;
+      const itemGap = 6 * scale;
+      const listX = w - pad - itemW;
+
+      const visibleItems = [];
+      for (let i = 0; i < skillsPerformed; i++) {
+        visibleItems.push({
+          label: `Skill ${i + 1}`,
+          val: `-${skillDeductions[i].toFixed(1)}`,
+          isCurrent: false,
+          isLanding: false
+        });
+      }
+
+      if (skillsPerformed === getMaxSkills()) {
+        const isCurrent = (landingTimestamp > 0 && currentTime >= landingTimestamp && currentTime <= (landingTimestamp + 2.2));
+        visibleItems.push({
+          label: 'Landing',
+          val: `-${landingDeduction.toFixed(1)}`,
+          isCurrent,
+          isLanding: true
+        });
+      }
+
+      const reservedBottom = isEnded ? (145 * scale) : (24 * scale);
+      const maxAvailableH = Math.max(itemH, h - listTop - reservedBottom);
+      const maxVisibleCount = Math.max(1, Math.floor((maxAvailableH + itemGap) / (itemH + itemGap)));
+      const itemsToDraw = visibleItems.slice(-maxVisibleCount);
+
+      itemsToDraw.forEach((item, idx) => {
+        const y = listTop + idx * (itemH + itemGap);
+
+        ctx.fillStyle = item.isCurrent ? 'rgba(230, 138, 0, 0.25)' : 'rgba(20, 20, 31, 0.84)';
+        drawRoundedRect(ctx, listX, y, itemW, itemH, 8 * scale);
+        ctx.fill();
+
+        ctx.lineWidth = 1.5 * scale;
+        ctx.strokeStyle = item.isCurrent ? '#e68a00' : '#2c2940';
+        ctx.stroke();
+
+        ctx.font = `700 ${13 * scale}px ${fontFamily}`;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = item.isLanding ? '#dc5183' : '#8a8a9e';
+        ctx.fillText(item.label, listX + 11 * scale, y + 8 * scale);
+
+        ctx.font = `800 ${13 * scale}px ${fontFamily}`;
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#dc5183';
+        ctx.fillText(item.val, listX + itemW - 11 * scale, y + 8 * scale);
+      });
+    }
+
+    // 3. END OF ROUTINE SCORE CARD (BOTTOM RIGHT, EXCLUDING NAVIGATION BOX)
+    if (isEnded) {
+      const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
+      const totalDeduct = activeSkillDeductions.reduce((a, b) => a + b, 0) + ((skillsPerformed === getMaxSkills()) ? landingDeduction : 0);
+      let baseScore = (currentDiscipline === 'TRP')
+        ? skillsPerformed * 1.0
+        : (currentDiscipline === 'DMT' ? (skillsPerformed === 2 ? 10.0 : 8.0) : (skillsPerformed + 2.0));
+      const netScore = Math.max(0, baseScore - totalDeduct);
+
+      const cardW = 215 * scale;
+      const cardH = 104 * scale;
+      const cardX = w - pad - cardW;
+      const cardY = h - pad - cardH;
+
+      ctx.fillStyle = 'rgba(14, 14, 22, 0.94)';
+      drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 14 * scale);
+      ctx.fill();
+
+      ctx.lineWidth = 2.5 * scale;
+      ctx.strokeStyle = '#9bd98b';
+      ctx.stroke();
+
+      ctx.textAlign = 'right';
+      ctx.font = `800 ${13 * scale}px ${fontFamily}`;
+      ctx.fillStyle = '#9bd98b';
+      ctx.fillText('ROUTINE SCORE', cardX + cardW - 16 * scale, cardY + 13 * scale);
+
+      ctx.font = `900 ${40 * scale}px ${fontFamily}`;
+      ctx.fillStyle = '#9bd98b';
+      ctx.fillText(netScore.toFixed(2), cardX + cardW - 16 * scale, cardY + 32 * scale);
+
+      ctx.font = `700 ${13 * scale}px ${fontFamily}`;
+      ctx.fillStyle = '#dc5183';
+      ctx.fillText(`Total Deductions: -${totalDeduct.toFixed(1)}`, cardX + cardW - 16 * scale, cardY + 78 * scale);
+    }
+
+    ctx.restore();
+  }
+
+  async function exportBurnedVideo(customBaseName, mode = 'standard') {
+    if (!videoObjectUrl) {
+      alert("No video loaded to export.");
+      return;
+    }
+
+    if (judgingVideo) judgingVideo.pause();
+    if (playbackVideo) playbackVideo.pause();
+    document.getElementById('pbPlayIcon').textContent = '▶';
+
+    const isTraining = (mode === 'training');
+    isExportCancelled = false;
+    const exportModal = document.getElementById('exportModal');
+    const modalTitle  = document.getElementById('exportModalTitle');
+    const pctLabel    = document.getElementById('exportPctLabel');
+    const fillBar     = document.getElementById('exportProgressFill');
+    const statusText  = document.getElementById('exportStatusText');
+
+    modalTitle.textContent = isTraining ? 'Rendering Training Video' : 'Rendering Burned Overlay Video';
+    pctLabel.textContent = '0%';
+    fillBar.style.width = '0%';
+    statusText.textContent = 'Preparing video encoder... Keep this tab active.';
+    exportModal.classList.remove('hidden');
+
+    const renderVideo = document.createElement('video');
+    renderVideo.src = videoObjectUrl;
+    renderVideo.playsInline = true;
+    renderVideo.preload = 'auto';
+    renderVideo.crossOrigin = 'anonymous';
+    activeExportVideo = renderVideo;
+
+    await new Promise((resolve, reject) => {
+      renderVideo.onloadedmetadata = () => resolve();
+      renderVideo.onerror = () => reject(new Error("Failed to load video metadata."));
+    }).catch((err) => {
+      alert(err.message);
+      cleanupVideoExport();
+    });
+
+    if (isExportCancelled || !activeExportVideo) return;
+
+    const w = renderVideo.videoWidth || 1280;
+    const h = renderVideo.videoHeight || 720;
+
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = w;
+    offscreenCanvas.height = h;
+    const ctx = offscreenCanvas.getContext('2d');
+
+    const combinedStream = offscreenCanvas.captureStream(30);
+
+    let exportAudioCtx = null;
+    try {
+      exportAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const sourceNode = exportAudioCtx.createMediaElementSource(renderVideo);
+      const destNode = exportAudioCtx.createMediaStreamDestination();
+      sourceNode.connect(destNode);
+      const audioTracks = destNode.stream.getAudioTracks();
+      if (audioTracks.length > 0) {
+        combinedStream.addTrack(audioTracks[0]);
+      }
+    } catch (e) {
+      if (renderVideo.captureStream) {
+        const rawStream = renderVideo.captureStream();
+        const audioTracks = rawStream.getAudioTracks();
+        if (audioTracks.length > 0) combinedStream.addTrack(audioTracks[0]);
+      }
+      renderVideo.muted = true;
+    }
+
+    const selectedMime = getBestExportMime();
+    const fileExt = selectedMime.includes('mp4') ? 'mp4' : 'webm';
+    const finalFileName = `${customBaseName || `Judging_Video_${currentDiscipline}_${Date.now()}`}.${fileExt}`;
+
+    const chunks = [];
+    let recorder;
+    try {
+      recorder = selectedMime
+        ? new MediaRecorder(combinedStream, { mimeType: selectedMime, videoBitsPerSecond: 8_000_000 })
+        : new MediaRecorder(combinedStream, { videoBitsPerSecond: 8_000_000 });
+    } catch (e) {
+      recorder = new MediaRecorder(combinedStream);
+    }
+    activeExportRecorder = recorder;
+
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) chunks.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      if (exportAudioCtx) {
+        exportAudioCtx.close().catch(() => {});
+      }
+      if (!isExportCancelled && chunks.length > 0) {
+        const blob = new Blob(chunks, { type: recorder.mimeType || selectedMime || 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = finalFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+        triggerFeedback('complete');
+      }
+      cleanupVideoExport();
+    };
+
+    // Helper to play a single video pass and render frames
+    const playExportPass = ({ drawOverlay, fadeInSec = 0, progressOffset = 0, progressSpan = 100, labelPrefix = '' }) => {
+      return new Promise((resolve, reject) => {
+        if (isExportCancelled || !activeExportVideo) return resolve();
+
+        const renderFrame = () => {
+          if (isExportCancelled || !activeExportVideo) return;
+
+          const curTime = renderVideo.currentTime;
+          const dur = renderVideo.duration || 1;
+          const isEnded = renderVideo.ended || (landingTimestamp > 0 && curTime >= (landingTimestamp + 2.2));
+
+          ctx.drawImage(renderVideo, 0, 0, w, h);
+
+          if (drawOverlay) {
+            drawBurnedOverlays(ctx, w, h, curTime, isEnded);
+          }
+
+          if (fadeInSec > 0 && curTime < fadeInSec) {
+            const alpha = Math.max(0, 1 - (curTime / fadeInSec));
+            ctx.fillStyle = `rgba(0, 0, 0, ${alpha.toFixed(3)})`;
+            ctx.fillRect(0, 0, w, h);
+          }
+
+          const passRatio = Math.min(1, curTime / dur);
+          const pct = Math.min(100, Math.round(progressOffset + passRatio * progressSpan));
+          pctLabel.textContent = `${pct}%`;
+          fillBar.style.width = `${pct}%`;
+
+          if (!renderVideo.ended && !renderVideo.paused) {
+            if ('requestVideoFrameCallback' in renderVideo) {
+              renderVideo.requestVideoFrameCallback(renderFrame);
+            } else {
+              requestAnimationFrame(renderFrame);
+            }
+          }
+        };
+
+        renderVideo.onended = () => {
+          const dur = renderVideo.duration || 1;
+          ctx.drawImage(renderVideo, 0, 0, w, h);
+          if (drawOverlay) {
+            drawBurnedOverlays(ctx, w, h, dur, true);
+          }
+          const endPct = Math.min(100, Math.round(progressOffset + progressSpan));
+          pctLabel.textContent = `${endPct}%`;
+          fillBar.style.width = `${endPct}%`;
+          renderVideo.onended = null;
+          resolve();
+        };
+
+        statusText.textContent = `${labelPrefix} (${w}×${h})... Keep this tab active.`;
+        renderVideo.currentTime = 0;
+
+        renderVideo.play().then(() => {
+          if ('requestVideoFrameCallback' in renderVideo) {
+            renderVideo.requestVideoFrameCallback(renderFrame);
+          } else {
+            requestAnimationFrame(renderFrame);
+          }
+        }).catch((err) => {
+          reject(err);
+        });
+      });
+    };
+
+    // Helper to run the fade-to-black + 1.0s black pause between Training Pass 1 and Pass 2
+    const runBlackTransition = (fadeOutMs = 500, holdBlackMs = 1000, progressOffset = 48, progressSpan = 4) => {
+      return new Promise((resolve) => {
+        if (isExportCancelled || !activeExportVideo) return resolve();
+
+        // Snapshot final frame of Pass 1 so we can smoothly fade it to black
+        const lastFrameCanvas = document.createElement('canvas');
+        lastFrameCanvas.width = w;
+        lastFrameCanvas.height = h;
+        lastFrameCanvas.getContext('2d').drawImage(offscreenCanvas, 0, 0);
+
+        const totalMs = fadeOutMs + holdBlackMs;
+        const startPerf = performance.now();
+
+        const stepTransition = (now) => {
+          if (isExportCancelled || !activeExportVideo) return resolve();
+
+          const elapsed = now - startPerf;
+          if (elapsed < fadeOutMs) {
+            const alpha = Math.min(1, elapsed / fadeOutMs);
+            ctx.drawImage(lastFrameCanvas, 0, 0);
+            ctx.fillStyle = `rgba(0, 0, 0, ${alpha.toFixed(3)})`;
+            ctx.fillRect(0, 0, w, h);
+          } else {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, w, h);
+          }
+
+          const ratio = Math.min(1, elapsed / totalMs);
+          const pct = Math.min(100, Math.round(progressOffset + ratio * progressSpan));
+          pctLabel.textContent = `${pct}%`;
+          fillBar.style.width = `${pct}%`;
+
+          if (elapsed < totalMs) {
+            requestAnimationFrame(stepTransition);
+          } else {
+            resolve();
+          }
+        };
+
+        requestAnimationFrame(stepTransition);
+      });
+    };
+
+    try {
+      recorder.start(250);
+
+      if (!isTraining) {
+        // STANDARD SINGLE PASS WITH OVERLAYS
+        await playExportPass({
+          drawOverlay: true,
+          fadeInSec: 0,
+          progressOffset: 0,
+          progressSpan: 100,
+          labelPrefix: `Compositing ${finalFileName}`
+        });
+      } else {
+        // TRAINING VIDEO:
+        // 1. Play full clean routine first (no overlay)
+        await playExportPass({
+          drawOverlay: false,
+          fadeInSec: 0,
+          progressOffset: 0,
+          progressSpan: 48,
+          labelPrefix: 'Pass 1/2: Clean Routine'
+        });
+
+        // 2. Fade to black (0.5s) + Hold black for 1.0s
+        statusText.textContent = 'Transition: Fading to black (1s pause)... Keep this tab active.';
+        await runBlackTransition(500, 1000, 48, 4);
+
+        // 3. Fade in (0.5s) and play full routine with overlays
+        await playExportPass({
+          drawOverlay: true,
+          fadeInSec: 0.5,
+          progressOffset: 52,
+          progressSpan: 48,
+          labelPrefix: 'Pass 2/2: Overlay Replay'
+        });
+      }
+
+      if (!isExportCancelled) {
+        pctLabel.textContent = '100%';
+        fillBar.style.width = '100%';
+        setTimeout(() => {
+          if (recorder.state !== 'inactive') recorder.stop();
+        }, 150);
+      }
+    } catch (err) {
+      alert("Unable to render video: " + err.message);
+      cancelVideoExport();
+    }
+  }
+
+  function cancelVideoExport() {
+    isExportCancelled = true;
+    if (activeExportVideo) {
+      activeExportVideo.pause();
+      activeExportVideo.src = '';
+    }
+    if (activeExportRecorder && activeExportRecorder.state !== 'inactive') {
+      activeExportRecorder.stop();
+    } else {
+      cleanupVideoExport();
+    }
+  }
+
+  function cleanupVideoExport() {
+    activeExportVideo = null;
+    activeExportRecorder = null;
+    document.getElementById('exportModal').classList.add('hidden');
+  }
+
+  /* ==========================================================================
+     SYNCHRONIZED VIDEO PLAYBACK OVERLAY ENGINE
+     ========================================================================== */
+  let playbackAnimFrame = null;
+
+  function confirmAndEnterOverlayPlayback() {
+    phase = 'playback';
+    reviewScreen.classList.add('hidden');
+    playbackOverlayStage.classList.remove('hidden');
+
+    phaseBadge.textContent = 'Overlay Playback';
+    phaseBadge.className = 'phase-badge badge-overlay';
+
+    buildRightSideRunningList();
+    renderScrubberSkillDots();
+
+    playbackVideo.currentTime = 0;
+    playbackVideo.play().catch(() => {});
+    document.getElementById('pbPlayIcon').textContent = '⏸️';
+
+    if (playbackAnimFrame) cancelAnimationFrame(playbackAnimFrame);
+    syncOverlayLoop();
+  }
+
+  function renderScrubberSkillDots() {
+    const dotsLayer = document.getElementById('scrubberDotsLayer');
+    if (!dotsLayer) return;
+    dotsLayer.innerHTML = '';
+
+    const duration = playbackVideo.duration;
+    if (!duration || isNaN(duration) || duration <= 0) return;
+
+    for (let i = 0; i < skillsPerformed; i++) {
+      const t = skillTimestamps[i];
+      if (t > 0 && t <= duration) {
+        const pct = (t / duration) * 100;
+        const dot = document.createElement('div');
+        dot.className = 'scrubber-skill-dot';
+        dot.style.left = `${pct}%`;
+        dot.title = `Skill ${i + 1} (${formatTime(t)})`;
+        dotsLayer.appendChild(dot);
+      }
+    }
+
+    if (skillsPerformed === getMaxSkills() && landingTimestamp > 0 && landingTimestamp <= duration) {
+      const pct = (landingTimestamp / duration) * 100;
+      const dot = document.createElement('div');
+      dot.className = 'scrubber-skill-dot';
+      dot.style.left = `${pct}%`;
+      dot.title = `Landing (${formatTime(landingTimestamp)})`;
+      dotsLayer.appendChild(dot);
+    }
+  }
+
+  if (playbackVideo) {
+    playbackVideo.addEventListener('loadedmetadata', () => {
+      if (phase === 'playback') renderScrubberSkillDots();
+    });
+  }
+
+  function buildRightSideRunningList() {
+    const panel = document.getElementById('overlayRightListPanel');
+    panel.innerHTML = '';
+
+    for (let skillIdx = 0; skillIdx < skillsPerformed; skillIdx++) {
+      const item = document.createElement('div');
+      item.className = 'running-list-item';
+      item.id = `runningItemSkill_${skillIdx}`;
+
+      const targetSkillIdx = skillIdx;
+
+      item.onclick = (e) => {
+        e.stopPropagation();
+        if (targetSkillIdx === 0) {
+          playbackVideo.currentTime = Math.max(0, skillTimestamps[0] - 2.0);
+        } else {
+          playbackVideo.currentTime = Math.max(0, skillTimestamps[targetSkillIdx - 1]);
+        }
+      };
+
+      item.innerHTML = `
+        <span class="item-skill-lbl">Skill ${targetSkillIdx + 1}</span>
+        <span class="item-deduct-val">-${skillDeductions[targetSkillIdx].toFixed(1)}</span>
+      `;
+      panel.appendChild(item);
+    }
+
+    if (skillsPerformed === getMaxSkills()) {
+      const item = document.createElement('div');
+      item.className = 'running-list-item';
+      item.id = `runningItemLanding`;
+      item.onclick = (e) => {
+        e.stopPropagation();
+        if (skillsPerformed > 0) {
+          playbackVideo.currentTime = Math.max(0, skillTimestamps[skillsPerformed - 1]);
+        } else {
+          playbackVideo.currentTime = Math.max(0, landingTimestamp - 2.0);
+        }
+      };
+      item.innerHTML = `
+        <span class="item-skill-lbl" style="color:var(--fig-pink);">Landing</span>
+        <span class="item-deduct-val">-${landingDeduction.toFixed(1)}</span>
+      `;
+      panel.appendChild(item);
+    }
+  }
+
+  function syncOverlayLoop() {
+    if (phase !== 'playback') return;
+
+    const currentTime = playbackVideo.currentTime;
+    const duration = playbackVideo.duration || 1;
+    const isEnded = playbackVideo.ended || (landingTimestamp > 0 && currentTime >= (landingTimestamp + 2.2));
+
+    // Update bottom scrubber
+    const scrubber = document.getElementById('pbScrubber');
+    scrubber.value = (currentTime / duration) * 100;
+    document.getElementById('pbTimeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+
+    // Top-Right Active Badge Logic
+    const topRightBadge = document.getElementById('overlayTopRightBadge');
+    const badgeValEl = document.getElementById('overlayBadgeVal');
+    let activeFound = false;
+
+    for (let i = 0; i < skillsPerformed; i++) {
+      const t = skillTimestamps[i];
+      if (t > 0 && currentTime >= t && currentTime <= (t + 1.8)) {
+        const val = skillDeductions[i];
+        const col = getDeductionBadgeColor(val);
+        document.getElementById('overlayBadgeSkill').textContent = `SKILL ${i + 1}`;
+        badgeValEl.textContent = `-${val.toFixed(1)}`;
+        badgeValEl.style.color = col;
+        topRightBadge.style.borderColor = col;
+        topRightBadge.classList.add('visible');
+        activeFound = true;
+        break;
+      }
+    }
+
+    if (!activeFound && skillsPerformed === getMaxSkills()) {
+      const t = landingTimestamp;
+      if (t > 0 && currentTime >= t && currentTime <= (t + 2.2)) {
+        const val = landingDeduction;
+        const col = getDeductionBadgeColor(val);
+        document.getElementById('overlayBadgeSkill').textContent = `LANDING`;
+        badgeValEl.textContent = `-${val.toFixed(1)}`;
+        badgeValEl.style.color = col;
+        topRightBadge.style.borderColor = col;
+        topRightBadge.classList.add('visible');
+        activeFound = true;
+      }
+    }
+
+    if (!activeFound) {
+      topRightBadge.classList.remove('visible');
+    }
+
+    // Running List Down Right Side (Shown 150ms after landing deduction)
+    const listPanel = document.getElementById('overlayRightListPanel');
+    if (shouldShowRunningList(currentTime, isEnded)) {
+      listPanel.classList.add('visible');
+
+      const landingItemEl = document.getElementById('runningItemLanding');
+      if (landingItemEl) {
+        if (landingTimestamp > 0 && currentTime >= landingTimestamp && currentTime <= (landingTimestamp + 2.2)) {
+          landingItemEl.classList.add('current-speaking');
+        } else {
+          landingItemEl.classList.remove('current-speaking');
+        }
+      }
+    } else {
+      listPanel.classList.remove('visible');
+    }
+
+    // End of Routine Score Card Overlay & Centered Bottom Navigation Box
+    const summaryCard = document.getElementById('overlaySummaryCard');
+    const endNavBox   = document.getElementById('overlayEndNavBox');
+
+    if (isEnded) {
+      const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
+      const totalDeduct = activeSkillDeductions.reduce((a, b) => a + b, 0) + ((skillsPerformed === getMaxSkills()) ? landingDeduction : 0);
+      let baseScore = (currentDiscipline === 'TRP') ? skillsPerformed * 1.0 : (currentDiscipline === 'DMT' ? (skillsPerformed === 2 ? 10.0 : 8.0) : (skillsPerformed + 2.0));
+      const netScore = Math.max(0, baseScore - totalDeduct);
+
+      document.getElementById('summaryCardNet').textContent = netScore.toFixed(2);
+      document.getElementById('summaryCardDeduct').textContent = `Total Deductions: -${totalDeduct.toFixed(1)}`;
+      summaryCard.classList.add('visible');
+      endNavBox.classList.add('visible');
+    } else {
+      summaryCard.classList.remove('visible');
+      endNavBox.classList.remove('visible');
+    }
+
+    playbackAnimFrame = requestAnimationFrame(syncOverlayLoop);
+  }
+
+  function togglePlayPausePlayback() {
+    if (playbackVideo.paused) {
+      playbackVideo.play();
+      document.getElementById('pbPlayIcon').textContent = '⏸️';
+    } else {
+      playbackVideo.pause();
+      document.getElementById('pbPlayIcon').textContent = '▶';
+    }
+  }
+
+  function scrubPlaybackVideo(pct) {
+    const duration = playbackVideo.duration || 1;
+    playbackVideo.currentTime = (pct / 100) * duration;
+  }
+
+  function restartOverlayPlayback() {
+    playbackVideo.currentTime = 0;
+    playbackVideo.play();
+    document.getElementById('pbPlayIcon').textContent = '⏸️';
+  }
+
+  function exitOverlayToReview() {
+    if (playbackAnimFrame) cancelAnimationFrame(playbackAnimFrame);
+    playbackVideo.pause();
+    enterReviewPhase();
+  }
+
+  function resetToSetup() {
+    closeFilenameModal();
+    cancelVideoExport();
+    if (playbackAnimFrame) cancelAnimationFrame(playbackAnimFrame);
+    if (judgingVideo) judgingVideo.pause();
+    if (playbackVideo) playbackVideo.pause();
+
+    phase = 'setup';
+    setupScreen.classList.remove('hidden');
+    judgingStage.classList.add('hidden');
+    reviewScreen.classList.add('hidden');
+    playbackOverlayStage.classList.add('hidden');
+    btnFinishRoutine.classList.add('hidden');
+    skillCounter.classList.add('hidden');
+
+    phaseBadge.textContent = 'Setup Video';
+    phaseBadge.className = 'phase-badge badge-setup';
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+</script>
+</body>
+</html>
