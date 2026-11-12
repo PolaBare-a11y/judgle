@@ -519,7 +519,7 @@
     .review-mid-group {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
@@ -547,24 +547,6 @@
       font-size: 0.6rem;
       color: #888899;
       text-transform: uppercase;
-    }
-
-    .review-score-tag {
-      font-size: 0.7rem;
-      color: var(--text-sub);
-      font-weight: 600;
-      min-width: 28px;
-    }
-
-    .sk-time-tag {
-      font-size: 0.72rem;
-      color: var(--fig-green);
-      font-family: monospace;
-      font-weight: 700;
-      background: rgba(155, 217, 139, 0.1);
-      padding: 2px 6px;
-      border-radius: 4px;
-      cursor: pointer;
     }
 
     .dd-input-wrapper {
@@ -647,6 +629,21 @@
     }
 
     /* TOP-RIGHT ACTIVE DEDUCTION BADGE + OPTIONAL DD SUB-BOX STACK */
+    @keyframes skillBadgePopIn {
+      0% {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.75);
+      }
+      65% {
+        opacity: 1;
+        transform: translateY(2px) scale(1.06);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
     .overlay-top-right-stack {
       position: absolute;
       top: 16px;
@@ -659,6 +656,10 @@
       pointer-events: none;
     }
 
+    .overlay-top-right-stack.skill-pop-anim {
+      animation: skillBadgePopIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
     .overlay-top-right-badge {
       background: rgba(10, 10, 15, 0.88);
       border: 2px solid var(--fig-orange);
@@ -669,9 +670,9 @@
       align-items: flex-end;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(8px);
-      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease, border-color 0.2s ease;
+      transition: transform 0.16s ease, opacity 0.16s ease, border-color 0.16s ease;
       opacity: 0;
-      transform: scale(0.8);
+      transform: scale(0.82);
     }
 
     .overlay-top-right-badge.visible {
@@ -692,7 +693,7 @@
       font-weight: 900;
       color: var(--fig-orange);
       line-height: 1.05;
-      transition: color 0.2s ease;
+      transition: color 0.16s ease;
     }
 
     .overlay-badge-dd {
@@ -709,7 +710,7 @@
       backdrop-filter: blur(8px);
       opacity: 0;
       transform: translateY(-4px) scale(0.92);
-      transition: opacity 0.2s ease, transform 0.2s ease;
+      transition: opacity 0.16s ease, transform 0.16s ease;
     }
 
     .overlay-badge-dd.visible {
@@ -1277,7 +1278,7 @@
         <video id="playbackVideo" class="video-player-element" playsinline></video>
 
         <!-- TOP RIGHT ACTIVE DEDUCTION BADGE + DD SUB-BOX -->
-        <div class="overlay-top-right-stack">
+        <div id="overlayTopRightStack" class="overlay-top-right-stack">
           <div id="overlayTopRightBadge" class="overlay-top-right-badge">
             <span id="overlayBadgeSkill" class="overlay-badge-skill">SKILL 1</span>
             <span id="overlayBadgeVal" class="overlay-badge-val">-0.2</span>
@@ -1378,7 +1379,7 @@
       </div>
     </div>
 
-    <!-- 8. MOBILE SHARE SHEET READY MODAL (GUARANTEES USER GESTURE ACTIVATION FOR WEB SHARE API) -->
+    <!-- 8. MOBILE SHARE SHEET READY MODAL -->
     <div id="shareReadyModal" class="modal-overlay hidden">
       <div class="trainer-modal-card">
         <div class="trainer-header">
@@ -1690,6 +1691,7 @@
      ========================================================================== */
   const DISCIPLINE_SKILLS = { TRP: 10, DMT: 2, TUM: 8 };
   const LANDING_DEDUCTION_SCALE = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
+  const RECOGNIZER_DEBOUNCE_MS = 400;
 
   let currentDiscipline = 'TRP';
   let videoObjectUrl = null;
@@ -1939,6 +1941,7 @@
       return;
     }
 
+    clearPendingRecognizerState();
     currentInterface = mode;
     const maxSkills = getMaxSkills();
     phase = 'routine';
@@ -1997,6 +2000,7 @@
   }
 
   function restartLiveVideo() {
+    clearPendingRecognizerState();
     judgingVideo.currentTime = 0;
     judgingVideo.play();
     document.getElementById('playPauseIcon').textContent = '⏸️';
@@ -2005,9 +2009,13 @@
   function updateCounter() {
     const maxSkills = getMaxSkills();
     if (phase === 'routine') {
+      skillCounter.classList.remove('hidden');
       skillCounter.textContent = `Skill ${currentSkillIndex + 1} / ${maxSkills}`;
     } else if (phase === 'landing') {
+      skillCounter.classList.remove('hidden');
       skillCounter.textContent = `Landing Deduction`;
+    } else {
+      skillCounter.classList.add('hidden');
     }
   }
 
@@ -2053,13 +2061,14 @@
   }
 
   function finishRoutineEarly() {
+    clearPendingRecognizerState();
     judgingVideo.pause();
     skillsPerformed = currentSkillIndex;
     enterReviewPhase();
   }
 
   /* ==========================================================================
-     GESTURE RECOGNITION (SWIPE & 300MS DEBOUNCED MULTI-STROKE RECOGNITION)
+     GESTURE RECOGNITION (SWIPE & DEBOUNCED MULTI-STROKE RECOGNITION FOR SKILLS & LANDING)
      ========================================================================== */
   let pointerPoints = [];
   let isPointerDown = false;
@@ -2067,6 +2076,42 @@
   let accumulatedRecPoints = [];
   let currentStrokeId = 0;
   let gestureStartTime = 0;
+
+  function clearPendingRecognizerState() {
+    if (recognizerTimer) {
+      clearTimeout(recognizerTimer);
+      recognizerTimer = null;
+    }
+    accumulatedRecPoints = [];
+    currentStrokeId = 0;
+    pointerPoints = [];
+    isPointerDown = false;
+    if (overlayCtx && gestureOverlayCanvas) {
+      overlayCtx.clearRect(0, 0, gestureOverlayCanvas.width, gestureOverlayCanvas.height);
+    }
+  }
+
+  function scheduleRecognizerEvaluation() {
+    if (recognizerTimer) {
+      clearTimeout(recognizerTimer);
+      recognizerTimer = null;
+    }
+    recognizerTimer = setTimeout(() => {
+      recognizerTimer = null;
+      if (phase !== 'routine' && phase !== 'landing') {
+        accumulatedRecPoints = [];
+        currentStrokeId = 0;
+        return;
+      }
+      const pointsToProcess = [...accumulatedRecPoints];
+      const capturedStartTime = gestureStartTime;
+      const croppedThumb = getCroppedThumbnailFromPoints(pointsToProcess, gestureOverlayCanvas);
+      if (overlayCtx) overlayCtx.clearRect(0, 0, gestureOverlayCanvas.width, gestureOverlayCanvas.height);
+      accumulatedRecPoints = [];
+      currentStrokeId = 0;
+      processNumberRecognitionPoints(pointsToProcess, croppedThumb, capturedStartTime);
+    }, RECOGNIZER_DEBOUNCE_MS);
+  }
 
   if (gestureOverlayCanvas) {
     gestureOverlayCanvas.addEventListener('pointerdown', (e) => {
@@ -2083,10 +2128,13 @@
         pointerPoints = [{ x: e.clientX, y: e.clientY, t: Date.now() }];
         gestureStartTime = judgingVideo.currentTime;
       } else {
+        if (recognizerTimer) {
+          clearTimeout(recognizerTimer);
+          recognizerTimer = null;
+        }
         if (accumulatedRecPoints.length === 0) {
           gestureStartTime = judgingVideo.currentTime;
         }
-        if (recognizerTimer) { clearTimeout(recognizerTimer); recognizerTimer = null; }
         currentStrokeId++;
         accumulatedRecPoints.push(new Point(x, y, currentStrokeId));
       }
@@ -2123,7 +2171,7 @@
       }
     });
 
-    gestureOverlayCanvas.addEventListener('pointerup', (e) => {
+    const handleGesturePointerEnd = (e) => {
       if (!isPointerDown) return;
       e.preventDefault();
       isPointerDown = false;
@@ -2134,15 +2182,13 @@
         if (overlayCtx) overlayCtx.clearRect(0, 0, gestureOverlayCanvas.width, gestureOverlayCanvas.height);
         processSwipePoints(pointerPoints, croppedThumb, gestureStartTime);
       } else {
-        recognizerTimer = setTimeout(() => {
-          const croppedThumb = getCroppedThumbnailFromPoints(accumulatedRecPoints, gestureOverlayCanvas);
-          if (overlayCtx) overlayCtx.clearRect(0, 0, gestureOverlayCanvas.width, gestureOverlayCanvas.height);
-          processNumberRecognitionPoints(accumulatedRecPoints, croppedThumb, gestureStartTime);
-          accumulatedRecPoints = [];
-          currentStrokeId = 0;
-        }, 300);
+        // Applies equally to both routine skills and landing deduction (allows multi-stroke digits like "10")
+        scheduleRecognizerEvaluation();
       }
-    });
+    };
+
+    gestureOverlayCanvas.addEventListener('pointerup', handleGesturePointerEnd);
+    gestureOverlayCanvas.addEventListener('pointercancel', handleGesturePointerEnd);
   }
 
   function processSwipePoints(points, thumbData, exactTime) {
@@ -2215,11 +2261,13 @@
      REVIEW SCREEN & CHECKPOINT
      ========================================================================== */
   function enterReviewPhase() {
+    clearPendingRecognizerState();
     phase = 'review';
     judgingStage.classList.add('hidden');
     playbackOverlayStage.classList.add('hidden');
     reviewScreen.classList.remove('hidden');
     btnFinishRoutine.classList.add('hidden');
+    skillCounter.classList.add('hidden');
 
     phaseBadge.textContent = 'Review & Edit';
     phaseBadge.className = 'phase-badge badge-review';
@@ -2256,8 +2304,6 @@
       row.className = `review-row ${isPerformed ? '' : 'disabled-row'}`;
 
       const thumbUrl = skillThumbnails[i];
-      const matchScore = skillMatchScores[i];
-      const scoreTagStr = (matchScore !== null && matchScore !== undefined) ? `${matchScore}%` : '';
       const ddValue = escapeHtml(skillDDs[i] || '');
 
       row.innerHTML = `
@@ -2267,8 +2313,6 @@
           <div class="review-thumb-box">
             ${thumbUrl ? `<img src="${thumbUrl}" class="review-thumb-img" alt="S${i+1}">` : '<span class="review-thumb-empty">—</span>'}
           </div>
-          ${scoreTagStr ? `<span class="review-score-tag">${scoreTagStr}</span>` : ''}
-          <span class="sk-time-tag">⏱️ ${formatTime(skillTimestamps[i])}</span>
           <div class="dd-input-wrapper">
             <span class="dd-prefix-lbl">DD</span>
             <input type="text" maxlength="20" class="dd-text-input" placeholder="—" value="${ddValue}" ${isPerformed ? '' : 'disabled'} oninput="updateSkillDD(${i}, this.value)">
@@ -2286,7 +2330,6 @@
 
     const landingRow = document.createElement('div');
     landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
-    const landingScoreTagStr = (landingMatchScore !== null && landingMatchScore !== undefined) ? `${landingMatchScore}%` : '';
 
     landingRow.innerHTML = `
       <span class="sk-lbl">Landing</span>
@@ -2295,8 +2338,6 @@
         <div class="review-thumb-box">
           ${landingThumbnail ? `<img src="${landingThumbnail}" class="review-thumb-img" alt="Landing">` : '<span class="review-thumb-empty">—</span>'}
         </div>
-        ${landingScoreTagStr ? `<span class="review-score-tag">${landingScoreTagStr}</span>` : ''}
-        <span class="sk-time-tag">⏱️ ${formatTime(landingTimestamp)}</span>
       </div>
 
       <div class="value-controls-group">
@@ -2327,6 +2368,84 @@
     let nextIdx = Math.min(LANDING_DEDUCTION_SCALE.length - 1, Math.max(0, idx + direction));
     landingDeduction = LANDING_DEDUCTION_SCALE[nextIdx];
     renderReviewSummary();
+  }
+
+  /* ==========================================================================
+     ACTIVE OVERLAY EVENT RESOLVER WITH SKILL-TO-SKILL TRANSITION TIMING
+     ========================================================================== */
+  function getActiveOverlayEvent(currentTime) {
+    const events = [];
+    for (let i = 0; i < skillsPerformed; i++) {
+      const t = skillTimestamps[i];
+      if (t > 0) {
+        events.push({
+          key: `skill_${i}`,
+          label: `SKILL ${i + 1}`,
+          val: skillDeductions[i],
+          dd: (skillDDs[i] || '').trim(),
+          start: t,
+          maxDur: 1.8
+        });
+      }
+    }
+
+    if (skillsPerformed === getMaxSkills() && landingTimestamp > 0) {
+      events.push({
+        key: 'landing',
+        label: 'LANDING',
+        val: landingDeduction,
+        dd: '',
+        start: landingTimestamp,
+        maxDur: 2.2
+      });
+    }
+
+    // Sort chronologically so consecutive skills cleanly hand off with a transition gap
+    events.sort((a, b) => a.start - b.start);
+
+    const TRANSITION_GAP_SEC = 0.16;
+    const FADE_SEC = 0.14;
+
+    for (let idx = 0; idx < events.length; idx++) {
+      const ev = events[idx];
+      const nextEv = events[idx + 1];
+      let end = ev.start + ev.maxDur;
+
+      // Cut off the previous badge slightly before the next skill starts so identical values visibly reset
+      if (nextEv && nextEv.start > ev.start) {
+        const cappedEnd = nextEv.start - TRANSITION_GAP_SEC;
+        if (cappedEnd < end) {
+          end = Math.max(ev.start + 0.12, cappedEnd);
+        }
+      }
+
+      if (currentTime >= ev.start && currentTime <= end) {
+        const elapsed = currentTime - ev.start;
+        const remaining = end - currentTime;
+
+        // Compute normalized transition scale & opacity (pop-in at start, fade/shrink out at end)
+        let alpha = 1.0;
+        let scale = 1.0;
+
+        if (elapsed < FADE_SEC) {
+          const p = elapsed / FADE_SEC;
+          alpha = p;
+          scale = 0.78 + 0.22 * p;
+        } else if (remaining < FADE_SEC) {
+          const p = Math.max(0, remaining / FADE_SEC);
+          alpha = p;
+          scale = 0.84 + 0.16 * p;
+        }
+
+        return {
+          ...ev,
+          alpha,
+          scale
+        };
+      }
+    }
+
+    return null;
   }
 
   /* ==========================================================================
@@ -2472,7 +2591,6 @@
       closeShareReadyModal();
     } catch (err) {
       if (err && err.name === 'AbortError') {
-        // User dismissed share sheet; keep modal open so they can retry or download
         return;
       }
       alert("Unable to open Share Sheet on this device. Downloading video instead.");
@@ -2500,36 +2618,23 @@
     ctx.save();
     ctx.textBaseline = 'top';
 
-    // 1. TOP-RIGHT ACTIVE DEDUCTION BADGE + OPTIONAL DD SUB-BOX
-    let activeLabel = null;
-    let activeVal = 0;
-    let activeDD = '';
+    // 1. TOP-RIGHT ACTIVE DEDUCTION BADGE + OPTIONAL DD SUB-BOX (WITH SKILL-TO-SKILL TRANSITION)
+    const activeEvent = getActiveOverlayEvent(currentTime);
 
-    for (let i = 0; i < skillsPerformed; i++) {
-      const t = skillTimestamps[i];
-      if (t > 0 && currentTime >= t && currentTime <= (t + 1.8)) {
-        activeLabel = `SKILL ${i + 1}`;
-        activeVal = skillDeductions[i];
-        activeDD = (skillDDs[i] || '').trim();
-        break;
-      }
-    }
-
-    if (!activeLabel && skillsPerformed === getMaxSkills()) {
-      const t = landingTimestamp;
-      if (t > 0 && currentTime >= t && currentTime <= (t + 2.2)) {
-        activeLabel = 'LANDING';
-        activeVal = landingDeduction;
-        activeDD = '';
-      }
-    }
-
-    if (activeLabel) {
-      const badgeColor = getDeductionHexColor(activeVal);
+    if (activeEvent) {
+      const badgeColor = getDeductionHexColor(activeEvent.val);
       const badgeW = 148 * scale;
       const badgeH = 78 * scale;
       const badgeX = w - pad - badgeW;
       const badgeY = pad;
+
+      ctx.save();
+      ctx.globalAlpha = activeEvent.alpha;
+      const pivotX = w - pad;
+      const pivotY = pad;
+      ctx.translate(pivotX, pivotY);
+      ctx.scale(activeEvent.scale, activeEvent.scale);
+      ctx.translate(-pivotX, -pivotY);
 
       ctx.fillStyle = 'rgba(10, 10, 15, 0.88)';
       drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, 14 * scale);
@@ -2542,16 +2647,16 @@
       ctx.textAlign = 'right';
       ctx.font = `800 ${13 * scale}px ${fontFamily}`;
       ctx.fillStyle = '#4495e5';
-      ctx.fillText(activeLabel, badgeX + badgeW - 14 * scale, badgeY + 11 * scale);
+      ctx.fillText(activeEvent.label, badgeX + badgeW - 14 * scale, badgeY + 11 * scale);
 
       ctx.font = `900 ${36 * scale}px ${fontFamily}`;
       ctx.fillStyle = badgeColor;
-      ctx.fillText(`-${activeVal.toFixed(1)}`, badgeX + badgeW - 14 * scale, badgeY + 29 * scale);
+      ctx.fillText(`-${activeEvent.val.toFixed(1)}`, badgeX + badgeW - 14 * scale, badgeY + 29 * scale);
 
       // Draw DD pill directly underneath the deduction box when entered
-      if (activeDD) {
+      if (activeEvent.dd) {
         ctx.font = `800 ${14 * scale}px ${monoFamily}`;
-        const textW = ctx.measureText(activeDD).width;
+        const textW = ctx.measureText(activeEvent.dd).width;
         const ddW = Math.max(76 * scale, textW + 24 * scale);
         const ddH = 26 * scale;
         const ddX = w - pad - ddW;
@@ -2567,8 +2672,10 @@
 
         ctx.textAlign = 'right';
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(activeDD, ddX + ddW - 12 * scale, ddY + 6 * scale);
+        ctx.fillText(activeEvent.dd, ddX + ddW - 12 * scale, ddY + 6 * scale);
       }
+
+      ctx.restore();
     }
 
     // 2. RUNNING LIST DOWN RIGHT SIDE (SHOWN ONLY 150MS AFTER LANDING DEDUCTION)
@@ -2942,11 +3049,14 @@
      SYNCHRONIZED VIDEO PLAYBACK OVERLAY ENGINE
      ========================================================================== */
   let playbackAnimFrame = null;
+  let lastOverlayEventKey = null;
 
   function confirmAndEnterOverlayPlayback() {
     phase = 'playback';
+    lastOverlayEventKey = null;
     reviewScreen.classList.add('hidden');
     playbackOverlayStage.classList.remove('hidden');
+    skillCounter.classList.add('hidden');
 
     phaseBadge.textContent = 'Overlay Playback';
     phaseBadge.className = 'phase-badge badge-overlay';
@@ -3061,52 +3171,41 @@
     scrubber.value = (currentTime / duration) * 100;
     document.getElementById('pbTimeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
 
-    // Top-Right Active Badge & DD Sub-Box Logic
+    // Top-Right Active Badge & DD Sub-Box Logic with Skill-to-Skill Transition Effect
+    const topRightStack = document.getElementById('overlayTopRightStack');
     const topRightBadge = document.getElementById('overlayTopRightBadge');
     const badgeValEl = document.getElementById('overlayBadgeVal');
     const badgeDdEl = document.getElementById('overlayBadgeDD');
-    let activeFound = false;
-    let activeDD = '';
 
-    for (let i = 0; i < skillsPerformed; i++) {
-      const t = skillTimestamps[i];
-      if (t > 0 && currentTime >= t && currentTime <= (t + 1.8)) {
-        const val = skillDeductions[i];
-        const col = getDeductionBadgeColor(val);
-        document.getElementById('overlayBadgeSkill').textContent = `SKILL ${i + 1}`;
-        badgeValEl.textContent = `-${val.toFixed(1)}`;
-        badgeValEl.style.color = col;
-        topRightBadge.style.borderColor = col;
-        topRightBadge.classList.add('visible');
-        activeFound = true;
-        activeDD = (skillDDs[i] || '').trim();
-        break;
-      }
-    }
+    const activeEvent = getActiveOverlayEvent(currentTime);
 
-    if (!activeFound && skillsPerformed === getMaxSkills()) {
-      const t = landingTimestamp;
-      if (t > 0 && currentTime >= t && currentTime <= (t + 2.2)) {
-        const val = landingDeduction;
-        const col = getDeductionBadgeColor(val);
-        document.getElementById('overlayBadgeSkill').textContent = `LANDING`;
-        badgeValEl.textContent = `-${val.toFixed(1)}`;
-        badgeValEl.style.color = col;
-        topRightBadge.style.borderColor = col;
-        topRightBadge.classList.add('visible');
-        activeFound = true;
-        activeDD = '';
-      }
-    }
-
-    if (!activeFound) {
+    if (!activeEvent) {
       topRightBadge.classList.remove('visible');
       badgeDdEl.classList.remove('visible');
-    } else if (activeDD) {
-      badgeDdEl.textContent = activeDD;
-      badgeDdEl.classList.add('visible');
+      topRightStack.classList.remove('skill-pop-anim');
+      lastOverlayEventKey = null;
     } else {
-      badgeDdEl.classList.remove('visible');
+      const col = getDeductionBadgeColor(activeEvent.val);
+      document.getElementById('overlayBadgeSkill').textContent = activeEvent.label;
+      badgeValEl.textContent = `-${activeEvent.val.toFixed(1)}`;
+      badgeValEl.style.color = col;
+      topRightBadge.style.borderColor = col;
+      topRightBadge.classList.add('visible');
+
+      if (activeEvent.dd) {
+        badgeDdEl.textContent = activeEvent.dd;
+        badgeDdEl.classList.add('visible');
+      } else {
+        badgeDdEl.classList.remove('visible');
+      }
+
+      // Retrigger pop-in transition whenever switching to a new skill/landing event
+      if (lastOverlayEventKey !== activeEvent.key) {
+        lastOverlayEventKey = activeEvent.key;
+        topRightStack.classList.remove('skill-pop-anim');
+        void topRightStack.offsetWidth;
+        topRightStack.classList.add('skill-pop-anim');
+      }
     }
 
     // Running List Down Right Side (Shown 150ms after landing deduction)
@@ -3164,6 +3263,7 @@
   }
 
   function restartOverlayPlayback() {
+    lastOverlayEventKey = null;
     playbackVideo.currentTime = 0;
     playbackVideo.play();
     document.getElementById('pbPlayIcon').textContent = '⏸️';
@@ -3176,6 +3276,7 @@
   }
 
   function resetToSetup() {
+    clearPendingRecognizerState();
     closeFilenameModal();
     closeShareReadyModal();
     cancelVideoExport();
