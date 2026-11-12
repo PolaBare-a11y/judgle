@@ -482,6 +482,27 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .btn-reset-patterns {
+      background: rgba(244, 67, 54, 0.12);
+      border: 1px solid rgba(244, 67, 54, 0.45);
+      color: var(--fig-red);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: none;
+      cursor: pointer;
+    }
+
+    .btn-reset-patterns:active {
+      background: var(--fig-red);
+      color: #fff;
     }
 
     .preset-group {
@@ -1297,7 +1318,10 @@
         </div>
         <div class="section-desc">Handwriting recognition ($P Algorithm). Draw digits directly on screen per skill element.</div>
 
-        <div class="section-subtitle">Recognized Strokes <span style="font-weight:normal; text-transform:none; color:var(--fig-blue);">(Click digit to train custom pattern)</span></div>
+        <div class="section-subtitle">
+          <span>Recognized Strokes <span style="font-weight:normal; text-transform:none; color:var(--fig-blue);">(Tap digit to train)</span></span>
+          <button id="btnResetPatterns" class="btn-reset-patterns hidden" onclick="clearSavedCustomTemplates()">Reset Saved</button>
+        </div>
         <div class="num-guide-grid">
           <div class="num-guide-card" onclick="openTemplateTrainer('0')">
             <div class="num-guide-digit">0</div>
@@ -1731,6 +1755,7 @@
     }
 
     initTemplates() {
+      this.PointSets = [];
       const makePolyline = (keyPoints, strokeId = 1) => {
         let pts = [];
         for (let i = 0; i < keyPoints.length - 1; i++) {
@@ -1905,6 +1930,7 @@
   }
 
   const dollarRecognizer = new PDollarRecognizer();
+  const CUSTOM_TEMPLATES_STORAGE_KEY = 'judgle_custom_templates_v1';
 
   // Presets & FIG Landing Scale
   const PRESETS = {
@@ -1961,6 +1987,7 @@
   const logListContainer     = document.getElementById('logListContainer');
   const headerLogCountBadge  = document.getElementById('headerLogCountBadge');
   const reviewLogCountBadge  = document.getElementById('reviewLogCountBadge');
+  const btnResetPatterns     = document.getElementById('btnResetPatterns');
 
   const canvas               = document.getElementById('gestureCanvas');
   const ctx                  = canvas ? canvas.getContext('2d') : null;
@@ -1970,6 +1997,65 @@
 
   const recCanvas            = document.getElementById('recognizerCanvas');
   const recCtx               = recCanvas ? recCanvas.getContext('2d') : null;
+
+  /* ==========================================================================
+     LOCAL STORAGE PERSISTENCE FOR CUSTOM TRAINED PATTERNS
+     ========================================================================== */
+  function loadCustomTemplatesFromStorage() {
+    try {
+      const raw = localStorage.getItem(CUSTOM_TEMPLATES_STORAGE_KEY);
+      if (!raw) return;
+      const savedTemplates = JSON.parse(raw);
+      if (!Array.isArray(savedTemplates)) return;
+
+      savedTemplates.forEach(item => {
+        if (item && item.digit && Array.isArray(item.points) && item.points.length >= 3) {
+          const pts = item.points.map(p => new Point(p.x, p.y, p.strokeId || 1));
+          dollarRecognizer.PointSets.push(new PDollarPointSet(item.digit, pts));
+          customTrainedDigits[item.digit] = true;
+        }
+      });
+
+      updateTrainedHints();
+    } catch (e) {
+      console.warn('Unable to load custom templates from localStorage:', e);
+    }
+  }
+
+  function persistCustomTemplateToStorage(digit, points) {
+    try {
+      const raw = localStorage.getItem(CUSTOM_TEMPLATES_STORAGE_KEY);
+      let savedTemplates = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(savedTemplates)) savedTemplates = [];
+
+      const serializedPoints = points.map(p => ({
+        x: p.x,
+        y: p.y,
+        strokeId: p.strokeId
+      }));
+
+      savedTemplates.push({
+        digit: digit,
+        points: serializedPoints
+      });
+
+      localStorage.setItem(CUSTOM_TEMPLATES_STORAGE_KEY, JSON.stringify(savedTemplates));
+    } catch (e) {
+      console.warn('Unable to save custom template to localStorage:', e);
+    }
+  }
+
+  function clearSavedCustomTemplates() {
+    if (!confirm('Reset all custom trained digit patterns back to defaults?')) return;
+    try {
+      localStorage.removeItem(CUSTOM_TEMPLATES_STORAGE_KEY);
+    } catch (e) {}
+    customTrainedDigits = {};
+    dollarRecognizer.initTemplates();
+    updateTrainedHints();
+    triggerFeedback('transition');
+    showUndoToast('Custom patterns reset');
+  }
 
   /* ==========================================================================
      CANVAS BOUNDING BOX CROPPING UTILITY
@@ -2832,6 +2918,7 @@
       return;
     }
     dollarRecognizer.PointSets.push(new PDollarPointSet(currentTrainerDigit, trainerPoints));
+    persistCustomTemplateToStorage(currentTrainerDigit, trainerPoints);
     customTrainedDigits[currentTrainerDigit] = true;
     updateTrainedHints();
     triggerFeedback('complete');
@@ -2839,16 +2926,26 @@
   }
 
   function updateTrainedHints() {
+    let hasAnyCustom = false;
     ['0','1','2','3','4','5'].forEach(digit => {
       const hintEl = document.getElementById(`hint-${digit}`);
       if (hintEl) {
         if (customTrainedDigits[digit]) {
+          hasAnyCustom = true;
           hintEl.innerHTML = '<span>Tap to train</span><span class="num-guide-tick">✓</span>';
         } else {
           hintEl.innerHTML = '<span>Tap to train</span>';
         }
       }
     });
+
+    if (btnResetPatterns) {
+      if (hasAnyCustom) {
+        btnResetPatterns.classList.remove('hidden');
+      } else {
+        btnResetPatterns.classList.add('hidden');
+      }
+    }
   }
 
   if (trainerCanvas) {
@@ -3361,6 +3458,9 @@
       document.exitFullscreen().catch(() => {});
     }
   }
+
+  // Restore any saved custom digit patterns on startup
+  loadCustomTemplatesFromStorage();
 </script>
 </body>
 </html>
