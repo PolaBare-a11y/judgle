@@ -1003,6 +1003,8 @@
     .btn-cancel:active { background: var(--fig-pink); color: #fff; }
     .btn-save { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; border: none; }
     .btn-save:active { opacity: 0.9; }
+    .btn-share-action { background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple)); color: #fff; border: none; }
+    .btn-share-action:active { opacity: 0.9; }
 
     /* FILENAME INPUT BOX */
     .filename-input-group {
@@ -1263,7 +1265,7 @@
 
       <div class="review-action-bar">
         <button class="btn-primary" onclick="confirmAndEnterOverlayPlayback()" style="flex: 1.3; background: linear-gradient(135deg, var(--fig-orange), var(--fig-pink));">▶ Apply Overlay & Play</button>
-        <button class="btn-primary btn-download" onclick="openFilenameModal('standard')" style="flex: 1;">🎬 Download Video</button>
+        <button class="btn-primary btn-download" onclick="openFilenameModal('standard')" style="flex: 1;">🎬 Export Video</button>
         <button class="btn-primary btn-training" onclick="openFilenameModal('training')" style="flex: 1.15;">🎓 Create Training Video</button>
         <button class="btn-primary btn-secondary" onclick="resetToSetup()" style="flex: 0.85;">New Video</button>
       </div>
@@ -1295,7 +1297,7 @@
 
         <!-- END OF REPLAY CENTERED BOTTOM NAVIGATION BOX -->
         <div id="overlayEndNavBox" class="overlay-end-nav-box">
-          <button class="btn-summary-action" style="background:linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color:#111; border:none;" onclick="openFilenameModal('standard')">🎬 Download Video</button>
+          <button class="btn-summary-action" style="background:linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color:#111; border:none;" onclick="openFilenameModal('standard')">🎬 Export Video</button>
           <button class="btn-summary-action" style="background:linear-gradient(135deg, var(--fig-purple), var(--fig-blue)); color:#fff; border:none;" onclick="openFilenameModal('training')">🎓 Create Training Video</button>
           <button class="btn-summary-action" onclick="exitOverlayToReview()">✏️ Adjust Deductions</button>
           <button class="btn-summary-action" onclick="restartOverlayPlayback()">🔁 Replay Video</button>
@@ -1340,17 +1342,18 @@
       <div class="trainer-modal-card">
         <div class="trainer-header">
           <div class="trainer-title" id="filenameModalTitle">Export Burned Video</div>
-          <div class="trainer-subtitle" id="filenameModalSubtitle">Enter a filename for your downloaded video</div>
+          <div class="trainer-subtitle" id="filenameModalSubtitle">Enter a filename to download or share to Google Drive</div>
         </div>
 
         <div class="filename-input-group">
-          <input type="text" id="exportFilenameInput" class="filename-text-input" placeholder="Routine_Judging_Video" onkeydown="if(event.key==='Enter') confirmFilenameAndExport()">
+          <input type="text" id="exportFilenameInput" class="filename-text-input" placeholder="Routine_Judging_Video" onkeydown="if(event.key==='Enter') confirmFilenameAndExport('download')">
           <span id="exportFileExtBadge" class="filename-ext-badge">.mp4</span>
         </div>
 
         <div class="trainer-btn-group">
           <button class="trainer-btn btn-cancel" onclick="closeFilenameModal()">Cancel</button>
-          <button class="trainer-btn btn-save" onclick="confirmFilenameAndExport()">Render & Download</button>
+          <button class="trainer-btn btn-save" onclick="confirmFilenameAndExport('download')">💾 Download</button>
+          <button class="trainer-btn btn-share-action" onclick="confirmFilenameAndExport('share')">📤 Share / Drive</button>
         </div>
       </div>
     </div>
@@ -1371,6 +1374,22 @@
 
         <div class="trainer-btn-group" style="margin-top:4px;">
           <button class="trainer-btn btn-cancel" onclick="cancelVideoExport()">Cancel Export</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. MOBILE SHARE SHEET READY MODAL (GUARANTEES USER GESTURE ACTIVATION FOR WEB SHARE API) -->
+    <div id="shareReadyModal" class="modal-overlay hidden">
+      <div class="trainer-modal-card">
+        <div class="trainer-header">
+          <div class="trainer-title">Video Ready to Share</div>
+          <div class="trainer-subtitle" id="shareReadySubtitle">Tap below to open your device Share Sheet and select Google Drive.</div>
+        </div>
+
+        <div class="trainer-btn-group">
+          <button class="trainer-btn btn-cancel" onclick="closeShareReadyModal()">Close</button>
+          <button class="trainer-btn btn-clear" onclick="downloadPendingShareFile()">💾 Download</button>
+          <button id="btnTriggerNativeShare" class="trainer-btn btn-save" onclick="triggerNativeFileShare()">📤 Share / Drive</button>
         </div>
       </div>
     </div>
@@ -2323,7 +2342,7 @@
   }
 
   /* ==========================================================================
-     PHASE 2: FILENAME PROMPT & MUTED BURNED OVERLAY VIDEO EXPORTER
+     PHASE 2: FILENAME PROMPT, MUTED BURNED VIDEO EXPORTER & WEB SHARE API
      Supports both 'standard' (single pass w/ overlay) and
      'training' (full clean pass -> fade to black -> 1s pause -> fade in -> overlay pass)
      ========================================================================== */
@@ -2331,6 +2350,7 @@
   let activeExportRecorder = null;
   let isExportCancelled = false;
   let currentExportMode = 'standard'; // 'standard' | 'training'
+  let pendingShareFile = null;
 
   function getBestExportMime() {
     const mimeCandidates = [
@@ -2362,7 +2382,7 @@
       : 'Export Burned Video';
     document.getElementById('filenameModalSubtitle').textContent = isTraining
       ? 'Plays clean routine first to judge, fades to black for 1s, then fades in with overlays (muted).'
-      : 'Enter a filename for your muted downloaded video';
+      : 'Enter a filename to download or share straight to Google Drive';
 
     const selectedMime = getBestExportMime();
     const fileExt = selectedMime.includes('mp4') ? 'mp4' : 'webm';
@@ -2385,7 +2405,7 @@
     document.getElementById('filenameModal').classList.add('hidden');
   }
 
-  function confirmFilenameAndExport() {
+  function confirmFilenameAndExport(deliveryAction = 'download') {
     const inputEl = document.getElementById('exportFilenameInput');
     let rawName = (inputEl.value || '').trim();
     rawName = rawName.replace(/\.(mp4|webm|mov)$/i, '').replace(/[\\/:*?"<>|]/g, '_');
@@ -2395,7 +2415,69 @@
         : `Judging_Video_${currentDiscipline}_${Date.now()}`;
     }
     closeFilenameModal();
-    exportBurnedVideo(rawName, currentExportMode);
+    exportBurnedVideo(rawName, currentExportMode, deliveryAction);
+  }
+
+  function triggerBlobDownload(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+
+  function openShareReadyModal(videoFile) {
+    pendingShareFile = videoFile;
+    const canNativeFileShare = typeof navigator.share === 'function'
+      && typeof navigator.canShare === 'function'
+      && navigator.canShare({ files: [videoFile] });
+
+    const shareBtn = document.getElementById('btnTriggerNativeShare');
+    const subtitleEl = document.getElementById('shareReadySubtitle');
+
+    if (canNativeFileShare) {
+      shareBtn.classList.remove('hidden');
+      subtitleEl.textContent = `"${videoFile.name}" is ready. Tap Share / Drive to open your device Share Sheet and select Google Drive.`;
+    } else {
+      shareBtn.classList.add('hidden');
+      subtitleEl.textContent = `Direct file sharing is not supported in this browser. Tap Download to save "${videoFile.name}" to your device.`;
+    }
+
+    document.getElementById('shareReadyModal').classList.remove('hidden');
+  }
+
+  function closeShareReadyModal() {
+    pendingShareFile = null;
+    document.getElementById('shareReadyModal').classList.add('hidden');
+  }
+
+  function downloadPendingShareFile() {
+    if (!pendingShareFile) return;
+    triggerBlobDownload(pendingShareFile, pendingShareFile.name);
+    triggerFeedback('complete');
+    closeShareReadyModal();
+  }
+
+  async function triggerNativeFileShare() {
+    if (!pendingShareFile) return;
+    try {
+      await navigator.share({
+        files: [pendingShareFile],
+        title: pendingShareFile.name
+      });
+      triggerFeedback('complete');
+      closeShareReadyModal();
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        // User dismissed share sheet; keep modal open so they can retry or download
+        return;
+      }
+      alert("Unable to open Share Sheet on this device. Downloading video instead.");
+      downloadPendingShareFile();
+    }
   }
 
   function drawRoundedRect(ctx, x, y, width, height, radius) {
@@ -2585,7 +2667,7 @@
     ctx.restore();
   }
 
-  async function exportBurnedVideo(customBaseName, mode = 'standard') {
+  async function exportBurnedVideo(customBaseName, mode = 'standard', deliveryAction = 'download') {
     if (!videoObjectUrl) {
       alert("No video loaded to export.");
       return;
@@ -2636,7 +2718,7 @@
     offscreenCanvas.height = h;
     const ctx = offscreenCanvas.getContext('2d');
 
-    // Video-only stream (forces downloaded video to be completely muted)
+    // Video-only stream (forces exported video to be completely muted)
     const videoOnlyStream = offscreenCanvas.captureStream(30);
 
     const selectedMime = getBestExportMime();
@@ -2658,20 +2740,23 @@
       if (e.data && e.data.size > 0) chunks.push(e.data);
     };
 
-    recorder.onstop = () => {
-      if (!isExportCancelled && chunks.length > 0) {
-        const blob = new Blob(chunks, { type: recorder.mimeType || selectedMime || 'video/webm' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = finalFileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(url), 10000);
-        triggerFeedback('complete');
-      }
+    recorder.onstop = async () => {
+      const wasCancelled = isExportCancelled;
       cleanupVideoExport();
+
+      if (!wasCancelled && chunks.length > 0) {
+        const mime = recorder.mimeType || selectedMime || 'video/webm';
+        const blob = new Blob(chunks, { type: mime });
+
+        if (deliveryAction === 'share') {
+          const videoFile = new File([blob], finalFileName, { type: mime });
+          triggerFeedback('complete');
+          openShareReadyModal(videoFile);
+        } else {
+          triggerBlobDownload(blob, finalFileName);
+          triggerFeedback('complete');
+        }
+      }
     };
 
     // Helper to play a single video pass and render frames
@@ -3092,6 +3177,7 @@
 
   function resetToSetup() {
     closeFilenameModal();
+    closeShareReadyModal();
     cancelVideoExport();
     if (playbackAnimFrame) cancelAnimationFrame(playbackAnimFrame);
     if (judgingVideo) judgingVideo.pause();
