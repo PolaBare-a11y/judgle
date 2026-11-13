@@ -30,7 +30,6 @@
       --dropzone-soft-bg:  rgba(68, 149, 229, 0.05);
       --dropzone-hover-bg: rgba(68, 149, 229, 0.12);
       --landing-row-bg:    rgba(220, 81, 131, 0.08);
-      --speaking-row-bg:   rgba(230, 138, 0, 0.22);
       --danger-btn-bg:     #2a1b24;
       --dot-shadow:        rgba(125, 95, 179, 0.8);
     }
@@ -54,7 +53,6 @@
       --dropzone-soft-bg:  rgba(255, 255, 255, 0.04);
       --dropzone-hover-bg: rgba(255, 255, 255, 0.10);
       --landing-row-bg:    rgba(255, 255, 255, 0.07);
-      --speaking-row-bg:   rgba(255, 255, 255, 0.20);
       --danger-btn-bg:     #232329;
       --dot-shadow:        rgba(255, 255, 255, 0.65);
     }
@@ -187,6 +185,110 @@
       gap: 12px;
     }
 
+    .batch-queue-card {
+      border-color: var(--fig-green);
+      background: linear-gradient(180deg, rgba(155, 217, 139, 0.06) 0%, var(--card-bg) 100%);
+    }
+
+    body.theme-mono .batch-queue-card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, var(--card-bg) 100%);
+    }
+
+    .batch-queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .batch-queue-item {
+      background: #0d0d14;
+      border: 1px solid var(--border-col);
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .batch-item-index {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--fig-green);
+      min-width: 22px;
+    }
+
+    .batch-item-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 78px;
+      flex-shrink: 0;
+    }
+
+    .batch-item-disc {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--fig-blue);
+    }
+
+    .batch-item-score {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-sub);
+    }
+
+    .batch-item-name-input {
+      flex: 1;
+      min-width: 0;
+      background: #14141f;
+      border: 1px solid var(--border-col);
+      border-radius: 6px;
+      padding: 6px 8px;
+      color: var(--text-main);
+      font-size: 0.8rem;
+      font-weight: 600;
+      outline: none;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    body.theme-mono .batch-item-name-input {
+      background: #18181d;
+    }
+
+    .batch-item-name-input:focus {
+      border-color: var(--fig-blue);
+    }
+
+    .btn-remove-queue-item {
+      background: var(--danger-btn-bg);
+      border: 1px solid var(--fig-pink);
+      color: var(--fig-pink);
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .btn-remove-queue-item:active {
+      background: var(--fig-pink);
+      color: #111;
+    }
+
+    .batch-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
     .section-title {
       font-size: 0.95rem;
       font-weight: 700;
@@ -218,6 +320,105 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-top: 2px;
+    }
+
+    /* TEXT INPUT FIELDS FOR BRANDING & INTRO SLATE */
+    .branding-fields-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .branding-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .branding-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .branding-toggle-lbl {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--fig-green);
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .branding-toggle-lbl input[type="checkbox"] {
+      accent-color: var(--fig-green);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    .branding-text-input {
+      width: 100%;
+      background: #08080d;
+      border: 1px solid var(--border-col);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text-main);
+      font-size: 0.85rem;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.15s ease;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .branding-text-input:focus {
+      border-color: var(--fig-blue);
+    }
+
+    .branding-text-input::placeholder {
+      color: #55536b;
+      font-weight: 500;
+    }
+
+    .branding-text-input:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .slate-duration-pills {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .duration-pill-btn {
+      background: #1a1926;
+      border: 1px solid var(--border-col);
+      color: var(--text-sub);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    body.theme-mono .duration-pill-btn {
+      background: #1b1b20;
+    }
+
+    .duration-pill-btn.selected {
+      border-color: var(--fig-blue);
+      background: var(--accent-soft-bg);
+      color: var(--text-main);
     }
 
     .preset-group {
@@ -403,6 +604,9 @@
     .btn-download { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; font-weight: 800; }
     .btn-training { background: linear-gradient(135deg, var(--fig-purple), var(--fig-blue)); color: #fff; font-weight: 800; }
     body.theme-mono .btn-training { color: #111; }
+    .btn-queue-add { background: #1a1926; border: 1.5px solid var(--fig-green); color: var(--fig-green); font-weight: 800; }
+    body.theme-mono .btn-queue-add { background: #1b1b20; }
+    .btn-queue-add:active { background: var(--fig-green); color: #111; }
     .btn-swipe-start { background: linear-gradient(135deg, var(--fig-purple), var(--fig-pink)); }
     .btn-recognizer-start { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; }
 
@@ -709,6 +913,97 @@
       justify-content: center;
     }
 
+    /* INTRO SLATE (TITLE CARD) OVERLAY FOR LIVE PLAYBACK */
+    .overlay-intro-slate {
+      position: absolute;
+      inset: 0;
+      z-index: 35;
+      background: var(--bg-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .overlay-intro-slate.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .intro-slate-frame {
+      border: 1.5px solid var(--border-col);
+      background: rgba(20, 20, 31, 0.72);
+      border-radius: 16px;
+      padding: 28px 36px;
+      max-width: 680px;
+      width: 90%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75);
+    }
+
+    body.theme-mono .intro-slate-frame {
+      background: rgba(20, 20, 23, 0.78);
+    }
+
+    .intro-slate-accent-bar {
+      width: 56px;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--fig-blue), var(--fig-purple));
+      margin-bottom: 4px;
+    }
+
+    .intro-slate-disc {
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: var(--fig-blue);
+    }
+
+    .intro-slate-title {
+      font-size: clamp(1.35rem, 3.2vw, 2.1rem);
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .intro-slate-subtitle {
+      font-size: clamp(0.88rem, 1.8vw, 1.08rem);
+      font-weight: 600;
+      color: var(--text-sub);
+      line-height: 1.4;
+      max-width: 540px;
+      word-break: break-word;
+    }
+
+    /* BOTTOM-LEFT FAINT CUSTOM WATERMARK (LIVE PLAYBACK) */
+    .overlay-bottom-left-watermark {
+      position: absolute;
+      bottom: 68px;
+      left: 18px;
+      z-index: 36;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      color: rgba(255, 255, 255, 0.34);
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+      pointer-events: none;
+      max-width: 60%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     /* TOP-RIGHT ACTIVE DEDUCTION BADGE + OPTIONAL DD SUB-BOX STACK */
     @keyframes skillBadgePopIn {
       0% {
@@ -843,13 +1138,7 @@
       font-size: 0.78rem;
       font-weight: 700;
       color: #ffffff;
-      transition: border-color 0.2s ease, background 0.2s ease;
       cursor: pointer;
-    }
-
-    .running-list-item.current-speaking {
-      border-color: var(--fig-orange);
-      background: var(--speaking-row-bg);
     }
 
     .item-skill-lbl {
@@ -1186,6 +1475,30 @@
     <!-- 1. SETUP / CONFIGURATION SCREEN -->
     <div id="setupScreen" class="setup-screen">
 
+      <!-- BATCH EXPORT QUEUE CARD (SHOWN WHEN >= 1 ROUTINE IS QUEUED) -->
+      <div id="batchQueueCard" class="setup-section-card batch-queue-card hidden">
+        <div class="section-title" style="color:var(--fig-green);">
+          <svg class="section-title-icon" style="stroke:var(--fig-green);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+          Batch Export Queue (<span id="batchQueueCountLabel">0</span>)
+          <button type="button" class="btn-reset-patterns" onclick="clearBatchQueue()">Clear Queue</button>
+        </div>
+        <div class="section-desc">Edit individual output filenames below, continue judging additional routines, or bulk export all queued routines into separate video files.</div>
+
+        <div id="batchQueueList" class="batch-queue-list"></div>
+
+        <div class="batch-actions-grid">
+          <button type="button" class="btn-primary btn-download" onclick="startBatchExport('standard')">🎬 Bulk Export Videos</button>
+          <button type="button" class="btn-primary btn-training" onclick="startBatchExport('training')">🎓 Bulk Export Training Videos</button>
+        </div>
+      </div>
+
       <!-- STEP 1: VIDEO FILE SELECTOR -->
       <div class="setup-section-card">
         <div class="section-title">
@@ -1303,14 +1616,60 @@
         </div>
       </div>
 
-      <!-- STEP 5: COLOUR SCHEME SELECTOR -->
+      <!-- STEP 5: INTRO SLATE & COURSE WATERMARK -->
+      <div class="setup-section-card">
+        <div class="section-title" style="color:var(--fig-blue);">
+          <svg class="section-title-icon" style="stroke:var(--fig-blue);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          5. Intro Slate & Course Watermark
+        </div>
+        <div class="section-desc">Add a custom opening title card before the routine starts and a faint bottom-left watermark across playback and exported videos.</div>
+
+        <div class="branding-fields-grid">
+          <div class="branding-field-group">
+            <div class="branding-label-row">
+              <span>Intro Title Card (Slate)</span>
+              <label class="branding-toggle-lbl">
+                <input type="checkbox" id="introSlateEnabledCheckbox" onchange="handleBrandingSettingsChange()">
+                Enable Intro Slate
+              </label>
+            </div>
+            <input type="text" id="introSlateTitleInput" class="branding-text-input" placeholder="e.g. TRP – National Level 5 Routine 1" maxlength="80" oninput="handleBrandingSettingsChange()">
+          </div>
+
+          <div class="branding-field-group">
+            <div class="branding-label-row">
+              <span>Intro Slate Subtitle / Instructions</span>
+              <div class="slate-duration-pills" id="slateDurationPills">
+                <button type="button" class="duration-pill-btn" data-sec="2" onclick="setIntroSlateDuration(2)">2s</button>
+                <button type="button" class="duration-pill-btn selected" data-sec="3" onclick="setIntroSlateDuration(3)">3s</button>
+                <button type="button" class="duration-pill-btn" data-sec="4" onclick="setIntroSlateDuration(4)">4s</button>
+                <button type="button" class="duration-pill-btn" data-sec="5" onclick="setIntroSlateDuration(5)">5s</button>
+              </div>
+            </div>
+            <input type="text" id="introSlateSubtitleInput" class="branding-text-input" placeholder="e.g. Pass 1: Judge Execution Only • Pass 2: Official Deductions" maxlength="120" oninput="handleBrandingSettingsChange()">
+          </div>
+
+          <div class="branding-field-group">
+            <div class="branding-label-row">
+              <span>Bottom-Left Faint Watermark</span>
+            </div>
+            <input type="text" id="watermarkTextInput" class="branding-text-input" placeholder="e.g. Gymnastics Australia – Judge Education" maxlength="70" oninput="handleBrandingSettingsChange()">
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 6: COLOUR SCHEME SELECTOR -->
       <div class="setup-section-card">
         <div class="section-title" style="color:var(--fig-pink);">
           <svg class="section-title-icon" style="stroke:var(--fig-pink);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <path d="M12 2a10 10 0 0 1 0 20z"></path>
           </svg>
-          5. Colour Scheme
+          6. Colour Scheme
         </div>
         <div class="section-desc">Switch between the default World Gymnastics ribbon palette and a clean monochromatic theme for the interface and video overlays.</div>
 
@@ -1389,10 +1748,11 @@
       <div class="review-list" id="reviewList"></div>
 
       <div class="review-action-bar">
-        <button class="btn-primary" onclick="confirmAndEnterOverlayPlayback()" style="flex: 1.3; background: linear-gradient(135deg, var(--fig-orange), var(--fig-pink));">▶ Apply Overlay & Play</button>
-        <button class="btn-primary btn-download" onclick="openFilenameModal('standard')" style="flex: 1;">🎬 Export Video</button>
-        <button class="btn-primary btn-training" onclick="openFilenameModal('training')" style="flex: 1.15;">🎓 Create Training Video</button>
-        <button class="btn-primary btn-secondary" onclick="resetToSetup()" style="flex: 0.85;">New Video</button>
+        <button class="btn-primary" onclick="confirmAndEnterOverlayPlayback()" style="flex: 1.2; background: linear-gradient(135deg, var(--fig-orange), var(--fig-pink));">▶ Apply Overlay & Play</button>
+        <button class="btn-primary btn-queue-add" onclick="addCurrentRoutineToBatchQueue()" style="flex: 1.1;">➕ Add to Queue</button>
+        <button class="btn-primary btn-download" onclick="openFilenameModal('standard')" style="flex: 0.95;">🎬 Export Video</button>
+        <button class="btn-primary btn-training" onclick="openFilenameModal('training')" style="flex: 1.1;">🎓 Create Training Video</button>
+        <button class="btn-primary btn-secondary" onclick="resetToSetup()" style="flex: 0.75;">New Video</button>
       </div>
     </div>
 
@@ -1400,6 +1760,19 @@
     <div id="playbackOverlayStage" class="playback-overlay-wrapper hidden">
       <div class="playback-video-container">
         <video id="playbackVideo" class="video-player-element" playsinline></video>
+
+        <!-- CUSTOM INTRO SLATE (TITLE CARD) PREVIEW OVERLAY -->
+        <div id="overlayIntroSlate" class="overlay-intro-slate">
+          <div class="intro-slate-frame">
+            <div class="intro-slate-accent-bar"></div>
+            <div id="overlaySlateDisc" class="intro-slate-disc">TRAMPOLINE • JUDGE EDUCATION</div>
+            <div id="overlaySlateTitle" class="intro-slate-title"></div>
+            <div id="overlaySlateSubtitle" class="intro-slate-subtitle"></div>
+          </div>
+        </div>
+
+        <!-- BOTTOM-LEFT FAINT WATERMARK -->
+        <div id="overlayBottomLeftWatermark" class="overlay-bottom-left-watermark hidden"></div>
 
         <!-- TOP RIGHT ACTIVE DEDUCTION BADGE + DD SUB-BOX -->
         <div id="overlayTopRightStack" class="overlay-top-right-stack">
@@ -1422,6 +1795,7 @@
 
         <!-- END OF REPLAY CENTERED BOTTOM NAVIGATION BOX -->
         <div id="overlayEndNavBox" class="overlay-end-nav-box">
+          <button class="btn-summary-action" style="border-color:var(--fig-green); color:var(--fig-green);" onclick="addCurrentRoutineToBatchQueue()">➕ Add to Queue</button>
           <button class="btn-summary-action" style="background:linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color:#111; border:none;" onclick="openFilenameModal('standard')">🎬 Export Video</button>
           <button class="btn-summary-action" style="background:linear-gradient(135deg, var(--fig-purple), var(--fig-blue)); color:#111; border:none;" onclick="openFilenameModal('training')">🎓 Create Training Video</button>
           <button class="btn-summary-action" onclick="exitOverlayToReview()">✏️ Adjust Deductions</button>
@@ -1462,9 +1836,9 @@
       </div>
     </div>
 
-    <!-- 6. FILENAME PROMPT MODAL -->
+    <!-- 6. FILENAME & QUICK SLATE EDIT MODAL -->
     <div id="filenameModal" class="modal-overlay hidden">
-      <div class="trainer-modal-card">
+      <div class="trainer-modal-card" style="max-width:460px;">
         <div class="trainer-header">
           <div class="trainer-title" id="filenameModalTitle">Export Burned Video</div>
           <div class="trainer-subtitle" id="filenameModalSubtitle">Enter a filename to download or share to Google Drive</div>
@@ -1473,6 +1847,19 @@
         <div class="filename-input-group">
           <input type="text" id="exportFilenameInput" class="filename-text-input" placeholder="Routine_Judging_Video" onkeydown="if(event.key==='Enter') confirmFilenameAndExport('download')">
           <span id="exportFileExtBadge" class="filename-ext-badge">.mp4</span>
+        </div>
+
+        <!-- Quick Intro Slate Overrides before export -->
+        <div class="branding-fields-grid" style="width:100%; text-align:left; background:#0d0d14; border:1px solid var(--border-col); border-radius:10px; padding:10px;">
+          <div class="branding-label-row">
+            <span>Intro Title Card</span>
+            <label class="branding-toggle-lbl">
+              <input type="checkbox" id="modalSlateEnabledCheckbox" onchange="syncModalSlateToSetup()">
+              Include Slate
+            </label>
+          </div>
+          <input type="text" id="modalSlateTitleInput" class="branding-text-input" placeholder="Intro Title (optional)" maxlength="80" oninput="syncModalSlateToSetup()">
+          <input type="text" id="modalSlateSubtitleInput" class="branding-text-input" placeholder="Intro Subtitle / Instructions (optional)" maxlength="120" oninput="syncModalSlateToSetup()">
         </div>
 
         <div class="trainer-btn-group">
@@ -1564,6 +1951,8 @@
   function getThemeCanvasColors() {
     if (currentColorScheme === 'mono') {
       return {
+        bgDark: '#09090b',
+        cardBg: 'rgba(20, 20, 23, 0.85)',
         blue: '#d4d4dc',
         purple: '#8e8e9e',
         pink: '#b0b0be',
@@ -1572,12 +1961,13 @@
         red: '#9e9eae',
         border: '#2b2b33',
         textSub: '#8e8e98',
-        speakingBg: 'rgba(255, 255, 255, 0.22)',
         strokeDraw: '#ffffff',
         strokeTrain: '#f2f2f7'
       };
     }
     return {
+      bgDark: '#0a0a0f',
+      cardBg: 'rgba(20, 20, 31, 0.85)',
       blue: '#4495e5',
       purple: '#7d5fb3',
       pink: '#dc5183',
@@ -1586,7 +1976,6 @@
       red: '#f44336',
       border: '#2c2940',
       textSub: '#8a8a9e',
-      speakingBg: 'rgba(230, 138, 0, 0.25)',
       strokeDraw: '#e68a00',
       strokeTrain: '#9bd98b'
     };
@@ -1594,6 +1983,118 @@
 
   // Hydrate saved colour scheme immediately on load
   loadSavedColorScheme();
+
+  /* ==========================================================================
+     INTRO SLATE (TITLE CARD) & BOTTOM-LEFT FAINT WATERMARK PERSISTENCE
+     ========================================================================== */
+  const BRANDING_STORAGE_KEY = 'judgle_course_branding_v1';
+  let brandingState = {
+    slateEnabled: false,
+    slateTitle: '',
+    slateSubtitle: '',
+    slateDurationSec: 3,
+    watermarkText: ''
+  };
+
+  function loadSavedBrandingSettings() {
+    try {
+      const raw = localStorage.getItem(BRANDING_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          brandingState.slateEnabled = Boolean(parsed.slateEnabled);
+          brandingState.slateTitle = String(parsed.slateTitle || '');
+          brandingState.slateSubtitle = String(parsed.slateSubtitle || '');
+          brandingState.slateDurationSec = [2, 3, 4, 5].includes(Number(parsed.slateDurationSec))
+            ? Number(parsed.slateDurationSec)
+            : 3;
+          brandingState.watermarkText = String(parsed.watermarkText || '');
+        }
+      }
+    } catch (e) {}
+    applyBrandingStateToInputs();
+  }
+
+  function persistBrandingSettings() {
+    try {
+      localStorage.setItem(BRANDING_STORAGE_KEY, JSON.stringify(brandingState));
+    } catch (e) {}
+  }
+
+  function applyBrandingStateToInputs() {
+    const enabledEl = document.getElementById('introSlateEnabledCheckbox');
+    const titleEl   = document.getElementById('introSlateTitleInput');
+    const subEl     = document.getElementById('introSlateSubtitleInput');
+    const wmEl      = document.getElementById('watermarkTextInput');
+
+    if (enabledEl) enabledEl.checked = brandingState.slateEnabled;
+    if (titleEl) titleEl.value = brandingState.slateTitle;
+    if (subEl) subEl.value = brandingState.slateSubtitle;
+    if (wmEl) wmEl.value = brandingState.watermarkText;
+
+    const pills = document.querySelectorAll('#slateDurationPills .duration-pill-btn');
+    pills.forEach(btn => {
+      const sec = Number(btn.getAttribute('data-sec'));
+      btn.classList.toggle('selected', sec === brandingState.slateDurationSec);
+    });
+  }
+
+  function handleBrandingSettingsChange() {
+    const enabledEl = document.getElementById('introSlateEnabledCheckbox');
+    const titleEl   = document.getElementById('introSlateTitleInput');
+    const subEl     = document.getElementById('introSlateSubtitleInput');
+    const wmEl      = document.getElementById('watermarkTextInput');
+
+    const prevTitle = brandingState.slateTitle;
+    const prevSub   = brandingState.slateSubtitle;
+
+    brandingState.slateTitle    = titleEl ? titleEl.value : '';
+    brandingState.slateSubtitle = subEl ? subEl.value : '';
+    brandingState.watermarkText = wmEl ? wmEl.value : '';
+
+    if (enabledEl) {
+      const hadNoText = !prevTitle.trim() && !prevSub.trim();
+      const hasNewText = Boolean(brandingState.slateTitle.trim() || brandingState.slateSubtitle.trim());
+      if (hadNoText && hasNewText && !enabledEl.checked) {
+        enabledEl.checked = true;
+      }
+      brandingState.slateEnabled = enabledEl.checked;
+    }
+
+    persistBrandingSettings();
+  }
+
+  function setIntroSlateDuration(sec) {
+    brandingState.slateDurationSec = sec;
+    applyBrandingStateToInputs();
+    persistBrandingSettings();
+  }
+
+  function syncModalSlateToSetup() {
+    const mEnabled = document.getElementById('modalSlateEnabledCheckbox');
+    const mTitle   = document.getElementById('modalSlateTitleInput');
+    const mSub     = document.getElementById('modalSlateSubtitleInput');
+
+    if (mEnabled) brandingState.slateEnabled = mEnabled.checked;
+    if (mTitle) brandingState.slateTitle = mTitle.value;
+    if (mSub) brandingState.slateSubtitle = mSub.value;
+
+    applyBrandingStateToInputs();
+    persistBrandingSettings();
+  }
+
+  function isIntroSlateActive(slateConfig = brandingState) {
+    return slateConfig.slateEnabled && Boolean((slateConfig.slateTitle || '').trim() || (slateConfig.slateSubtitle || '').trim());
+  }
+
+  function getDisciplineFullName(disc) {
+    if (disc === 'DMT') return 'DOUBLE MINI TRAMPOLINE';
+    if (disc === 'TUM') return 'TUMBLING';
+    return 'TRAMPOLINE';
+  }
+
+  // Hydrate branding inputs on initial load
+  loadSavedBrandingSettings();
 
   /* ==========================================================================
      $P POINT SPACE RECOGNIZER CLASS IMPLEMENTATION
@@ -1909,6 +2410,9 @@
 
   let skillsPerformed = 10;
 
+  // Batch Processing Queue State
+  let batchQueue = [];
+
   // DOM Elements
   const setupScreen          = document.getElementById('setupScreen');
   const judgingStage         = document.getElementById('judgingStage');
@@ -1953,7 +2457,7 @@
     } catch (e) {}
   }
 
-  function getMaxSkills() { return DISCIPLINE_SKILLS[currentDiscipline] || 10; }
+  function getMaxSkills(disc = currentDiscipline) { return DISCIPLINE_SKILLS[disc] || 10; }
 
   function formatTime(seconds) {
     if (isNaN(seconds) || seconds < 0) return "00:00.0";
@@ -1978,13 +2482,33 @@
     return c.red;
   }
 
+  function computeRoutineScores(disc, performedCount, skillDeductArr, landDeduct) {
+    const maxSkills = getMaxSkills(disc);
+    const isLandingActive = (performedCount === maxSkills);
+    const activeSkillDeductions = skillDeductArr.slice(0, performedCount);
+    const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
+    const totalDeduct = skillDeductSum + (isLandingActive ? landDeduct : 0);
+
+    let baseScore = (disc === 'TRP')
+      ? performedCount * 1.0
+      : (disc === 'DMT' ? (performedCount === 2 ? 10.0 : 8.0) : (performedCount + 2.0));
+    const netScore = Math.max(0, baseScore - totalDeduct);
+    return { totalDeduct, netScore };
+  }
+
+  function isObjectUrlInBatchQueue(url) {
+    return Boolean(url) && batchQueue.some(item => item.videoObjectUrl === url);
+  }
+
   /* ==========================================================================
      VIDEO FILE LOADING
      ========================================================================== */
   function handleVideoFileSelected(event) {
     const file = event.target.files[0];
     if (file) {
-      if (videoObjectUrl) URL.revokeObjectURL(videoObjectUrl);
+      if (videoObjectUrl && !isObjectUrlInBatchQueue(videoObjectUrl)) {
+        URL.revokeObjectURL(videoObjectUrl);
+      }
       videoObjectUrl = URL.createObjectURL(file);
       loadedVideoBaseName = file.name.replace(/\.[^/.]+$/, '');
       judgingVideo.src = videoObjectUrl;
@@ -2002,6 +2526,137 @@
     document.getElementById('discDmtCard').classList.remove('selected');
     document.getElementById('discTumCard').classList.remove('selected');
     el.classList.add('selected');
+  }
+
+  /* ==========================================================================
+     BATCH QUEUE MANAGEMENT (ADD, EDIT FILENAME, REMOVE, CLEAR)
+     ========================================================================== */
+  function addCurrentRoutineToBatchQueue() {
+    if (!videoObjectUrl) {
+      alert("No routine video loaded to add to queue.");
+      return;
+    }
+
+    const { totalDeduct, netScore } = computeRoutineScores(
+      currentDiscipline,
+      skillsPerformed,
+      skillDeductions,
+      landingDeduction
+    );
+
+    const queueNum = batchQueue.length + 1;
+    const basePrefix = loadedVideoBaseName
+      ? `${loadedVideoBaseName}_`
+      : `Routine_${queueNum}_`;
+    const defaultOutputName = `${basePrefix}${currentDiscipline}`;
+
+    batchQueue.push({
+      id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      videoObjectUrl: videoObjectUrl,
+      outputBaseName: defaultOutputName,
+      discipline: currentDiscipline,
+      skillsPerformed: skillsPerformed,
+      skillDeductions: skillDeductions.slice(0, getMaxSkills(currentDiscipline)),
+      skillTimestamps: skillTimestamps.slice(0, getMaxSkills(currentDiscipline)),
+      skillDDs: skillDDs.slice(0, getMaxSkills(currentDiscipline)),
+      landingDeduction: landingDeduction,
+      landingTimestamp: landingTimestamp,
+      totalDeduct: totalDeduct,
+      netScore: netScore,
+      slateEnabled: brandingState.slateEnabled,
+      slateTitle: brandingState.slateTitle,
+      slateSubtitle: brandingState.slateSubtitle,
+      slateDurationSec: brandingState.slateDurationSec,
+      watermarkText: brandingState.watermarkText
+    });
+
+    // Clear active video selection so user can immediately select the next routine video
+    videoObjectUrl = null;
+    loadedVideoBaseName = '';
+    const fileInput = document.getElementById('videoFileInput');
+    if (fileInput) fileInput.value = '';
+    const badge = document.getElementById('selectedVideoName');
+    if (badge) {
+      badge.textContent = 'No File Loaded';
+      badge.classList.add('hidden');
+    }
+
+    renderBatchQueueCard();
+    triggerFeedback('complete');
+    resetToSetup();
+    if (setupScreen) setupScreen.scrollTop = 0;
+  }
+
+  function updateBatchQueueItemName(index, newVal) {
+    if (!batchQueue[index]) return;
+    batchQueue[index].outputBaseName = String(newVal || '');
+  }
+
+  function removeBatchQueueItem(index) {
+    const removed = batchQueue[index];
+    if (!removed) return;
+    batchQueue.splice(index, 1);
+
+    // Revoke blob URL if no longer referenced anywhere
+    if (
+      removed.videoObjectUrl &&
+      removed.videoObjectUrl !== videoObjectUrl &&
+      !isObjectUrlInBatchQueue(removed.videoObjectUrl)
+    ) {
+      URL.revokeObjectURL(removed.videoObjectUrl);
+    }
+
+    renderBatchQueueCard();
+    triggerFeedback('tap');
+  }
+
+  function clearBatchQueue() {
+    if (batchQueue.length === 0) return;
+    if (!confirm(`Remove all ${batchQueue.length} routine(s) from the batch queue?`)) return;
+
+    const urlsToCheck = batchQueue.map(item => item.videoObjectUrl);
+    batchQueue = [];
+
+    urlsToCheck.forEach(url => {
+      if (url && url !== videoObjectUrl && !isObjectUrlInBatchQueue(url)) {
+        URL.revokeObjectURL(url);
+      }
+    });
+
+    renderBatchQueueCard();
+    triggerFeedback('tap');
+  }
+
+  function renderBatchQueueCard() {
+    const cardEl = document.getElementById('batchQueueCard');
+    const countEl = document.getElementById('batchQueueCountLabel');
+    const listEl = document.getElementById('batchQueueList');
+    if (!cardEl || !countEl || !listEl) return;
+
+    if (batchQueue.length === 0) {
+      cardEl.classList.add('hidden');
+      listEl.innerHTML = '';
+      return;
+    }
+
+    cardEl.classList.remove('hidden');
+    countEl.textContent = String(batchQueue.length);
+    listEl.innerHTML = '';
+
+    batchQueue.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'batch-queue-item';
+      row.innerHTML = `
+        <span class="batch-item-index">#${idx + 1}</span>
+        <div class="batch-item-meta">
+          <span class="batch-item-disc">${escapeHtml(item.discipline)} (${item.skillsPerformed} sk)</span>
+          <span class="batch-item-score">E: ${item.netScore.toFixed(2)}</span>
+        </div>
+        <input type="text" class="batch-item-name-input" value="${escapeHtml(item.outputBaseName)}" placeholder="Output filename" oninput="updateBatchQueueItemName(${idx}, this.value)">
+        <button type="button" class="btn-remove-queue-item" title="Remove from queue" onclick="removeBatchQueueItem(${idx})">✕</button>
+      `;
+      listEl.appendChild(row);
+    });
   }
 
   /* ==========================================================================
@@ -2379,7 +3034,6 @@
         if (overlayCtx) overlayCtx.clearRect(0, 0, gestureOverlayCanvas.width, gestureOverlayCanvas.height);
         processSwipePoints(pointerPoints, croppedThumb, gestureStartTime);
       } else {
-        // Applies equally to both routine skills and landing deduction (allows multi-stroke digits like "10")
         scheduleRecognizerEvaluation();
       }
     };
@@ -2474,7 +3128,7 @@
   }
 
   function updateSkillDD(index, rawValue) {
-    skillDDs[index] = String(rawValue || '').slice(0, 20);
+    skillDDs[index] = String(rawValue || '').slice(0, 8);
   }
 
   function renderReviewSummary() {
@@ -2482,12 +3136,12 @@
     document.getElementById('skillsCountDisplay').textContent = skillsPerformed;
 
     const isLandingActive = (skillsPerformed === maxSkills);
-    const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
-    const skillDeductSum = activeSkillDeductions.reduce((a, b) => a + b, 0);
-    const totalDeduct = skillDeductSum + (isLandingActive ? landingDeduction : 0);
-
-    let baseScore = (currentDiscipline === 'TRP') ? skillsPerformed * 1.0 : (currentDiscipline === 'DMT' ? (skillsPerformed === 2 ? 10.0 : 8.0) : (skillsPerformed + 2.0));
-    const netScore = Math.max(0, baseScore - totalDeduct);
+    const { totalDeduct, netScore } = computeRoutineScores(
+      currentDiscipline,
+      skillsPerformed,
+      skillDeductions,
+      landingDeduction
+    );
 
     document.getElementById('totalDeductDisplay').textContent = totalDeduct.toFixed(1);
     document.getElementById('netScoreDisplay').textContent = netScore.toFixed(2);
@@ -2512,7 +3166,7 @@
           </div>
           <div class="dd-input-wrapper">
             <span class="dd-prefix-lbl">DD</span>
-            <input type="text" maxlength="20" class="dd-text-input" placeholder="—" value="${ddValue}" ${isPerformed ? '' : 'disabled'} oninput="updateSkillDD(${i}, this.value)">
+            <input type="text" maxlength="8" class="dd-text-input" placeholder="—" value="${ddValue}" ${isPerformed ? '' : 'disabled'} oninput="updateSkillDD(${i}, this.value)">
           </div>
         </div>
 
@@ -2568,36 +3222,67 @@
   }
 
   /* ==========================================================================
+     PARAMETERIZED ROUTINE DATA HELPER (SUPPORTS ACTIVE ROUTINE OR QUEUED ITEMS)
+     ========================================================================== */
+  function getActiveRoutineSnapshot(customOutputName = '') {
+    return {
+      videoObjectUrl,
+      outputBaseName: customOutputName,
+      discipline: currentDiscipline,
+      skillsPerformed,
+      skillDeductions: [...skillDeductions],
+      skillTimestamps: [...skillTimestamps],
+      skillDDs: [...skillDDs],
+      landingDeduction,
+      landingTimestamp,
+      slateEnabled: brandingState.slateEnabled,
+      slateTitle: brandingState.slateTitle,
+      slateSubtitle: brandingState.slateSubtitle,
+      slateDurationSec: brandingState.slateDurationSec,
+      watermarkText: brandingState.watermarkText
+    };
+  }
+
+  /* ==========================================================================
      ACTIVE OVERLAY EVENT RESOLVER WITH SKILL-TO-SKILL TRANSITION TIMING
      ========================================================================== */
-  function getActiveOverlayEvent(currentTime) {
+  function getActiveOverlayEvent(currentTime, routineData = null) {
+    const data = routineData || {
+      discipline: currentDiscipline,
+      skillsPerformed,
+      skillDeductions,
+      skillTimestamps,
+      skillDDs,
+      landingDeduction,
+      landingTimestamp
+    };
+
     const events = [];
-    for (let i = 0; i < skillsPerformed; i++) {
-      const t = skillTimestamps[i];
+    for (let i = 0; i < data.skillsPerformed; i++) {
+      const t = data.skillTimestamps[i];
       if (t > 0) {
         events.push({
           key: `skill_${i}`,
           label: `SKILL ${i + 1}`,
-          val: skillDeductions[i],
-          dd: (skillDDs[i] || '').trim(),
+          val: data.skillDeductions[i],
+          dd: (data.skillDDs[i] || '').trim(),
           start: t,
           maxDur: 1.8
         });
       }
     }
 
-    if (skillsPerformed === getMaxSkills() && landingTimestamp > 0) {
+    if (data.skillsPerformed === getMaxSkills(data.discipline) && data.landingTimestamp > 0) {
       events.push({
         key: 'landing',
         label: 'LANDING',
-        val: landingDeduction,
+        val: data.landingDeduction,
         dd: '',
-        start: landingTimestamp,
+        start: data.landingTimestamp,
         maxDur: 2.2
       });
     }
 
-    // Sort chronologically so consecutive skills cleanly hand off with a transition gap
     events.sort((a, b) => a.start - b.start);
 
     const TRANSITION_GAP_SEC = 0.16;
@@ -2608,7 +3293,6 @@
       const nextEv = events[idx + 1];
       let end = ev.start + ev.maxDur;
 
-      // Cut off the previous badge slightly before the next skill starts so identical values visibly reset
       if (nextEv && nextEv.start > ev.start) {
         const cappedEnd = nextEv.start - TRANSITION_GAP_SEC;
         if (cappedEnd < end) {
@@ -2620,7 +3304,6 @@
         const elapsed = currentTime - ev.start;
         const remaining = end - currentTime;
 
-        // Compute normalized transition scale & opacity (pop-in at start, fade/shrink out at end)
         let alpha = 1.0;
         let scale = 1.0;
 
@@ -2649,18 +3332,20 @@
      RUNNING LIST VISIBILITY TIMING HELPER
      Shows running list only 150ms after landing deduction is shown
      ========================================================================== */
-  function shouldShowRunningList(currentTime, isEnded) {
-    const isLandingActive = (skillsPerformed === getMaxSkills());
-    if (isLandingActive && landingTimestamp > 0) {
-      return currentTime >= (landingTimestamp + 0.15);
+  function shouldShowRunningList(currentTime, isEnded, routineData = null) {
+    const disc = routineData ? routineData.discipline : currentDiscipline;
+    const performed = routineData ? routineData.skillsPerformed : skillsPerformed;
+    const landTs = routineData ? routineData.landingTimestamp : landingTimestamp;
+
+    const isLandingActive = (performed === getMaxSkills(disc));
+    if (isLandingActive && landTs > 0) {
+      return currentTime >= (landTs + 0.15);
     }
     return isEnded;
   }
 
   /* ==========================================================================
-     PHASE 2: FILENAME PROMPT, MUTED BURNED VIDEO EXPORTER & WEB SHARE API
-     Supports both 'standard' (single pass w/ overlay) and
-     'training' (full clean pass -> fade to black -> 1s pause -> fade in -> overlay pass)
+     PHASE 2: FILENAME PROMPT, SINGLE & BATCH MUTED VIDEO EXPORTER
      ========================================================================== */
   let activeExportVideo = null;
   let activeExportRecorder = null;
@@ -2677,6 +3362,12 @@
       'video/webm'
     ];
     return mimeCandidates.find(m => MediaRecorder.isTypeSupported(m)) || '';
+  }
+
+  function sanitizeFileBaseName(rawName, fallbackPrefix) {
+    let clean = String(rawName || '').trim();
+    clean = clean.replace(/\.(mp4|webm|mov)$/i, '').replace(/[\\/:*?"<>|]/g, '_');
+    return clean || `${fallbackPrefix}_${Date.now()}`;
   }
 
   function openFilenameModal(mode = 'standard') {
@@ -2710,6 +3401,13 @@
     const inputEl = document.getElementById('exportFilenameInput');
     inputEl.value = defaultName;
 
+    const mEnabled = document.getElementById('modalSlateEnabledCheckbox');
+    const mTitle   = document.getElementById('modalSlateTitleInput');
+    const mSub     = document.getElementById('modalSlateSubtitleInput');
+    if (mEnabled) mEnabled.checked = brandingState.slateEnabled;
+    if (mTitle) mTitle.value = brandingState.slateTitle;
+    if (mSub) mSub.value = brandingState.slateSubtitle;
+
     document.getElementById('filenameModal').classList.remove('hidden');
     setTimeout(() => {
       inputEl.focus();
@@ -2722,16 +3420,16 @@
   }
 
   function confirmFilenameAndExport(deliveryAction = 'download') {
+    syncModalSlateToSetup();
     const inputEl = document.getElementById('exportFilenameInput');
-    let rawName = (inputEl.value || '').trim();
-    rawName = rawName.replace(/\.(mp4|webm|mov)$/i, '').replace(/[\\/:*?"<>|]/g, '_');
-    if (!rawName) {
-      rawName = currentExportMode === 'training'
-        ? `Training_Video_${currentDiscipline}_${Date.now()}`
-        : `Judging_Video_${currentDiscipline}_${Date.now()}`;
-    }
+    const fallbackPrefix = currentExportMode === 'training'
+      ? `Training_Video_${currentDiscipline}`
+      : `Judging_Video_${currentDiscipline}`;
+    const cleanBaseName = sanitizeFileBaseName(inputEl.value, fallbackPrefix);
     closeFilenameModal();
-    exportBurnedVideo(rawName, currentExportMode, deliveryAction);
+
+    const routineSnapshot = getActiveRoutineSnapshot(cleanBaseName);
+    exportSingleRoutine(routineSnapshot, currentExportMode, deliveryAction);
   }
 
   function triggerBlobDownload(blob, fileName) {
@@ -2806,7 +3504,141 @@
     ctx.closePath();
   }
 
-  function drawBurnedOverlays(ctx, w, h, currentTime, isEnded) {
+  function wrapCanvasTextLines(ctx, text, maxWidth) {
+    const words = String(text || '').trim().split(/\s+/);
+    const lines = [];
+    let currentLine = '';
+
+    for (let i = 0; i < words.length; i++) {
+      const testLine = currentLine ? `${currentLine} ${words[i]}` : words[i];
+      if (ctx.measureText(testLine).width <= maxWidth) {
+        currentLine = testLine;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = words[i];
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  }
+
+  function drawBurnedWatermark(ctx, w, h, wmRawText) {
+    const wmText = String(wmRawText || '').trim();
+    if (!wmText) return;
+
+    const scale = Math.max(0.5, h / 720);
+    const pad = 20 * scale;
+    const fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+    ctx.save();
+    ctx.font = `700 ${15 * scale}px ${fontFamily}`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+    ctx.shadowBlur = 4 * scale;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 1 * scale;
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.34)';
+    ctx.fillText(wmText, pad, h - pad, w * 0.62);
+    ctx.restore();
+  }
+
+  function drawIntroSlateFrame(ctx, w, h, routineData, fadeAlpha = 0) {
+    const themeCols = getThemeCanvasColors();
+    const scale = Math.max(0.5, h / 720);
+    const fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+    const titleText = String(routineData.slateTitle || '').trim();
+    const subtitleText = String(routineData.slateSubtitle || '').trim();
+    const discHeader = `${getDisciplineFullName(routineData.discipline)} • JUDGE EDUCATION`;
+
+    ctx.save();
+
+    ctx.fillStyle = themeCols.bgDark;
+    ctx.fillRect(0, 0, w, h);
+
+    const maxCardW = Math.min(w * 0.84, 860 * scale);
+    const innerTextMaxW = maxCardW - 88 * scale;
+
+    ctx.font = `900 ${38 * scale}px ${fontFamily}`;
+    const titleLines = titleText ? wrapCanvasTextLines(ctx, titleText, innerTextMaxW) : [];
+
+    ctx.font = `600 ${20 * scale}px ${fontFamily}`;
+    const subLines = subtitleText ? wrapCanvasTextLines(ctx, subtitleText, innerTextMaxW) : [];
+
+    const titleLineH = 46 * scale;
+    const subLineH = 28 * scale;
+    const cardPadY = 42 * scale;
+    const cardH = cardPadY * 2
+      + 10 * scale
+      + 26 * scale
+      + (titleLines.length > 0 ? titleLines.length * titleLineH + 10 * scale : 0)
+      + (subLines.length > 0 ? subLines.length * subLineH + 8 * scale : 0);
+
+    const cardX = (w - maxCardW) / 2;
+    const cardY = (h - cardH) / 2;
+
+    ctx.fillStyle = themeCols.cardBg;
+    drawRoundedRect(ctx, cardX, cardY, maxCardW, cardH, 18 * scale);
+    ctx.fill();
+
+    ctx.lineWidth = 2 * scale;
+    ctx.strokeStyle = themeCols.border;
+    ctx.stroke();
+
+    let cursorY = cardY + cardPadY;
+
+    const barW = 72 * scale;
+    const barH = 5 * scale;
+    const grad = ctx.createLinearGradient(w / 2 - barW / 2, cursorY, w / 2 + barW / 2, cursorY);
+    grad.addColorStop(0, themeCols.blue);
+    grad.addColorStop(1, themeCols.purple);
+    ctx.fillStyle = grad;
+    drawRoundedRect(ctx, w / 2 - barW / 2, cursorY, barW, barH, 3 * scale);
+    ctx.fill();
+
+    cursorY += barH + 16 * scale;
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.font = `800 ${14 * scale}px ${fontFamily}`;
+    ctx.fillStyle = themeCols.blue;
+    ctx.fillText(discHeader, w / 2, cursorY);
+
+    cursorY += 28 * scale;
+
+    if (titleLines.length > 0) {
+      ctx.font = `900 ${38 * scale}px ${fontFamily}`;
+      ctx.fillStyle = '#ffffff';
+      titleLines.forEach(line => {
+        ctx.fillText(line, w / 2, cursorY);
+        cursorY += titleLineH;
+      });
+      cursorY += 6 * scale;
+    }
+
+    if (subLines.length > 0) {
+      ctx.font = `600 ${20 * scale}px ${fontFamily}`;
+      ctx.fillStyle = themeCols.textSub;
+      subLines.forEach(line => {
+        ctx.fillText(line, w / 2, cursorY);
+        cursorY += subLineH;
+      });
+    }
+
+    drawBurnedWatermark(ctx, w, h, routineData.watermarkText);
+
+    if (fadeAlpha > 0) {
+      ctx.fillStyle = `rgba(0, 0, 0, ${Math.min(1, Math.max(0, fadeAlpha)).toFixed(3)})`;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    ctx.restore();
+  }
+
+  function drawBurnedOverlays(ctx, w, h, currentTime, isEnded, routineData) {
     const themeCols = getThemeCanvasColors();
     const scale = Math.max(0.5, h / 720);
     const pad = 20 * scale;
@@ -2816,8 +3648,8 @@
     ctx.save();
     ctx.textBaseline = 'top';
 
-    // 1. TOP-RIGHT ACTIVE DEDUCTION BADGE + OPTIONAL DD SUB-BOX (WITH SKILL-TO-SKILL TRANSITION)
-    const activeEvent = getActiveOverlayEvent(currentTime);
+    // 1. TOP-RIGHT ACTIVE DEDUCTION BADGE + OPTIONAL DD SUB-BOX
+    const activeEvent = getActiveOverlayEvent(currentTime, routineData);
 
     if (activeEvent) {
       const badgeColor = getDeductionHexColor(activeEvent.val);
@@ -2851,7 +3683,6 @@
       ctx.fillStyle = badgeColor;
       ctx.fillText(`-${activeEvent.val.toFixed(1)}`, badgeX + badgeW - 14 * scale, badgeY + 29 * scale);
 
-      // Draw DD pill directly underneath the deduction box when entered
       if (activeEvent.dd) {
         ctx.font = `800 ${14 * scale}px ${monoFamily}`;
         const textW = ctx.measureText(activeEvent.dd).width;
@@ -2876,8 +3707,8 @@
       ctx.restore();
     }
 
-    // 2. RUNNING LIST DOWN RIGHT SIDE (SHOWN ONLY 150MS AFTER LANDING DEDUCTION)
-    if (shouldShowRunningList(currentTime, isEnded)) {
+    // 2. RUNNING LIST DOWN RIGHT SIDE (SHOWN ONLY 150MS AFTER LANDING DEDUCTION; NO CURRENT ROW HIGHLIGHT)
+    if (shouldShowRunningList(currentTime, isEnded, routineData)) {
       const listTop = pad + 124 * scale;
       const itemW = 215 * scale;
       const itemH = 31 * scale;
@@ -2885,22 +3716,19 @@
       const listX = w - pad - itemW;
 
       const visibleItems = [];
-      for (let i = 0; i < skillsPerformed; i++) {
-        const ddStr = (skillDDs[i] || '').trim();
+      for (let i = 0; i < routineData.skillsPerformed; i++) {
+        const ddStr = (routineData.skillDDs[i] || '').trim();
         visibleItems.push({
           label: ddStr ? `Skill ${i + 1} (${ddStr})` : `Skill ${i + 1}`,
-          val: `-${skillDeductions[i].toFixed(1)}`,
-          isCurrent: false,
+          val: `-${routineData.skillDeductions[i].toFixed(1)}`,
           isLanding: false
         });
       }
 
-      if (skillsPerformed === getMaxSkills()) {
-        const isCurrent = (landingTimestamp > 0 && currentTime >= landingTimestamp && currentTime <= (landingTimestamp + 2.2));
+      if (routineData.skillsPerformed === getMaxSkills(routineData.discipline)) {
         visibleItems.push({
           label: 'Landing',
-          val: `-${landingDeduction.toFixed(1)}`,
-          isCurrent,
+          val: `-${routineData.landingDeduction.toFixed(1)}`,
           isLanding: true
         });
       }
@@ -2913,12 +3741,12 @@
       itemsToDraw.forEach((item, idx) => {
         const y = listTop + idx * (itemH + itemGap);
 
-        ctx.fillStyle = item.isCurrent ? themeCols.speakingBg : 'rgba(20, 20, 31, 0.84)';
+        ctx.fillStyle = 'rgba(20, 20, 31, 0.84)';
         drawRoundedRect(ctx, listX, y, itemW, itemH, 8 * scale);
         ctx.fill();
 
         ctx.lineWidth = 1.5 * scale;
-        ctx.strokeStyle = item.isCurrent ? themeCols.orange : themeCols.border;
+        ctx.strokeStyle = themeCols.border;
         ctx.stroke();
 
         ctx.font = `700 ${13 * scale}px ${fontFamily}`;
@@ -2933,14 +3761,14 @@
       });
     }
 
-    // 3. END OF ROUTINE SCORE CARD (BOTTOM RIGHT, EXCLUDING NAVIGATION BOX)
+    // 3. END OF ROUTINE SCORE CARD (BOTTOM RIGHT)
     if (isEnded) {
-      const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
-      const totalDeduct = activeSkillDeductions.reduce((a, b) => a + b, 0) + ((skillsPerformed === getMaxSkills()) ? landingDeduction : 0);
-      let baseScore = (currentDiscipline === 'TRP')
-        ? skillsPerformed * 1.0
-        : (currentDiscipline === 'DMT' ? (skillsPerformed === 2 ? 10.0 : 8.0) : (skillsPerformed + 2.0));
-      const netScore = Math.max(0, baseScore - totalDeduct);
+      const { totalDeduct, netScore } = computeRoutineScores(
+        routineData.discipline,
+        routineData.skillsPerformed,
+        routineData.skillDeductions,
+        routineData.landingDeduction
+      );
 
       const cardW = 215 * scale;
       const cardH = 104 * scale;
@@ -2972,32 +3800,38 @@
     ctx.restore();
   }
 
-  async function exportBurnedVideo(customBaseName, mode = 'standard', deliveryAction = 'download') {
-    if (!videoObjectUrl) {
-      alert("No video loaded to export.");
-      return;
-    }
-
-    if (judgingVideo) judgingVideo.pause();
-    if (playbackVideo) playbackVideo.pause();
-    document.getElementById('pbPlayIcon').textContent = '▶';
-
+  /* ==========================================================================
+     CORE RENDER ENGINE: RENDERS ONE ROUTINE SNAPSHOT INTO A VIDEO BLOB
+     ========================================================================== */
+  async function renderRoutineToBlob(routineData, mode = 'standard', batchContext = null) {
     const isTraining = (mode === 'training');
-    isExportCancelled = false;
-    const exportModal = document.getElementById('exportModal');
-    const modalTitle  = document.getElementById('exportModalTitle');
-    const pctLabel    = document.getElementById('exportPctLabel');
-    const fillBar     = document.getElementById('exportProgressFill');
-    const statusText  = document.getElementById('exportStatusText');
+    const useSlate = isIntroSlateActive(routineData);
 
-    modalTitle.textContent = isTraining ? 'Rendering Training Video' : 'Rendering Burned Overlay Video';
-    pctLabel.textContent = '0%';
-    fillBar.style.width = '0%';
-    statusText.textContent = 'Preparing muted video encoder... Keep this tab active.';
-    exportModal.classList.remove('hidden');
+    const pctLabel   = document.getElementById('exportPctLabel');
+    const fillBar    = document.getElementById('exportProgressFill');
+    const statusText = document.getElementById('exportStatusText');
+
+    const batchTag = batchContext
+      ? `[Routine ${batchContext.index + 1} of ${batchContext.total}] `
+      : '';
+
+    const updateProgressUI = (localPct, msg) => {
+      const clampedLocal = Math.min(100, Math.max(0, Math.round(localPct)));
+      if (batchContext) {
+        const overallPct = Math.min(100, Math.round(((batchContext.index + clampedLocal / 100) / batchContext.total) * 100));
+        pctLabel.textContent = `${overallPct}%`;
+        fillBar.style.width = `${overallPct}%`;
+      } else {
+        pctLabel.textContent = `${clampedLocal}%`;
+        fillBar.style.width = `${clampedLocal}%`;
+      }
+      if (msg) statusText.textContent = `${batchTag}${msg}`;
+    };
+
+    updateProgressUI(0, 'Preparing muted video encoder... Keep this tab active.');
 
     const renderVideo = document.createElement('video');
-    renderVideo.src = videoObjectUrl;
+    renderVideo.src = routineData.videoObjectUrl;
     renderVideo.muted = true;
     renderVideo.volume = 0;
     renderVideo.playsInline = true;
@@ -3007,13 +3841,10 @@
 
     await new Promise((resolve, reject) => {
       renderVideo.onloadedmetadata = () => resolve();
-      renderVideo.onerror = () => reject(new Error("Failed to load video metadata."));
-    }).catch((err) => {
-      alert(err.message);
-      cleanupVideoExport();
+      renderVideo.onerror = () => reject(new Error(`Failed to load video metadata for "${routineData.outputBaseName}".`));
     });
 
-    if (isExportCancelled || !activeExportVideo) return;
+    if (isExportCancelled || !activeExportVideo) return null;
 
     const w = renderVideo.videoWidth || 1280;
     const h = renderVideo.videoHeight || 720;
@@ -3023,12 +3854,15 @@
     offscreenCanvas.height = h;
     const ctx = offscreenCanvas.getContext('2d');
 
-    // Video-only stream (forces exported video to be completely muted)
     const videoOnlyStream = offscreenCanvas.captureStream(30);
 
     const selectedMime = getBestExportMime();
     const fileExt = selectedMime.includes('mp4') ? 'mp4' : 'webm';
-    const finalFileName = `${customBaseName || `Judging_Video_${currentDiscipline}_${Date.now()}`}.${fileExt}`;
+    const suffixFallback = isTraining
+      ? `Training_${routineData.discipline}`
+      : `Judging_${routineData.discipline}`;
+    const cleanBase = sanitizeFileBaseName(routineData.outputBaseName, suffixFallback);
+    const finalFileName = `${cleanBase}.${fileExt}`;
 
     const chunks = [];
     let recorder;
@@ -3045,26 +3879,47 @@
       if (e.data && e.data.size > 0) chunks.push(e.data);
     };
 
-    recorder.onstop = async () => {
-      const wasCancelled = isExportCancelled;
-      cleanupVideoExport();
+    const recorderStoppedPromise = new Promise((resolve) => {
+      recorder.onstop = () => resolve();
+    });
 
-      if (!wasCancelled && chunks.length > 0) {
-        const mime = recorder.mimeType || selectedMime || 'video/webm';
-        const blob = new Blob(chunks, { type: mime });
+    const playIntroSlatePass = (durationSec, progressOffset = 0, progressSpan = 8) => {
+      return new Promise((resolve) => {
+        if (isExportCancelled || !activeExportVideo) return resolve();
 
-        if (deliveryAction === 'share') {
-          const videoFile = new File([blob], finalFileName, { type: mime });
-          triggerFeedback('complete');
-          openShareReadyModal(videoFile);
-        } else {
-          triggerBlobDownload(blob, finalFileName);
-          triggerFeedback('complete');
-        }
-      }
+        const totalMs = Math.max(1000, durationSec * 1000);
+        const fadeOutMs = Math.min(450, totalMs * 0.25);
+        const startPerf = performance.now();
+
+        const stepSlate = (now) => {
+          if (isExportCancelled || !activeExportVideo) return resolve();
+
+          const elapsed = now - startPerf;
+          const remaining = totalMs - elapsed;
+          let fadeAlpha = 0;
+          if (remaining < fadeOutMs) {
+            fadeAlpha = 1 - Math.max(0, remaining / fadeOutMs);
+          }
+
+          drawIntroSlateFrame(ctx, w, h, routineData, fadeAlpha);
+
+          const ratio = Math.min(1, elapsed / totalMs);
+          updateProgressUI(
+            progressOffset + ratio * progressSpan,
+            `Rendering Intro Title Card (${durationSec}s)... Keep this tab active.`
+          );
+
+          if (elapsed < totalMs) {
+            requestAnimationFrame(stepSlate);
+          } else {
+            resolve();
+          }
+        };
+
+        requestAnimationFrame(stepSlate);
+      });
     };
 
-    // Helper to play a single video pass and render frames
     const playExportPass = ({ drawOverlay, fadeInSec = 0, progressOffset = 0, progressSpan = 100, labelPrefix = '' }) => {
       return new Promise((resolve, reject) => {
         if (isExportCancelled || !activeExportVideo) return resolve();
@@ -3074,13 +3929,15 @@
 
           const curTime = renderVideo.currentTime;
           const dur = renderVideo.duration || 1;
-          const isEnded = renderVideo.ended || (landingTimestamp > 0 && curTime >= (landingTimestamp + 2.2));
+          const isEnded = renderVideo.ended || (routineData.landingTimestamp > 0 && curTime >= (routineData.landingTimestamp + 2.2));
 
           ctx.drawImage(renderVideo, 0, 0, w, h);
 
           if (drawOverlay) {
-            drawBurnedOverlays(ctx, w, h, curTime, isEnded);
+            drawBurnedOverlays(ctx, w, h, curTime, isEnded, routineData);
           }
+
+          drawBurnedWatermark(ctx, w, h, routineData.watermarkText);
 
           if (fadeInSec > 0 && curTime < fadeInSec) {
             const alpha = Math.max(0, 1 - (curTime / fadeInSec));
@@ -3089,9 +3946,10 @@
           }
 
           const passRatio = Math.min(1, curTime / dur);
-          const pct = Math.min(100, Math.round(progressOffset + passRatio * progressSpan));
-          pctLabel.textContent = `${pct}%`;
-          fillBar.style.width = `${pct}%`;
+          updateProgressUI(
+            progressOffset + passRatio * progressSpan,
+            `${labelPrefix} (${w}×${h}, Muted)... Keep this tab active.`
+          );
 
           if (!renderVideo.ended && !renderVideo.paused) {
             if ('requestVideoFrameCallback' in renderVideo) {
@@ -3106,16 +3964,14 @@
           const dur = renderVideo.duration || 1;
           ctx.drawImage(renderVideo, 0, 0, w, h);
           if (drawOverlay) {
-            drawBurnedOverlays(ctx, w, h, dur, true);
+            drawBurnedOverlays(ctx, w, h, dur, true, routineData);
           }
-          const endPct = Math.min(100, Math.round(progressOffset + progressSpan));
-          pctLabel.textContent = `${endPct}%`;
-          fillBar.style.width = `${endPct}%`;
+          drawBurnedWatermark(ctx, w, h, routineData.watermarkText);
+          updateProgressUI(progressOffset + progressSpan, null);
           renderVideo.onended = null;
           resolve();
         };
 
-        statusText.textContent = `${labelPrefix} (${w}×${h}, Muted)... Keep this tab active.`;
         renderVideo.muted = true;
         renderVideo.currentTime = 0;
 
@@ -3131,7 +3987,6 @@
       });
     };
 
-    // Helper to run the fade-to-black + 1.0s black pause between Training Pass 1 and Pass 2
     const runBlackTransition = (fadeOutMs = 500, holdBlackMs = 1000, progressOffset = 48, progressSpan = 4) => {
       return new Promise((resolve) => {
         if (isExportCancelled || !activeExportVideo) return resolve();
@@ -3159,9 +4014,10 @@
           }
 
           const ratio = Math.min(1, elapsed / totalMs);
-          const pct = Math.min(100, Math.round(progressOffset + ratio * progressSpan));
-          pctLabel.textContent = `${pct}%`;
-          fillBar.style.width = `${pct}%`;
+          updateProgressUI(
+            progressOffset + ratio * progressSpan,
+            'Transition: Fading to black (1s pause)... Keep this tab active.'
+          );
 
           if (elapsed < totalMs) {
             requestAnimationFrame(stepTransition);
@@ -3174,53 +4030,166 @@
       });
     };
 
-    try {
-      recorder.start(250);
+    recorder.start(250);
 
-      if (!isTraining) {
-        // STANDARD SINGLE PASS WITH OVERLAYS (MUTED)
-        await playExportPass({
-          drawOverlay: true,
-          fadeInSec: 0,
-          progressOffset: 0,
-          progressSpan: 100,
-          labelPrefix: `Compositing ${finalFileName}`
-        });
-      } else {
-        // TRAINING VIDEO (MUTED):
-        // 1. Play full clean routine first (no overlay)
-        await playExportPass({
-          drawOverlay: false,
-          fadeInSec: 0,
-          progressOffset: 0,
-          progressSpan: 48,
-          labelPrefix: 'Pass 1/2: Clean Routine'
-        });
-
-        // 2. Fade to black (0.5s) + Hold black for 1.0s
-        statusText.textContent = 'Transition: Fading to black (1s pause)... Keep this tab active.';
-        await runBlackTransition(500, 1000, 48, 4);
-
-        // 3. Fade in (0.5s) and play full routine with overlays
-        await playExportPass({
-          drawOverlay: true,
-          fadeInSec: 0.5,
-          progressOffset: 52,
-          progressSpan: 48,
-          labelPrefix: 'Pass 2/2: Overlay Replay'
-        });
+    if (!isTraining) {
+      let offset = 0;
+      let span = 100;
+      if (useSlate) {
+        await playIntroSlatePass(routineData.slateDurationSec || 3, 0, 8);
+        offset = 8;
+        span = 92;
       }
 
-      if (!isExportCancelled) {
-        pctLabel.textContent = '100%';
-        fillBar.style.width = '100%';
-        setTimeout(() => {
-          if (recorder.state !== 'inactive') recorder.stop();
-        }, 150);
+      await playExportPass({
+        drawOverlay: true,
+        fadeInSec: useSlate ? 0.35 : 0,
+        progressOffset: offset,
+        progressSpan: span,
+        labelPrefix: `Compositing ${finalFileName}`
+      });
+    } else {
+      let pass1Offset = 0;
+      let pass1Span = 48;
+      if (useSlate) {
+        await playIntroSlatePass(routineData.slateDurationSec || 3, 0, 6);
+        pass1Offset = 6;
+        pass1Span = 44;
+      }
+
+      await playExportPass({
+        drawOverlay: false,
+        fadeInSec: useSlate ? 0.35 : 0,
+        progressOffset: pass1Offset,
+        progressSpan: pass1Span,
+        labelPrefix: `Pass 1/2: Clean Routine (${finalFileName})`
+      });
+
+      await runBlackTransition(500, 1000, 50, 4);
+
+      await playExportPass({
+        drawOverlay: true,
+        fadeInSec: 0.5,
+        progressOffset: 54,
+        progressSpan: 46,
+        labelPrefix: `Pass 2/2: Overlay Replay (${finalFileName})`
+      });
+    }
+
+    if (!isExportCancelled) {
+      updateProgressUI(100, null);
+      await new Promise(r => setTimeout(r, 150));
+      if (recorder.state !== 'inactive') recorder.stop();
+      await recorderStoppedPromise;
+
+      const mime = recorder.mimeType || selectedMime || 'video/webm';
+      const blob = new Blob(chunks, { type: mime });
+      activeExportVideo = null;
+      activeExportRecorder = null;
+      return { blob, fileName: finalFileName, mime };
+    }
+
+    if (recorder.state !== 'inactive') recorder.stop();
+    await recorderStoppedPromise;
+    activeExportVideo = null;
+    activeExportRecorder = null;
+    return null;
+  }
+
+  async function exportSingleRoutine(routineData, mode = 'standard', deliveryAction = 'download') {
+    if (!routineData || !routineData.videoObjectUrl) {
+      alert("No video loaded to export.");
+      return;
+    }
+
+    if (judgingVideo) judgingVideo.pause();
+    if (playbackVideo) playbackVideo.pause();
+    document.getElementById('pbPlayIcon').textContent = '▶';
+
+    isExportCancelled = false;
+    const exportModal = document.getElementById('exportModal');
+    const modalTitle  = document.getElementById('exportModalTitle');
+
+    modalTitle.textContent = (mode === 'training')
+      ? 'Rendering Training Video'
+      : 'Rendering Burned Overlay Video';
+    exportModal.classList.remove('hidden');
+
+    try {
+      const result = await renderRoutineToBlob(routineData, mode, null);
+      cleanupVideoExport();
+
+      if (!isExportCancelled && result && result.blob && result.blob.size > 0) {
+        if (deliveryAction === 'share') {
+          const videoFile = new File([result.blob], result.fileName, { type: result.mime });
+          triggerFeedback('complete');
+          openShareReadyModal(videoFile);
+        } else {
+          triggerBlobDownload(result.blob, result.fileName);
+          triggerFeedback('complete');
+        }
       }
     } catch (err) {
       alert("Unable to render video: " + err.message);
       cancelVideoExport();
+    }
+  }
+
+  async function startBatchExport(mode = 'standard') {
+    if (batchQueue.length === 0) {
+      alert("Your batch queue is empty.");
+      return;
+    }
+
+    if (typeof MediaRecorder === 'undefined') {
+      alert("Your browser does not support video recording export.");
+      return;
+    }
+
+    if (judgingVideo) judgingVideo.pause();
+    if (playbackVideo) playbackVideo.pause();
+
+    isExportCancelled = false;
+    const exportModal = document.getElementById('exportModal');
+    const modalTitle  = document.getElementById('exportModalTitle');
+    const pctLabel    = document.getElementById('exportPctLabel');
+    const fillBar     = document.getElementById('exportProgressFill');
+
+    const total = batchQueue.length;
+    modalTitle.textContent = (mode === 'training')
+      ? `Bulk Exporting ${total} Training Video${total > 1 ? 's' : ''}`
+      : `Bulk Exporting ${total} Video${total > 1 ? 's' : ''}`;
+    pctLabel.textContent = '0%';
+    fillBar.style.width = '0%';
+    exportModal.classList.remove('hidden');
+
+    let exportedCount = 0;
+
+    try {
+      for (let i = 0; i < total; i++) {
+        if (isExportCancelled) break;
+
+        const item = batchQueue[i];
+        const result = await renderRoutineToBlob(item, mode, { index: i, total });
+
+        if (isExportCancelled) break;
+
+        if (result && result.blob && result.blob.size > 0) {
+          triggerBlobDownload(result.blob, result.fileName);
+          exportedCount++;
+          // Pause briefly between separate downloads so the browser allows every file download
+          if (i < total - 1) {
+            await new Promise(r => setTimeout(r, 650));
+          }
+        }
+      }
+    } catch (err) {
+      alert("Batch export stopped: " + err.message);
+    } finally {
+      cleanupVideoExport();
+      if (!isExportCancelled && exportedCount > 0) {
+        triggerFeedback('complete');
+      }
     }
   }
 
@@ -3244,10 +4213,78 @@
   }
 
   /* ==========================================================================
-     SYNCHRONIZED VIDEO PLAYBACK OVERLAY ENGINE
+     SYNCHRONIZED VIDEO PLAYBACK OVERLAY ENGINE (WITH INTRO SLATE & WATERMARK)
      ========================================================================== */
   let playbackAnimFrame = null;
   let lastOverlayEventKey = null;
+  let introSlateTimer = null;
+
+  function clearIntroSlatePreview() {
+    if (introSlateTimer) {
+      clearTimeout(introSlateTimer);
+      introSlateTimer = null;
+    }
+    const slateEl = document.getElementById('overlayIntroSlate');
+    if (slateEl) slateEl.classList.remove('visible');
+  }
+
+  function applyWatermarkPreview() {
+    const wmEl = document.getElementById('overlayBottomLeftWatermark');
+    if (!wmEl) return;
+    const text = (brandingState.watermarkText || '').trim();
+    if (text) {
+      wmEl.textContent = text;
+      wmEl.classList.remove('hidden');
+    } else {
+      wmEl.textContent = '';
+      wmEl.classList.add('hidden');
+    }
+  }
+
+  function startPlaybackWithOptionalSlate() {
+    clearIntroSlatePreview();
+    applyWatermarkPreview();
+
+    if (isIntroSlateActive()) {
+      const slateEl   = document.getElementById('overlayIntroSlate');
+      const discEl    = document.getElementById('overlaySlateDisc');
+      const titleEl   = document.getElementById('overlaySlateTitle');
+      const subEl     = document.getElementById('overlaySlateSubtitle');
+
+      if (discEl) discEl.textContent = `${getDisciplineFullName(currentDiscipline)} • JUDGE EDUCATION`;
+      if (titleEl) {
+        const t = brandingState.slateTitle.trim();
+        titleEl.textContent = t;
+        titleEl.classList.toggle('hidden', !t);
+      }
+      if (subEl) {
+        const s = brandingState.slateSubtitle.trim();
+        subEl.textContent = s;
+        subEl.classList.toggle('hidden', !s);
+      }
+
+      playbackVideo.pause();
+      playbackVideo.currentTime = 0;
+      document.getElementById('pbPlayIcon').textContent = '⏸️';
+      if (slateEl) slateEl.classList.add('visible');
+
+      const holdMs = Math.max(1500, (brandingState.slateDurationSec * 1000) - 350);
+      introSlateTimer = setTimeout(() => {
+        if (slateEl) slateEl.classList.remove('visible');
+        introSlateTimer = setTimeout(() => {
+          introSlateTimer = null;
+          if (phase === 'playback') {
+            playbackVideo.play().catch(() => {});
+            document.getElementById('pbPlayIcon').textContent = '⏸️';
+          }
+        }, 350);
+      }, holdMs);
+    } else {
+      playbackVideo.currentTime = 0;
+      playbackVideo.play().catch(() => {});
+      document.getElementById('pbPlayIcon').textContent = '⏸️';
+    }
+  }
 
   function confirmAndEnterOverlayPlayback() {
     phase = 'playback';
@@ -3261,10 +4298,7 @@
 
     buildRightSideRunningList();
     renderScrubberSkillDots();
-
-    playbackVideo.currentTime = 0;
-    playbackVideo.play().catch(() => {});
-    document.getElementById('pbPlayIcon').textContent = '⏸️';
+    startPlaybackWithOptionalSlate();
 
     if (playbackAnimFrame) cancelAnimationFrame(playbackAnimFrame);
     syncOverlayLoop();
@@ -3323,6 +4357,7 @@
 
       item.onclick = (e) => {
         e.stopPropagation();
+        clearIntroSlatePreview();
         if (targetSkillIdx === 0) {
           playbackVideo.currentTime = Math.max(0, skillTimestamps[0] - 2.0);
         } else {
@@ -3343,6 +4378,7 @@
       item.id = `runningItemLanding`;
       item.onclick = (e) => {
         e.stopPropagation();
+        clearIntroSlatePreview();
         if (skillsPerformed > 0) {
           playbackVideo.currentTime = Math.max(0, skillTimestamps[skillsPerformed - 1]);
         } else {
@@ -3397,7 +4433,6 @@
         badgeDdEl.classList.remove('visible');
       }
 
-      // Retrigger pop-in transition whenever switching to a new skill/landing event
       if (lastOverlayEventKey !== activeEvent.key) {
         lastOverlayEventKey = activeEvent.key;
         topRightStack.classList.remove('skill-pop-anim');
@@ -3406,19 +4441,10 @@
       }
     }
 
-    // Running List Down Right Side (Shown 150ms after landing deduction)
+    // Running List Down Right Side (Shown 150ms after landing deduction; no current-row highlight)
     const listPanel = document.getElementById('overlayRightListPanel');
     if (shouldShowRunningList(currentTime, isEnded)) {
       listPanel.classList.add('visible');
-
-      const landingItemEl = document.getElementById('runningItemLanding');
-      if (landingItemEl) {
-        if (landingTimestamp > 0 && currentTime >= landingTimestamp && currentTime <= (landingTimestamp + 2.2)) {
-          landingItemEl.classList.add('current-speaking');
-        } else {
-          landingItemEl.classList.remove('current-speaking');
-        }
-      }
     } else {
       listPanel.classList.remove('visible');
     }
@@ -3428,10 +4454,12 @@
     const endNavBox   = document.getElementById('overlayEndNavBox');
 
     if (isEnded) {
-      const activeSkillDeductions = skillDeductions.slice(0, skillsPerformed);
-      const totalDeduct = activeSkillDeductions.reduce((a, b) => a + b, 0) + ((skillsPerformed === getMaxSkills()) ? landingDeduction : 0);
-      let baseScore = (currentDiscipline === 'TRP') ? skillsPerformed * 1.0 : (currentDiscipline === 'DMT' ? (skillsPerformed === 2 ? 10.0 : 8.0) : (skillsPerformed + 2.0));
-      const netScore = Math.max(0, baseScore - totalDeduct);
+      const { totalDeduct, netScore } = computeRoutineScores(
+        currentDiscipline,
+        skillsPerformed,
+        skillDeductions,
+        landingDeduction
+      );
 
       document.getElementById('summaryCardNet').textContent = netScore.toFixed(2);
       document.getElementById('summaryCardDeduct').textContent = `Total Deductions: -${totalDeduct.toFixed(1)}`;
@@ -3446,6 +4474,12 @@
   }
 
   function togglePlayPausePlayback() {
+    if (introSlateTimer) {
+      clearIntroSlatePreview();
+      playbackVideo.play().catch(() => {});
+      document.getElementById('pbPlayIcon').textContent = '⏸️';
+      return;
+    }
     if (playbackVideo.paused) {
       playbackVideo.play();
       document.getElementById('pbPlayIcon').textContent = '⏸️';
@@ -3456,18 +4490,18 @@
   }
 
   function scrubPlaybackVideo(pct) {
+    clearIntroSlatePreview();
     const duration = playbackVideo.duration || 1;
     playbackVideo.currentTime = (pct / 100) * duration;
   }
 
   function restartOverlayPlayback() {
     lastOverlayEventKey = null;
-    playbackVideo.currentTime = 0;
-    playbackVideo.play();
-    document.getElementById('pbPlayIcon').textContent = '⏸️';
+    startPlaybackWithOptionalSlate();
   }
 
   function exitOverlayToReview() {
+    clearIntroSlatePreview();
     if (playbackAnimFrame) cancelAnimationFrame(playbackAnimFrame);
     playbackVideo.pause();
     enterReviewPhase();
@@ -3475,6 +4509,7 @@
 
   function resetToSetup() {
     clearPendingRecognizerState();
+    clearIntroSlatePreview();
     closeFilenameModal();
     closeShareReadyModal();
     cancelVideoExport();
