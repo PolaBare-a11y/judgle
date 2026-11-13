@@ -324,6 +324,43 @@
       margin-top: 2px;
     }
 
+    /* SWIPE GESTURE CHEAT SHEET GUIDE */
+    .swipe-cheat-sheet {
+      background: #0c0c14;
+      border: 1px solid var(--border-col);
+      border-radius: 8px;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .cheat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--text-sub);
+      background: #14141f;
+      padding: 5px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .cheat-arrow {
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: var(--fig-orange);
+      min-width: 16px;
+      text-align: center;
+    }
+
+    .cheat-val {
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
     /* TEXT INPUT FIELDS FOR BRANDING & INTRO SLATE */
     .branding-fields-grid {
       display: flex;
@@ -868,7 +905,7 @@
     }
 
     .dd-text-input {
-      width: 56px;
+      width: 78px;
       background: transparent;
       border: none;
       outline: none;
@@ -1694,6 +1731,18 @@
         <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-top:4px;">
           <button class="btn-primary btn-swipe-start" onclick="startVideoJudging('swipe')">Start Directional Swipe</button>
           <button class="btn-primary btn-recognizer-start" onclick="startVideoJudging('recognizer')">Start Number Recognizer</button>
+        </div>
+
+        <!-- Swipe Gesture Guide / Cheat Sheet Reminder -->
+		<div class="section-desc">Gestures:</div>
+        <div class="swipe-cheat-sheet">
+		
+          <div class="cheat-item"><span class="cheat-arrow">👆</span><span>Tap: <span class="cheat-val">-0.0</span></span></div>
+          <div class="cheat-item"><span class="cheat-arrow">⬆️</span><span>Up: <span class="cheat-val">-0.1</span></span></div>
+          <div class="cheat-item"><span class="cheat-arrow">➡️</span><span>Right: <span class="cheat-val">-0.2</span></span></div>
+          <div class="cheat-item"><span class="cheat-arrow">⬇️</span><span>Down: <span class="cheat-val">-0.3</span></span></div>
+          <div class="cheat-item"><span class="cheat-arrow">⬅️</span><span>Left: <span class="cheat-val">-0.4</span></span></div>
+          <div class="cheat-item"><span class="cheat-arrow">⭕</span><span>Circle: <span class="cheat-val">-0.5</span></span></div>
         </div>
       </div>
 
