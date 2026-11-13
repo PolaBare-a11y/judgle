@@ -27,6 +27,7 @@
 
       /* Theme-adaptive accents */
       --accent-soft-bg:    rgba(68, 149, 229, 0.15);
+      --fault-pill-bg:     rgba(230, 138, 0, 0.16);
       --dropzone-soft-bg:  rgba(68, 149, 229, 0.05);
       --dropzone-hover-bg: rgba(68, 149, 229, 0.12);
       --landing-row-bg:    rgba(220, 81, 131, 0.08);
@@ -50,6 +51,7 @@
       --text-sub:   #8e8e98;
 
       --accent-soft-bg:    rgba(255, 255, 255, 0.12);
+      --fault-pill-bg:     rgba(255, 255, 255, 0.16);
       --dropzone-soft-bg:  rgba(255, 255, 255, 0.04);
       --dropzone-hover-bg: rgba(255, 255, 255, 0.10);
       --landing-row-bg:    rgba(255, 255, 255, 0.07);
@@ -697,7 +699,7 @@
 
     /* REVIEW SCREEN */
     .review-screen {
-      padding: 12px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -709,12 +711,12 @@
       background: var(--card-bg);
       border: 1px solid var(--border-col);
       border-radius: 10px;
-      padding: 10px;
+      padding: 8px 10px;
       display: flex;
       justify-content: space-around;
       align-items: center;
       flex-shrink: 0;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .score-box { 
@@ -724,24 +726,24 @@
       align-items: center;
     }
 
-    .score-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
-    .deduct-val { font-size: 1.5rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
-    .score-lbl { font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .score-val { font-size: 1.4rem; font-weight: 800; color: var(--fig-green); line-height: 1.1; }
+    .deduct-val { font-size: 1.4rem; font-weight: 800; color: var(--fig-pink); line-height: 1.1; }
+    .score-lbl { font-size: 0.62rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
 
     .value-controls-group {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
 
     .btn-step {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 6px;
       background: #1e1c2e;
       border: 1px solid var(--fig-purple);
       color: var(--text-main);
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -764,22 +766,21 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
       min-height: 0;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       overflow-y: auto;
     }
 
     .review-row {
-      min-height: 44px;
       background: var(--card-bg);
       border: 1px solid var(--border-col);
       border-radius: 8px;
-      padding: 4px 10px;
+      padding: 5px 8px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 6px;
+      flex-direction: column;
+      gap: 4px;
+      flex-shrink: 0;
     }
 
     .review-row.disabled-row {
@@ -793,27 +794,36 @@
       background: var(--landing-row-bg);
     }
 
+    .review-row-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      min-height: 30px;
+    }
+
     .sk-lbl {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-sub);
       font-weight: 700;
-      width: 62px;
+      width: 54px;
       flex-shrink: 0;
     }
 
     .review-mid-group {
       display: flex;
       align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 6px;
+      flex-shrink: 1;
+      min-width: 0;
     }
 
     .review-thumb-box {
-      width: 40px;
-      height: 34px;
+      width: 34px;
+      height: 28px;
       background: #DCE0DC;
       border: 1px solid #3c3954;
-      border-radius: 6px;
+      border-radius: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -829,7 +839,7 @@
     }
 
     .review-thumb-empty {
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       color: #888899;
       text-transform: uppercase;
     }
@@ -839,9 +849,9 @@
       align-items: center;
       background: #08080d;
       border: 1px solid var(--border-col);
-      border-radius: 6px;
-      padding: 0 6px;
-      height: 28px;
+      border-radius: 5px;
+      padding: 0 5px;
+      height: 26px;
       transition: border-color 0.15s ease;
     }
 
@@ -850,20 +860,20 @@
     }
 
     .dd-prefix-lbl {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 800;
       color: var(--fig-blue);
-      margin-right: 4px;
-      letter-spacing: 0.4px;
+      margin-right: 3px;
+      letter-spacing: 0.3px;
     }
 
     .dd-text-input {
-      width: 68px;
+      width: 56px;
       background: transparent;
       border: none;
       outline: none;
       color: var(--text-main);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       font-family: monospace;
       user-select: text;
@@ -876,11 +886,58 @@
     }
 
     .sk-val {
-      font-size: 1.05rem;
-      font-weight: 700;
+      font-size: 0.98rem;
+      font-weight: 800;
       color: var(--text-main);
-      min-width: 44px;
+      min-width: 38px;
       text-align: center;
+    }
+
+    /* COMPACT HORIZONTALLY SCROLLABLE QUICK-TAP FAULT PILL STRIP */
+    .fault-pills-strip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-top: 2px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      touch-action: pan-x;
+    }
+
+    .fault-pills-strip::-webkit-scrollbar {
+      display: none;
+    }
+
+    .fault-pill-btn {
+      background: #1a1926;
+      border: 1px solid var(--border-col);
+      color: var(--text-sub);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.64rem;
+      font-weight: 700;
+      line-height: 1.25;
+      white-space: nowrap;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    }
+
+    body.theme-mono .fault-pill-btn {
+      background: #1b1b20;
+    }
+
+    .fault-pill-btn.selected {
+      background: var(--fault-pill-bg);
+      border-color: var(--fig-orange);
+      color: var(--fig-orange);
+    }
+
+    .fault-pill-btn:disabled {
+      pointer-events: none;
     }
 
     .review-action-bar {
@@ -1004,7 +1061,7 @@
       text-overflow: ellipsis;
     }
 
-    /* TOP-RIGHT ACTIVE DEDUCTION BADGE + OPTIONAL DD SUB-BOX STACK */
+    /* TOP-RIGHT ACTIVE DEDUCTION BADGE + FAULT REASONING UNDER VALUE + DD SUB-BOX */
     @keyframes skillBadgePopIn {
       0% {
         opacity: 0;
@@ -1072,6 +1129,16 @@
       transition: color 0.16s ease;
     }
 
+    .overlay-badge-faults {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-top: 2px;
+      letter-spacing: 0.2px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
     .overlay-badge-dd {
       background: rgba(10, 10, 15, 0.9);
       border: 1.5px solid var(--fig-blue);
@@ -1097,10 +1164,10 @@
     /* RUNNING LIST DOWN RIGHT SIDE (APPEARS 150MS AFTER LANDING DEDUCTION) */
     .overlay-right-list-panel {
       position: absolute;
-      top: 138px;
+      top: 152px;
       right: 16px;
       bottom: 70px;
-      width: 215px;
+      width: 235px;
       z-index: 24;
       display: flex;
       flex-direction: column;
@@ -1146,6 +1213,20 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .item-right-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .item-faults-lbl {
+      color: var(--text-main);
+      font-size: 0.7rem;
+      font-weight: 700;
+      white-space: nowrap;
     }
 
     .item-deduct-val {
@@ -1774,11 +1855,12 @@
         <!-- BOTTOM-LEFT FAINT WATERMARK -->
         <div id="overlayBottomLeftWatermark" class="overlay-bottom-left-watermark hidden"></div>
 
-        <!-- TOP RIGHT ACTIVE DEDUCTION BADGE + DD SUB-BOX -->
+        <!-- TOP RIGHT ACTIVE DEDUCTION BADGE + FAULT REASONING UNDER VALUE + DD SUB-BOX -->
         <div id="overlayTopRightStack" class="overlay-top-right-stack">
           <div id="overlayTopRightBadge" class="overlay-top-right-badge">
             <span id="overlayBadgeSkill" class="overlay-badge-skill">SKILL 1</span>
             <span id="overlayBadgeVal" class="overlay-badge-val">-0.2</span>
+            <span id="overlayBadgeFaults" class="overlay-badge-faults hidden"></span>
           </div>
           <div id="overlayBadgeDD" class="overlay-badge-dd"></div>
         </div>
@@ -1981,7 +2063,6 @@
     };
   }
 
-  // Hydrate saved colour scheme immediately on load
   loadSavedColorScheme();
 
   /* ==========================================================================
@@ -2093,7 +2174,6 @@
     return 'TRAMPOLINE';
   }
 
-  // Hydrate branding inputs on initial load
   loadSavedBrandingSettings();
 
   /* ==========================================================================
@@ -2390,6 +2470,23 @@
   const LANDING_DEDUCTION_SCALE = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
   const RECOGNIZER_DEBOUNCE_MS = 400;
 
+  const SKILL_FAULT_PRESETS = [
+    'Shape',
+    'Opening',
+    'Keeping',
+    'Legs',
+    'Arms',
+    'Twist'
+  ];
+
+  const LANDING_FAULT_PRESETS = [
+    'Step',
+    'Arm',
+    'Body',
+    'Touch',
+    'Fall'
+  ];
+
   let currentDiscipline = 'TRP';
   let videoObjectUrl = null;
   let loadedVideoBaseName = '';
@@ -2402,11 +2499,13 @@
   let skillThumbnails = new Array(10).fill(null);
   let skillMatchScores = new Array(10).fill(null);
   let skillDDs = new Array(10).fill('');
+  let skillFaults = Array.from({ length: 10 }, () => []);
 
   let landingDeduction = 0;
   let landingTimestamp = 0;
   let landingThumbnail = null;
   let landingMatchScore = null;
+  let landingFaults = [];
 
   let skillsPerformed = 10;
 
@@ -2537,6 +2636,7 @@
       return;
     }
 
+    const maxSkills = getMaxSkills(currentDiscipline);
     const { totalDeduct, netScore } = computeRoutineScores(
       currentDiscipline,
       skillsPerformed,
@@ -2556,11 +2656,13 @@
       outputBaseName: defaultOutputName,
       discipline: currentDiscipline,
       skillsPerformed: skillsPerformed,
-      skillDeductions: skillDeductions.slice(0, getMaxSkills(currentDiscipline)),
-      skillTimestamps: skillTimestamps.slice(0, getMaxSkills(currentDiscipline)),
-      skillDDs: skillDDs.slice(0, getMaxSkills(currentDiscipline)),
+      skillDeductions: skillDeductions.slice(0, maxSkills),
+      skillTimestamps: skillTimestamps.slice(0, maxSkills),
+      skillDDs: skillDDs.slice(0, maxSkills),
+      skillFaults: skillFaults.slice(0, maxSkills).map(arr => [...arr]),
       landingDeduction: landingDeduction,
       landingTimestamp: landingTimestamp,
+      landingFaults: [...landingFaults],
       totalDeduct: totalDeduct,
       netScore: netScore,
       slateEnabled: brandingState.slateEnabled,
@@ -2570,7 +2672,6 @@
       watermarkText: brandingState.watermarkText
     });
 
-    // Clear active video selection so user can immediately select the next routine video
     videoObjectUrl = null;
     loadedVideoBaseName = '';
     const fileInput = document.getElementById('videoFileInput');
@@ -2597,7 +2698,6 @@
     if (!removed) return;
     batchQueue.splice(index, 1);
 
-    // Revoke blob URL if no longer referenced anywhere
     if (
       removed.videoObjectUrl &&
       removed.videoObjectUrl !== videoObjectUrl &&
@@ -2733,7 +2833,6 @@
     }
   }
 
-  // Hydrate persisted patterns from localStorage on initial load
   loadSavedTemplatesFromStorage();
   updateTrainedHints();
 
@@ -2803,11 +2902,13 @@
     skillThumbnails = new Array(maxSkills).fill(null);
     skillMatchScores = new Array(maxSkills).fill(null);
     skillDDs = new Array(maxSkills).fill('');
+    skillFaults = Array.from({ length: maxSkills }, () => []);
 
     landingDeduction = 0;
     landingTimestamp = 0;
     landingThumbnail = null;
     landingMatchScore = null;
+    landingFaults = [];
     skillsPerformed = maxSkills;
 
     setupScreen.classList.add('hidden');
@@ -3109,7 +3210,7 @@
   }
 
   /* ==========================================================================
-     REVIEW SCREEN & CHECKPOINT
+     REVIEW SCREEN & CHECKPOINT (WITH QUICK-TAP FAULT PILLS)
      ========================================================================== */
   function enterReviewPhase() {
     clearPendingRecognizerState();
@@ -3129,6 +3230,31 @@
 
   function updateSkillDD(index, rawValue) {
     skillDDs[index] = String(rawValue || '').slice(0, 8);
+  }
+
+  function toggleSkillFault(skillIdx, faultTag, btnEl) {
+    if (!skillFaults[skillIdx]) skillFaults[skillIdx] = [];
+    const existingIdx = skillFaults[skillIdx].indexOf(faultTag);
+    if (existingIdx >= 0) {
+      skillFaults[skillIdx].splice(existingIdx, 1);
+      if (btnEl) btnEl.classList.remove('selected');
+    } else {
+      skillFaults[skillIdx].push(faultTag);
+      if (btnEl) btnEl.classList.add('selected');
+    }
+    triggerFeedback('tap');
+  }
+
+  function toggleLandingFault(faultTag, btnEl) {
+    const existingIdx = landingFaults.indexOf(faultTag);
+    if (existingIdx >= 0) {
+      landingFaults.splice(existingIdx, 1);
+      if (btnEl) btnEl.classList.remove('selected');
+    } else {
+      landingFaults.push(faultTag);
+      if (btnEl) btnEl.classList.add('selected');
+    }
+    triggerFeedback('tap');
   }
 
   function renderReviewSummary() {
@@ -3156,25 +3282,34 @@
 
       const thumbUrl = skillThumbnails[i];
       const ddValue = escapeHtml(skillDDs[i] || '');
+      const selectedFaults = skillFaults[i] || [];
+
+      const pillsHtml = SKILL_FAULT_PRESETS.map(tag => {
+        const isSel = selectedFaults.includes(tag);
+        return `<button type="button" class="fault-pill-btn ${isSel ? 'selected' : ''}" ${isPerformed ? '' : 'disabled'} onclick="toggleSkillFault(${i}, '${tag}', this)">${tag}</button>`;
+      }).join('');
 
       row.innerHTML = `
-        <span class="sk-lbl">Skill ${i + 1}</span>
-        
-        <div class="review-mid-group">
-          <div class="review-thumb-box">
-            ${thumbUrl ? `<img src="${thumbUrl}" class="review-thumb-img" alt="S${i+1}">` : '<span class="review-thumb-empty">—</span>'}
+        <div class="review-row-main">
+          <span class="sk-lbl">Skill ${i + 1}</span>
+          
+          <div class="review-mid-group">
+            <div class="review-thumb-box">
+              ${thumbUrl ? `<img src="${thumbUrl}" class="review-thumb-img" alt="S${i+1}">` : '<span class="review-thumb-empty">—</span>'}
+            </div>
+            <div class="dd-input-wrapper">
+              <span class="dd-prefix-lbl">DD</span>
+              <input type="text" maxlength="8" class="dd-text-input" placeholder="—" value="${ddValue}" ${isPerformed ? '' : 'disabled'} oninput="updateSkillDD(${i}, this.value)">
+            </div>
           </div>
-          <div class="dd-input-wrapper">
-            <span class="dd-prefix-lbl">DD</span>
-            <input type="text" maxlength="8" class="dd-text-input" placeholder="—" value="${ddValue}" ${isPerformed ? '' : 'disabled'} oninput="updateSkillDD(${i}, this.value)">
-          </div>
-        </div>
 
-        <div class="value-controls-group">
-          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>` : ''}
-          <span class="sk-val">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
-          ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, 1)">+</button>` : ''}
+          <div class="value-controls-group">
+            ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>` : ''}
+            <span class="sk-val">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
+            ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, 1)">+</button>` : ''}
+          </div>
         </div>
+        <div class="fault-pills-strip">${pillsHtml}</div>
       `;
       listContainer.appendChild(row);
     });
@@ -3182,20 +3317,28 @@
     const landingRow = document.createElement('div');
     landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
 
+    const landingPillsHtml = LANDING_FAULT_PRESETS.map(tag => {
+      const isSel = landingFaults.includes(tag);
+      return `<button type="button" class="fault-pill-btn ${isSel ? 'selected' : ''}" ${isLandingActive ? '' : 'disabled'} onclick="toggleLandingFault('${tag}', this)">${tag}</button>`;
+    }).join('');
+
     landingRow.innerHTML = `
-      <span class="sk-lbl">Landing</span>
-      
-      <div class="review-mid-group">
-        <div class="review-thumb-box">
-          ${landingThumbnail ? `<img src="${landingThumbnail}" class="review-thumb-img" alt="Landing">` : '<span class="review-thumb-empty">—</span>'}
+      <div class="review-row-main">
+        <span class="sk-lbl">Landing</span>
+        
+        <div class="review-mid-group">
+          <div class="review-thumb-box">
+            ${landingThumbnail ? `<img src="${landingThumbnail}" class="review-thumb-img" alt="Landing">` : '<span class="review-thumb-empty">—</span>'}
+          </div>
+        </div>
+
+        <div class="value-controls-group">
+          ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(-1)">−</button>` : ''}
+          <span class="sk-val">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
+          ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(1)">+</button>` : ''}
         </div>
       </div>
-
-      <div class="value-controls-group">
-        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(-1)">−</button>` : ''}
-        <span class="sk-val">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
-        ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(1)">+</button>` : ''}
-      </div>
+      <div class="fault-pills-strip">${landingPillsHtml}</div>
     `;
     listContainer.appendChild(landingRow);
   }
@@ -3233,8 +3376,10 @@
       skillDeductions: [...skillDeductions],
       skillTimestamps: [...skillTimestamps],
       skillDDs: [...skillDDs],
+      skillFaults: skillFaults.map(arr => [...arr]),
       landingDeduction,
       landingTimestamp,
+      landingFaults: [...landingFaults],
       slateEnabled: brandingState.slateEnabled,
       slateTitle: brandingState.slateTitle,
       slateSubtitle: brandingState.slateSubtitle,
@@ -3253,8 +3398,10 @@
       skillDeductions,
       skillTimestamps,
       skillDDs,
+      skillFaults,
       landingDeduction,
-      landingTimestamp
+      landingTimestamp,
+      landingFaults
     };
 
     const events = [];
@@ -3266,6 +3413,7 @@
           label: `SKILL ${i + 1}`,
           val: data.skillDeductions[i],
           dd: (data.skillDDs[i] || '').trim(),
+          faults: Array.isArray(data.skillFaults?.[i]) ? data.skillFaults[i] : [],
           start: t,
           maxDur: 1.8
         });
@@ -3278,6 +3426,7 @@
         label: 'LANDING',
         val: data.landingDeduction,
         dd: '',
+        faults: Array.isArray(data.landingFaults) ? data.landingFaults : [],
         start: data.landingTimestamp,
         maxDur: 2.2
       });
@@ -3648,13 +3797,20 @@
     ctx.save();
     ctx.textBaseline = 'top';
 
-    // 1. TOP-RIGHT ACTIVE DEDUCTION BADGE + OPTIONAL DD SUB-BOX
+    // 1. TOP-RIGHT ACTIVE DEDUCTION BADGE + FAULT REASONING UNDER VALUE + DD SUB-BOX
     const activeEvent = getActiveOverlayEvent(currentTime, routineData);
 
     if (activeEvent) {
       const badgeColor = getDeductionHexColor(activeEvent.val);
-      const badgeW = 148 * scale;
-      const badgeH = 78 * scale;
+      const faultsStr = (activeEvent.faults && activeEvent.faults.length > 0)
+        ? activeEvent.faults.join(' • ')
+        : '';
+
+      ctx.font = `800 ${13 * scale}px ${fontFamily}`;
+      const faultsTextW = faultsStr ? ctx.measureText(faultsStr).width : 0;
+
+      const badgeW = Math.max(148 * scale, faultsTextW + 32 * scale);
+      const badgeH = faultsStr ? (98 * scale) : (78 * scale);
       const badgeX = w - pad - badgeW;
       const badgeY = pad;
 
@@ -3683,6 +3839,12 @@
       ctx.fillStyle = badgeColor;
       ctx.fillText(`-${activeEvent.val.toFixed(1)}`, badgeX + badgeW - 14 * scale, badgeY + 29 * scale);
 
+      if (faultsStr) {
+        ctx.font = `800 ${13 * scale}px ${fontFamily}`;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(faultsStr, badgeX + badgeW - 14 * scale, badgeY + 72 * scale);
+      }
+
       if (activeEvent.dd) {
         ctx.font = `800 ${14 * scale}px ${monoFamily}`;
         const textW = ctx.measureText(activeEvent.dd).width;
@@ -3707,10 +3869,10 @@
       ctx.restore();
     }
 
-    // 2. RUNNING LIST DOWN RIGHT SIDE (SHOWN ONLY 150MS AFTER LANDING DEDUCTION; NO CURRENT ROW HIGHLIGHT)
+    // 2. RUNNING LIST DOWN RIGHT SIDE (SHOWN ONLY 150MS AFTER LANDING DEDUCTION; SHOWS FAULTS BESIDE DEDUCTION)
     if (shouldShowRunningList(currentTime, isEnded, routineData)) {
-      const listTop = pad + 124 * scale;
-      const itemW = 215 * scale;
+      const listTop = pad + 152 * scale;
+      const itemW = 235 * scale;
       const itemH = 31 * scale;
       const itemGap = 6 * scale;
       const listX = w - pad - itemW;
@@ -3718,16 +3880,20 @@
       const visibleItems = [];
       for (let i = 0; i < routineData.skillsPerformed; i++) {
         const ddStr = (routineData.skillDDs[i] || '').trim();
+        const fArr = routineData.skillFaults?.[i] || [];
         visibleItems.push({
           label: ddStr ? `Skill ${i + 1} (${ddStr})` : `Skill ${i + 1}`,
+          faultsText: fArr.join(' • '),
           val: `-${routineData.skillDeductions[i].toFixed(1)}`,
           isLanding: false
         });
       }
 
       if (routineData.skillsPerformed === getMaxSkills(routineData.discipline)) {
+        const lFaults = routineData.landingFaults || [];
         visibleItems.push({
           label: 'Landing',
+          faultsText: lFaults.join(' • '),
           val: `-${routineData.landingDeduction.toFixed(1)}`,
           isLanding: true
         });
@@ -3754,10 +3920,19 @@
         ctx.fillStyle = item.isLanding ? themeCols.pink : themeCols.textSub;
         ctx.fillText(item.label, listX + 11 * scale, y + 8 * scale);
 
-        ctx.font = `800 ${13 * scale}px ${fontFamily}`;
         ctx.textAlign = 'right';
+        const rightEdgeX = listX + itemW - 11 * scale;
+
+        ctx.font = `800 ${13 * scale}px ${fontFamily}`;
         ctx.fillStyle = themeCols.pink;
-        ctx.fillText(item.val, listX + itemW - 11 * scale, y + 8 * scale);
+        ctx.fillText(item.val, rightEdgeX, y + 8 * scale);
+
+        if (item.faultsText) {
+          ctx.font = `700 ${11 * scale}px ${fontFamily}`;
+          ctx.fillStyle = '#ffffff';
+          const valW = ctx.measureText(item.val).width;
+          ctx.fillText(item.faultsText, rightEdgeX - valW - 10 * scale, y + 9 * scale);
+        }
       });
     }
 
@@ -3770,7 +3945,7 @@
         routineData.landingDeduction
       );
 
-      const cardW = 215 * scale;
+      const cardW = 235 * scale;
       const cardH = 104 * scale;
       const cardX = w - pad - cardW;
       const cardY = h - pad - cardH;
@@ -4177,7 +4352,6 @@
         if (result && result.blob && result.blob.size > 0) {
           triggerBlobDownload(result.blob, result.fileName);
           exportedCount++;
-          // Pause briefly between separate downloads so the browser allows every file download
           if (i < total - 1) {
             await new Promise(r => setTimeout(r, 650));
           }
@@ -4354,6 +4528,8 @@
       const labelText = ddStr
         ? `Skill ${targetSkillIdx + 1} (${escapeHtml(ddStr)})`
         : `Skill ${targetSkillIdx + 1}`;
+      const fArr = skillFaults[targetSkillIdx] || [];
+      const faultsStr = fArr.join(' • ');
 
       item.onclick = (e) => {
         e.stopPropagation();
@@ -4367,7 +4543,10 @@
 
       item.innerHTML = `
         <span class="item-skill-lbl">${labelText}</span>
-        <span class="item-deduct-val">-${skillDeductions[targetSkillIdx].toFixed(1)}</span>
+        <div class="item-right-group">
+          ${faultsStr ? `<span class="item-faults-lbl">${escapeHtml(faultsStr)}</span>` : ''}
+          <span class="item-deduct-val">-${skillDeductions[targetSkillIdx].toFixed(1)}</span>
+        </div>
       `;
       panel.appendChild(item);
     }
@@ -4376,6 +4555,8 @@
       const item = document.createElement('div');
       item.className = 'running-list-item';
       item.id = `runningItemLanding`;
+      const landingFaultsStr = landingFaults.join(' • ');
+
       item.onclick = (e) => {
         e.stopPropagation();
         clearIntroSlatePreview();
@@ -4387,7 +4568,10 @@
       };
       item.innerHTML = `
         <span class="item-skill-lbl" style="color:var(--fig-pink);">Landing</span>
-        <span class="item-deduct-val">-${landingDeduction.toFixed(1)}</span>
+        <div class="item-right-group">
+          ${landingFaultsStr ? `<span class="item-faults-lbl">${escapeHtml(landingFaultsStr)}</span>` : ''}
+          <span class="item-deduct-val">-${landingDeduction.toFixed(1)}</span>
+        </div>
       `;
       panel.appendChild(item);
     }
@@ -4405,16 +4589,18 @@
     scrubber.value = (currentTime / duration) * 100;
     document.getElementById('pbTimeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
 
-    // Top-Right Active Badge & DD Sub-Box Logic with Skill-to-Skill Transition Effect
+    // Top-Right Active Badge, Fault Reasoning Under Deduction Value & DD Sub-Box
     const topRightStack = document.getElementById('overlayTopRightStack');
     const topRightBadge = document.getElementById('overlayTopRightBadge');
     const badgeValEl = document.getElementById('overlayBadgeVal');
+    const badgeFaultsEl = document.getElementById('overlayBadgeFaults');
     const badgeDdEl = document.getElementById('overlayBadgeDD');
 
     const activeEvent = getActiveOverlayEvent(currentTime);
 
     if (!activeEvent) {
       topRightBadge.classList.remove('visible');
+      badgeFaultsEl.classList.add('hidden');
       badgeDdEl.classList.remove('visible');
       topRightStack.classList.remove('skill-pop-anim');
       lastOverlayEventKey = null;
@@ -4425,6 +4611,14 @@
       badgeValEl.style.color = col;
       topRightBadge.style.borderColor = col;
       topRightBadge.classList.add('visible');
+
+      if (activeEvent.faults && activeEvent.faults.length > 0) {
+        badgeFaultsEl.textContent = activeEvent.faults.join(' • ');
+        badgeFaultsEl.classList.remove('hidden');
+      } else {
+        badgeFaultsEl.textContent = '';
+        badgeFaultsEl.classList.add('hidden');
+      }
 
       if (activeEvent.dd) {
         badgeDdEl.textContent = activeEvent.dd;
@@ -4441,7 +4635,7 @@
       }
     }
 
-    // Running List Down Right Side (Shown 150ms after landing deduction; no current-row highlight)
+    // Running List Down Right Side (Shown 150ms after landing deduction)
     const listPanel = document.getElementById('overlayRightListPanel');
     if (shouldShowRunningList(currentTime, isEnded)) {
       listPanel.classList.add('visible');
