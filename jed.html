@@ -1081,6 +1081,199 @@
       word-break: break-word;
     }
 
+    /* CLOSING ROUTINE SUMMARY TITLE CARD OVER LAST FRAME (LIVE PLAYBACK) */
+    .overlay-end-slate {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 124px;
+      z-index: 28;
+      background: rgba(10, 10, 15, 0.35);
+      backdrop-filter: blur(2px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 16px 6px 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    body.theme-mono .overlay-end-slate {
+      background: rgba(9, 9, 11, 0.38);
+    }
+
+    .overlay-end-slate.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .end-slate-card {
+      background: rgba(20, 20, 31, 0.86);
+      backdrop-filter: blur(8px);
+      border: 1.5px solid var(--border-col);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 720px;
+      max-height: 100%;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85);
+      overflow: hidden;
+    }
+
+    .end-slate-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-col);
+      padding-bottom: 10px;
+      flex-shrink: 0;
+    }
+
+    .end-slate-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      text-align: left;
+    }
+
+    .end-slate-kicker {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--fig-blue);
+    }
+
+    .end-slate-main-title {
+      font-size: clamp(1.05rem, 2.4vw, 1.45rem);
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .end-slate-sub-meta {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-sub);
+    }
+
+    .end-slate-score-pill {
+      background: rgba(155, 217, 139, 0.12);
+      border: 1.5px solid var(--fig-green);
+      border-radius: 12px;
+      padding: 6px 14px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    body.theme-mono .end-slate-score-pill {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .end-slate-score-lbl {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--fig-green);
+    }
+
+    .end-slate-score-val {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: var(--fig-green);
+      line-height: 1.05;
+    }
+
+    .end-slate-deduct-sub {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--fig-pink);
+    }
+
+    .end-slate-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px 12px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    @media (max-width: 560px) {
+      .end-slate-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .end-slate-row {
+      background: rgba(10, 10, 16, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 8px;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.78rem;
+    }
+
+    .end-slate-row.landing-highlight {
+      border-color: var(--fig-pink);
+      background: var(--landing-row-bg);
+    }
+
+    .end-slate-row-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .end-slate-sk-name {
+      font-weight: 800;
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+
+    .end-slate-dd-tag {
+      font-family: monospace;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--fig-blue);
+      background: rgba(68, 149, 229, 0.14);
+      padding: 1px 5px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .end-slate-row-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .end-slate-faults {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      white-space: nowrap;
+    }
+
+    .end-slate-val {
+      font-weight: 900;
+      font-size: 0.84rem;
+      min-width: 34px;
+      text-align: right;
+    }
+
     /* BOTTOM-LEFT FAINT CUSTOM WATERMARK (LIVE PLAYBACK) */
     .overlay-bottom-left-watermark {
       position: absolute;
@@ -1745,7 +1938,7 @@
         </div>
       </div>
 
-      <!-- STEP 5: INTRO SLATE & COURSE WATERMARK -->
+      <!-- STEP 5: INTRO & END TITLE CARDS & COURSE WATERMARK -->
       <div class="setup-section-card">
         <div class="section-title" style="color:var(--fig-blue);">
           <svg class="section-title-icon" style="stroke:var(--fig-blue);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1753,9 +1946,9 @@
             <line x1="8" y1="21" x2="16" y2="21"></line>
             <line x1="12" y1="17" x2="12" y2="21"></line>
           </svg>
-          5. Intro Slate & Course Watermark
+          5. Title Cards & Course Watermark
         </div>
-        <div class="section-desc">Add a custom opening title card before the routine starts and a faint bottom-left watermark across playback and exported MP4 videos.</div>
+        <div class="section-desc">Add an opening title card, a full-screen closing summary title card with all routine deductions, DD, faults, and net E-Score, and a faint bottom-left watermark.</div>
 
         <div class="branding-fields-grid">
           <div class="branding-field-group">
@@ -1780,6 +1973,25 @@
               </div>
             </div>
             <input type="text" id="introSlateSubtitleInput" class="branding-text-input" placeholder="e.g. Pass 1: Judge Execution Only • Pass 2: Official Deductions" maxlength="120" oninput="handleBrandingSettingsChange()">
+          </div>
+
+          <div class="branding-field-group" style="padding-top:4px; border-top:1px solid rgba(255,255,255,0.06);">
+            <div class="branding-label-row">
+              <span>Closing Routine Summary Title Card</span>
+              <label class="branding-toggle-lbl">
+                <input type="checkbox" id="endSlateEnabledCheckbox" checked onchange="handleBrandingSettingsChange()">
+                Include End Title Card
+              </label>
+            </div>
+            <div class="branding-label-row" style="margin-top:2px;">
+              <span style="font-size:0.68rem; text-transform:none; font-weight:500;">Full-screen breakdown of all skills, DD, faults &amp; net E-Score</span>
+              <div class="slate-duration-pills" id="endSlateDurationPills">
+                <button type="button" class="duration-pill-btn" data-sec="3" onclick="setEndSlateDuration(3)">3s</button>
+                <button type="button" class="duration-pill-btn selected" data-sec="4" onclick="setEndSlateDuration(4)">4s</button>
+                <button type="button" class="duration-pill-btn" data-sec="5" onclick="setEndSlateDuration(5)">5s</button>
+                <button type="button" class="duration-pill-btn" data-sec="6" onclick="setEndSlateDuration(6)">6s</button>
+              </div>
+            </div>
           </div>
 
           <div class="branding-field-group">
@@ -1916,6 +2128,25 @@
         <!-- RUNNING LIST DOWN RIGHT SIDE (APPEARS 150MS AFTER LANDING DEDUCTION) -->
         <div id="overlayRightListPanel" class="overlay-right-list-panel"></div>
 
+        <!-- FULL-SCREEN CLOSING ROUTINE SUMMARY TITLE CARD (LIVE PLAYBACK) -->
+        <div id="overlayEndSlate" class="overlay-end-slate">
+          <div class="end-slate-card">
+            <div class="end-slate-header">
+              <div class="end-slate-title-block">
+                <div id="endSlateKicker" class="end-slate-kicker">TRAMPOLINE • ROUTINE BREAKDOWN</div>
+                <div id="endSlateTitle" class="end-slate-main-title">Routine Execution Summary</div>
+                <div id="endSlateSubMeta" class="end-slate-sub-meta">10 Skills + Landing</div>
+              </div>
+              <div class="end-slate-score-pill">
+                <div class="end-slate-score-lbl">Net E-Score</div>
+                <div id="endSlateNetScore" class="end-slate-score-val">9.50</div>
+                <div id="endSlateTotalDeduct" class="end-slate-deduct-sub">Deductions: -0.5</div>
+              </div>
+            </div>
+            <div id="endSlateGrid" class="end-slate-grid"></div>
+          </div>
+        </div>
+
         <!-- END OF ROUTINE SCORE CARD OVERLAY (POSITIONED BOTTOM RIGHT) -->
         <div id="overlaySummaryCard" class="overlay-summary-card">
           <div class="summary-card-title">Routine Score</div>
@@ -1990,6 +2221,13 @@
           </div>
           <input type="text" id="modalSlateTitleInput" class="branding-text-input" placeholder="Intro Title (optional)" maxlength="80" oninput="syncModalSlateToSetup()">
           <input type="text" id="modalSlateSubtitleInput" class="branding-text-input" placeholder="Intro Subtitle / Instructions (optional)" maxlength="120" oninput="syncModalSlateToSetup()">
+          <div class="branding-label-row" style="margin-top:4px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.06);">
+            <span>Closing Routine Breakdown Card</span>
+            <label class="branding-toggle-lbl">
+              <input type="checkbox" id="modalEndSlateEnabledCheckbox" checked onchange="syncModalSlateToSetup()">
+              Include End Card
+            </label>
+          </div>
         </div>
 
         <div class="trainer-btn-group">
@@ -2122,6 +2360,8 @@
     slateTitle: '',
     slateSubtitle: '',
     slateDurationSec: 3,
+    endSlateEnabled: true,
+    endSlateDurationSec: 4,
     watermarkText: ''
   };
 
@@ -2137,6 +2377,12 @@
           brandingState.slateDurationSec = [2, 3, 4, 5].includes(Number(parsed.slateDurationSec))
             ? Number(parsed.slateDurationSec)
             : 3;
+          brandingState.endSlateEnabled = (parsed.endSlateEnabled !== undefined)
+            ? Boolean(parsed.endSlateEnabled)
+            : true;
+          brandingState.endSlateDurationSec = [3, 4, 5, 6].includes(Number(parsed.endSlateDurationSec))
+            ? Number(parsed.endSlateDurationSec)
+            : 4;
           brandingState.watermarkText = String(parsed.watermarkText || '');
         }
       }
@@ -2151,14 +2397,16 @@
   }
 
   function applyBrandingStateToInputs() {
-    const enabledEl = document.getElementById('introSlateEnabledCheckbox');
-    const titleEl   = document.getElementById('introSlateTitleInput');
-    const subEl     = document.getElementById('introSlateSubtitleInput');
-    const wmEl      = document.getElementById('watermarkTextInput');
+    const enabledEl    = document.getElementById('introSlateEnabledCheckbox');
+    const titleEl      = document.getElementById('introSlateTitleInput');
+    const subEl        = document.getElementById('introSlateSubtitleInput');
+    const endEnabledEl = document.getElementById('endSlateEnabledCheckbox');
+    const wmEl         = document.getElementById('watermarkTextInput');
 
     if (enabledEl) enabledEl.checked = brandingState.slateEnabled;
     if (titleEl) titleEl.value = brandingState.slateTitle;
     if (subEl) subEl.value = brandingState.slateSubtitle;
+    if (endEnabledEl) endEnabledEl.checked = brandingState.endSlateEnabled;
     if (wmEl) wmEl.value = brandingState.watermarkText;
 
     const pills = document.querySelectorAll('#slateDurationPills .duration-pill-btn');
@@ -2166,13 +2414,20 @@
       const sec = Number(btn.getAttribute('data-sec'));
       btn.classList.toggle('selected', sec === brandingState.slateDurationSec);
     });
+
+    const endPills = document.querySelectorAll('#endSlateDurationPills .duration-pill-btn');
+    endPills.forEach(btn => {
+      const sec = Number(btn.getAttribute('data-sec'));
+      btn.classList.toggle('selected', sec === brandingState.endSlateDurationSec);
+    });
   }
 
   function handleBrandingSettingsChange() {
-    const enabledEl = document.getElementById('introSlateEnabledCheckbox');
-    const titleEl   = document.getElementById('introSlateTitleInput');
-    const subEl     = document.getElementById('introSlateSubtitleInput');
-    const wmEl      = document.getElementById('watermarkTextInput');
+    const enabledEl    = document.getElementById('introSlateEnabledCheckbox');
+    const titleEl      = document.getElementById('introSlateTitleInput');
+    const subEl        = document.getElementById('introSlateSubtitleInput');
+    const endEnabledEl = document.getElementById('endSlateEnabledCheckbox');
+    const wmEl         = document.getElementById('watermarkTextInput');
 
     const prevTitle = brandingState.slateTitle;
     const prevSub   = brandingState.slateSubtitle;
@@ -2190,6 +2445,10 @@
       brandingState.slateEnabled = enabledEl.checked;
     }
 
+    if (endEnabledEl) {
+      brandingState.endSlateEnabled = endEnabledEl.checked;
+    }
+
     persistBrandingSettings();
   }
 
@@ -2199,14 +2458,22 @@
     persistBrandingSettings();
   }
 
+  function setEndSlateDuration(sec) {
+    brandingState.endSlateDurationSec = sec;
+    applyBrandingStateToInputs();
+    persistBrandingSettings();
+  }
+
   function syncModalSlateToSetup() {
-    const mEnabled = document.getElementById('modalSlateEnabledCheckbox');
-    const mTitle   = document.getElementById('modalSlateTitleInput');
-    const mSub     = document.getElementById('modalSlateSubtitleInput');
+    const mEnabled    = document.getElementById('modalSlateEnabledCheckbox');
+    const mTitle      = document.getElementById('modalSlateTitleInput');
+    const mSub        = document.getElementById('modalSlateSubtitleInput');
+    const mEndEnabled = document.getElementById('modalEndSlateEnabledCheckbox');
 
     if (mEnabled) brandingState.slateEnabled = mEnabled.checked;
     if (mTitle) brandingState.slateTitle = mTitle.value;
     if (mSub) brandingState.slateSubtitle = mSub.value;
+    if (mEndEnabled) brandingState.endSlateEnabled = mEndEnabled.checked;
 
     applyBrandingStateToInputs();
     persistBrandingSettings();
@@ -2214,6 +2481,10 @@
 
   function isIntroSlateActive(slateConfig = brandingState) {
     return slateConfig.slateEnabled && Boolean((slateConfig.slateTitle || '').trim() || (slateConfig.slateSubtitle || '').trim());
+  }
+
+  function isEndSlateActive(slateConfig = brandingState) {
+    return Boolean(slateConfig.endSlateEnabled);
   }
 
   function getDisciplineFullName(disc) {
@@ -2717,6 +2988,8 @@
       slateTitle: brandingState.slateTitle,
       slateSubtitle: brandingState.slateSubtitle,
       slateDurationSec: brandingState.slateDurationSec,
+      endSlateEnabled: brandingState.endSlateEnabled,
+      endSlateDurationSec: brandingState.endSlateDurationSec,
       watermarkText: brandingState.watermarkText
     });
 
@@ -3432,6 +3705,8 @@
       slateTitle: brandingState.slateTitle,
       slateSubtitle: brandingState.slateSubtitle,
       slateDurationSec: brandingState.slateDurationSec,
+      endSlateEnabled: brandingState.endSlateEnabled,
+      endSlateDurationSec: brandingState.endSlateDurationSec,
       watermarkText: brandingState.watermarkText
     };
   }
@@ -3550,6 +3825,22 @@
   let currentExportMode = 'standard'; // 'standard' | 'training'
   let pendingShareFile = null;
 
+  function getSafeEncoderDimensions(rawW, rawH, maxDimension = 1920) {
+    let w = rawW || 1280;
+    let h = rawH || 720;
+
+    if (w > maxDimension || h > maxDimension) {
+      const scale = maxDimension / Math.max(w, h);
+      w = Math.round(w * scale);
+      h = Math.round(h * scale);
+    }
+
+    // H.264 requires dimensions divisible by 2
+    w = w % 2 === 0 ? w : w - 1;
+    h = h % 2 === 0 ? h : h - 1;
+    return { w, h };
+  }
+
   async function getSupportedH264Config(width, height) {
     if (typeof VideoEncoder === 'undefined') {
       throw new Error('WebCodecs VideoEncoder is not supported in this browser. Please use Chrome, Edge, or Safari 16.4+.');
@@ -3559,6 +3850,9 @@
     }
 
     const codecs = [
+      'avc1.640033', // High Profile Level 5.1 (4K / tall mobile screens)
+      'avc1.4d0033', // Main Profile Level 5.1
+      'avc1.640032', // High Profile Level 5.0
       'avc1.64002a', // High Profile Level 4.2 (1080p60)
       'avc1.4d002a', // Main Profile Level 4.2 (1080p)
       'avc1.42002a', // Baseline Level 4.2
@@ -3622,12 +3916,14 @@
     const inputEl = document.getElementById('exportFilenameInput');
     inputEl.value = defaultName;
 
-    const mEnabled = document.getElementById('modalSlateEnabledCheckbox');
-    const mTitle   = document.getElementById('modalSlateTitleInput');
-    const mSub     = document.getElementById('modalSlateSubtitleInput');
+    const mEnabled    = document.getElementById('modalSlateEnabledCheckbox');
+    const mTitle      = document.getElementById('modalSlateTitleInput');
+    const mSub        = document.getElementById('modalSlateSubtitleInput');
+    const mEndEnabled = document.getElementById('modalEndSlateEnabledCheckbox');
     if (mEnabled) mEnabled.checked = brandingState.slateEnabled;
     if (mTitle) mTitle.value = brandingState.slateTitle;
     if (mSub) mSub.value = brandingState.slateSubtitle;
+    if (mEndEnabled) mEndEnabled.checked = brandingState.endSlateEnabled;
 
     document.getElementById('filenameModal').classList.remove('hidden');
     setTimeout(() => {
@@ -3855,6 +4151,221 @@
       ctx.fillStyle = `rgba(0, 0, 0, ${Math.min(1, Math.max(0, fadeAlpha)).toFixed(3)})`;
       ctx.fillRect(0, 0, w, h);
     }
+
+    ctx.restore();
+  }
+
+  function drawEndSlateFrame(ctx, w, h, routineData, bgCanvas = null, cardAlpha = 1.0) {
+    const themeCols = getThemeCanvasColors();
+    const scale = Math.max(0.5, h / 720);
+    const fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+    const monoFamily = 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
+
+    const maxSkills = getMaxSkills(routineData.discipline);
+    const isLandingActive = (routineData.skillsPerformed === maxSkills);
+    const { totalDeduct, netScore } = computeRoutineScores(
+      routineData.discipline,
+      routineData.skillsPerformed,
+      routineData.skillDeductions,
+      routineData.landingDeduction
+    );
+
+    const discFull = getDisciplineFullName(routineData.discipline);
+    const customTitle = String(routineData.slateTitle || '').trim();
+    const headerTitle = customTitle || 'Routine Execution Breakdown';
+    const subMeta = `${routineData.skillsPerformed} Skill${routineData.skillsPerformed === 1 ? '' : 's'}${isLandingActive ? ' + Landing' : ' (Incomplete Routine)'}`;
+
+    const rows = [];
+    for (let i = 0; i < routineData.skillsPerformed; i++) {
+      const ddStr = String(routineData.skillDDs?.[i] || '').trim();
+      const faultsArr = Array.isArray(routineData.skillFaults?.[i]) ? routineData.skillFaults[i] : [];
+      rows.push({
+        label: `Skill ${i + 1}`,
+        dd: ddStr,
+        faults: faultsArr.join(' • '),
+        valNum: routineData.skillDeductions[i] || 0,
+        isLanding: false
+      });
+    }
+    if (isLandingActive) {
+      const lFaults = Array.isArray(routineData.landingFaults) ? routineData.landingFaults : [];
+      rows.push({
+        label: 'Landing',
+        dd: '',
+        faults: lFaults.join(' • '),
+        valNum: routineData.landingDeduction || 0,
+        isLanding: true
+      });
+    }
+
+    ctx.save();
+
+    // Keep the frozen last frame at the auto-trim mark as the full background
+    if (bgCanvas) {
+      ctx.drawImage(bgCanvas, 0, 0, w, h);
+    } else {
+      ctx.fillStyle = themeCols.bgDark;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    const alpha = Math.min(1, Math.max(0, cardAlpha));
+    ctx.globalAlpha = alpha;
+
+    // Subtle dark tint over the frozen last frame for legibility
+    ctx.fillStyle = 'rgba(10, 10, 15, 0.38)';
+    ctx.fillRect(0, 0, w, h);
+
+    const isPortrait = h > w;
+    const cols = (!isPortrait && rows.length > 4) ? 2 : 1;
+    const rowsPerCol = Math.ceil(rows.length / cols);
+
+    const cardW = Math.min(w * 0.90, (cols === 2 ? 960 : 620) * scale);
+    const cardPadX = 28 * scale;
+    const cardPadY = 24 * scale;
+    const headerH = 82 * scale;
+    const rowH = Math.min(42 * scale, Math.max(30 * scale, ((h * 0.72) - headerH) / Math.max(1, rowsPerCol)));
+    const rowGap = 7 * scale;
+    const gridH = rowsPerCol * rowH + Math.max(0, rowsPerCol - 1) * rowGap;
+    const cardH = Math.min(h * 0.90, cardPadY * 2 + headerH + 14 * scale + gridH);
+
+    const cardX = (w - cardW) / 2;
+    const cardY = (h - cardH) / 2;
+
+    // Outer container card
+    ctx.fillStyle = themeCols.cardBg;
+    drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 18 * scale);
+    ctx.fill();
+    ctx.lineWidth = 2 * scale;
+    ctx.strokeStyle = themeCols.border;
+    ctx.stroke();
+
+    const innerX = cardX + cardPadX;
+    const innerW = cardW - cardPadX * 2;
+    const headerTop = cardY + cardPadY;
+
+    // Header Left: Discipline kicker, Routine Title & Subtitle
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+
+    ctx.font = `800 ${12 * scale}px ${fontFamily}`;
+    ctx.fillStyle = themeCols.blue;
+    ctx.fillText(`${discFull} • ROUTINE SUMMARY`, innerX, headerTop);
+
+    ctx.font = `900 ${24 * scale}px ${fontFamily}`;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(headerTitle, innerX, headerTop + 18 * scale, innerW - 195 * scale);
+
+    ctx.font = `600 ${13 * scale}px ${fontFamily}`;
+    ctx.fillStyle = themeCols.textSub;
+    ctx.fillText(subMeta, innerX, headerTop + 48 * scale, innerW - 195 * scale);
+
+    // Header Right: Net E-Score & Total Deductions Pill
+    const pillW = 178 * scale;
+    const pillH = 68 * scale;
+    const pillX = innerX + innerW - pillW;
+    const pillY = headerTop - 2 * scale;
+
+    ctx.fillStyle = currentColorScheme === 'mono'
+      ? 'rgba(255, 255, 255, 0.10)'
+      : 'rgba(155, 217, 139, 0.12)';
+    drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 12 * scale);
+    ctx.fill();
+    ctx.lineWidth = 2 * scale;
+    ctx.strokeStyle = themeCols.green;
+    ctx.stroke();
+
+    ctx.textAlign = 'right';
+    ctx.font = `800 ${10.5 * scale}px ${fontFamily}`;
+    ctx.fillStyle = themeCols.green;
+    ctx.fillText('NET E-SCORE', pillX + pillW - 12 * scale, pillY + 7 * scale);
+
+    ctx.font = `900 ${28 * scale}px ${fontFamily}`;
+    ctx.fillStyle = themeCols.green;
+    ctx.fillText(netScore.toFixed(2), pillX + pillW - 12 * scale, pillY + 20 * scale);
+
+    ctx.font = `700 ${11.5 * scale}px ${fontFamily}`;
+    ctx.fillStyle = themeCols.pink;
+    ctx.fillText(`Deductions: -${totalDeduct.toFixed(1)}`, pillX + pillW - 12 * scale, pillY + 50 * scale);
+
+    // Horizontal divider line under header
+    const divY = headerTop + headerH - 6 * scale;
+    ctx.beginPath();
+    ctx.moveTo(innerX, divY);
+    ctx.lineTo(innerX + innerW, divY);
+    ctx.lineWidth = 1.5 * scale;
+    ctx.strokeStyle = themeCols.border;
+    ctx.stroke();
+
+    // Rows Grid (1 column on portrait/short, 2 columns on landscape)
+    const gridTop = divY + 12 * scale;
+    const colGap = 14 * scale;
+    const colW = (innerW - (cols - 1) * colGap) / cols;
+
+    rows.forEach((item, idx) => {
+      const colIdx = Math.floor(idx / rowsPerCol);
+      const rowIdx = idx % rowsPerCol;
+      const rx = innerX + colIdx * (colW + colGap);
+      const ry = gridTop + rowIdx * (rowH + rowGap);
+
+      ctx.fillStyle = item.isLanding
+        ? (currentColorScheme === 'mono' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(220, 81, 131, 0.12)')
+        : 'rgba(10, 10, 16, 0.78)';
+      drawRoundedRect(ctx, rx, ry, colW, rowH, 8 * scale);
+      ctx.fill();
+
+      ctx.lineWidth = 1.2 * scale;
+      ctx.strokeStyle = item.isLanding ? themeCols.pink : 'rgba(255, 255, 255, 0.08)';
+      ctx.stroke();
+
+      const textY = ry + (rowH - 14 * scale) / 2;
+
+      // Left: Skill Label + optional DD tag
+      ctx.textAlign = 'left';
+      ctx.font = `800 ${13.5 * scale}px ${fontFamily}`;
+      ctx.fillStyle = item.isLanding ? themeCols.pink : '#ffffff';
+      ctx.fillText(item.label, rx + 11 * scale, textY);
+
+      let leftOffset = rx + 11 * scale + ctx.measureText(item.label).width + 8 * scale;
+
+      if (item.dd) {
+        ctx.font = `800 ${11.5 * scale}px ${monoFamily}`;
+        const ddW = ctx.measureText(item.dd).width + 10 * scale;
+        const ddH = 18 * scale;
+        const ddY = ry + (rowH - ddH) / 2;
+
+        ctx.fillStyle = currentColorScheme === 'mono'
+          ? 'rgba(255, 255, 255, 0.14)'
+          : 'rgba(68, 149, 229, 0.18)';
+        drawRoundedRect(ctx, leftOffset, ddY, ddW, ddH, 4 * scale);
+        ctx.fill();
+
+        ctx.fillStyle = themeCols.blue;
+        ctx.fillText(item.dd, leftOffset + 5 * scale, ddY + 3 * scale);
+        leftOffset += ddW + 8 * scale;
+      }
+
+      // Right: Deduction Value + Faults
+      const valStr = `-${item.valNum.toFixed(1)}`;
+      const valColor = getDeductionHexColor(item.valNum);
+      const rightEdge = rx + colW - 11 * scale;
+
+      ctx.textAlign = 'right';
+      ctx.font = `900 ${14.5 * scale}px ${fontFamily}`;
+      ctx.fillStyle = valColor;
+      ctx.fillText(valStr, rightEdge, textY - 0.5 * scale);
+
+      const valW = ctx.measureText(valStr).width;
+
+      if (item.faults) {
+        const maxFaultW = Math.max(20 * scale, (rightEdge - valW - 10 * scale) - leftOffset);
+        ctx.font = `600 ${11.5 * scale}px ${fontFamily}`;
+        ctx.fillStyle = themeCols.textSub;
+        ctx.fillText(item.faults, rightEdge - valW - 10 * scale, textY + 1 * scale, maxFaultW);
+      }
+    });
+
+    ctx.globalAlpha = 1.0;
+    drawBurnedWatermark(ctx, w, h, routineData.watermarkText);
 
     ctx.restore();
   }
@@ -4095,8 +4606,7 @@
 
     const rawW = renderVideo.videoWidth || 1280;
     const rawH = renderVideo.videoHeight || 720;
-    const w = rawW % 2 === 0 ? rawW : rawW - 1;
-    const h = rawH % 2 === 0 ? rawH : rawH - 1;
+    const { w, h } = getSafeEncoderDimensions(rawW, rawH, 1920);
 
     const encoderConfig = await getSupportedH264Config(w, h);
 
@@ -4197,6 +4707,43 @@
       }
     };
 
+    const renderEndSlatePass = async (durationSec, progressOffset = 90, progressSpan = 10) => {
+      const fullDur = renderVideo.duration || 1;
+      const { endTime } = getTrimmedWindow(fullDur);
+      await seekVideoTo(endTime);
+      if (isExportCancelled || encoderError || !activeExportVideo) return;
+
+      // Capture the exact last frame at the auto-trim end mark
+      const lastFrameCanvas = document.createElement('canvas');
+      lastFrameCanvas.width = w;
+      lastFrameCanvas.height = h;
+      lastFrameCanvas.getContext('2d').drawImage(renderVideo, 0, 0, w, h);
+
+      const totalFrames = Math.max(1, Math.round(durationSec * FPS));
+      const fadeInFrames = Math.min(Math.round(0.35 * FPS), Math.round(totalFrames * 0.2));
+
+      for (let f = 0; f < totalFrames; f++) {
+        if (isExportCancelled || encoderError || !activeExportVideo) return;
+
+        let cardAlpha = 1.0;
+        if (f < fadeInFrames) {
+          cardAlpha = (f + 1) / fadeInFrames;
+        }
+
+        drawEndSlateFrame(ctx, w, h, routineData, lastFrameCanvas, cardAlpha);
+        await encodeCurrentCanvasFrame();
+
+        if (f % 3 === 0 || f === totalFrames - 1) {
+          const ratio = (f + 1) / totalFrames;
+          updateProgressUI(
+            progressOffset + ratio * progressSpan,
+            `Encoding Closing Routine Breakdown Card (${durationSec}s)... Keep this tab active.`
+          );
+          await new Promise(r => setTimeout(r, 0));
+        }
+      }
+    };
+
     // =========================================================================
     // [AUTO-TRIM & FADE-IN CONFIG]
     // Default export behavior: 3.0s pre-roll before Skill 1, 2.0s post-roll
@@ -4204,7 +4751,7 @@
     // =========================================================================
     const TRIM_CONFIG = {
       leadInSeconds: 3.0,   // Seconds before first deduction
-      tailSeconds: 3.0,     // Seconds after final deduction (or landing)
+      tailSeconds: 2.0,     // Seconds after final deduction (or landing)
       fadeInSeconds: 0.5    // Duration of subtle fade-in at start of trimmed clip
     };
 
@@ -4314,13 +4861,18 @@
       }
     };
 
+    const useEndSlate = isEndSlateActive(routineData);
+
     if (!isTraining) {
       let offset = 0;
       let span = 100;
       if (useSlate) {
         await renderIntroSlatePass(routineData.slateDurationSec || 3, 0, 8);
         offset = 8;
-        span = 92;
+        span -= 8;
+      }
+      if (useEndSlate) {
+        span -= 10;
       }
 
       await renderVideoPass({
@@ -4330,6 +4882,10 @@
         progressSpan: span,
         labelPrefix: `Encoding ${finalFileName}`
       });
+
+      if (useEndSlate) {
+        await renderEndSlatePass(routineData.endSlateDurationSec || 4, offset + span, 10);
+      }
     } else {
       let pass1Offset = 0;
       let pass1Span = 48;
@@ -4338,6 +4894,8 @@
         pass1Offset = 6;
         pass1Span = 44;
       }
+
+      const pass2Span = useEndSlate ? 38 : 46;
 
       await renderVideoPass({
         drawOverlay: false,
@@ -4353,9 +4911,13 @@
         drawOverlay: true,
         fadeInSec: 0.5,
         progressOffset: 54,
-        progressSpan: 46,
+        progressSpan: pass2Span,
         labelPrefix: `Pass 2/2: Overlay Replay (${finalFileName})`
       });
+
+      if (useEndSlate) {
+        await renderEndSlatePass(routineData.endSlateDurationSec || 4, 54 + pass2Span, 8);
+      }
     }
 
     if (encoderError) {
@@ -4690,6 +5252,60 @@
     }
   }
 
+  function populateLiveEndSlateCard(totalDeduct, netScore) {
+    const maxSkills = getMaxSkills();
+    const isLandingActive = (skillsPerformed === maxSkills);
+    const discFull = getDisciplineFullName(currentDiscipline);
+    const customTitle = String(brandingState.slateTitle || '').trim();
+
+    document.getElementById('endSlateKicker').textContent = `${discFull} • ROUTINE BREAKDOWN`;
+    document.getElementById('endSlateTitle').textContent = customTitle || 'Routine Execution Summary';
+    document.getElementById('endSlateSubMeta').textContent = `${skillsPerformed} Skill${skillsPerformed === 1 ? '' : 's'}${isLandingActive ? ' + Landing' : ' (Incomplete Routine)'}`;
+    document.getElementById('endSlateNetScore').textContent = netScore.toFixed(2);
+    document.getElementById('endSlateTotalDeduct').textContent = `Deductions: -${totalDeduct.toFixed(1)}`;
+
+    const grid = document.getElementById('endSlateGrid');
+    grid.innerHTML = '';
+
+    for (let i = 0; i < skillsPerformed; i++) {
+      const ddStr = String(skillDDs[i] || '').trim();
+      const faultsStr = (skillFaults[i] || []).join(' • ');
+      const val = skillDeductions[i] || 0;
+      const col = getDeductionBadgeColor(val);
+
+      const row = document.createElement('div');
+      row.className = 'end-slate-row';
+      row.innerHTML = `
+        <div class="end-slate-row-left">
+          <span class="end-slate-sk-name">Skill ${i + 1}</span>
+          ${ddStr ? `<span class="end-slate-dd-tag">${escapeHtml(ddStr)}</span>` : ''}
+        </div>
+        <div class="end-slate-row-right">
+          ${faultsStr ? `<span class="end-slate-faults">${escapeHtml(faultsStr)}</span>` : ''}
+          <span class="end-slate-val" style="color:${col};">-${val.toFixed(1)}</span>
+        </div>
+      `;
+      grid.appendChild(row);
+    }
+
+    if (isLandingActive) {
+      const lFaultsStr = landingFaults.join(' • ');
+      const lCol = getDeductionBadgeColor(landingDeduction);
+      const lRow = document.createElement('div');
+      lRow.className = 'end-slate-row landing-highlight';
+      lRow.innerHTML = `
+        <div class="end-slate-row-left">
+          <span class="end-slate-sk-name" style="color:var(--fig-pink);">Landing</span>
+        </div>
+        <div class="end-slate-row-right">
+          ${lFaultsStr ? `<span class="end-slate-faults">${escapeHtml(lFaultsStr)}</span>` : ''}
+          <span class="end-slate-val" style="color:${lCol};">-${landingDeduction.toFixed(1)}</span>
+        </div>
+      `;
+      grid.appendChild(lRow);
+    }
+  }
+
   function syncOverlayLoop() {
     if (phase !== 'playback') return;
 
@@ -4756,7 +5372,8 @@
       listPanel.classList.remove('visible');
     }
 
-    // End of Routine Score Card Overlay & Centered Bottom Navigation Box
+    // End of Routine Full-Screen Title Card / Score Card Overlay & Centered Bottom Navigation Box
+    const endSlateEl  = document.getElementById('overlayEndSlate');
     const summaryCard = document.getElementById('overlaySummaryCard');
     const endNavBox   = document.getElementById('overlayEndNavBox');
 
@@ -4768,11 +5385,38 @@
         landingDeduction
       );
 
-      document.getElementById('summaryCardNet').textContent = netScore.toFixed(2);
-      document.getElementById('summaryCardDeduct').textContent = `Total Deductions: -${totalDeduct.toFixed(1)}`;
-      summaryCard.classList.add('visible');
+      if (isEndSlateActive()) {
+        if (endSlateEl && !endSlateEl.classList.contains('visible')) {
+          // Hold on the auto-trim end frame so the last frame acts as the card background
+          const validTs = [];
+          for (let i = 0; i < skillsPerformed; i++) {
+            if (skillTimestamps[i] > 0) validTs.push(skillTimestamps[i]);
+          }
+          if (skillsPerformed === getMaxSkills() && landingTimestamp > 0) {
+            validTs.push(landingTimestamp);
+          }
+          if (validTs.length > 0 && !playbackVideo.ended) {
+            validTs.sort((a, b) => a - b);
+            const autoTrimEnd = Math.min(duration, validTs[validTs.length - 1] + 2.0);
+            if (!playbackVideo.paused && Math.abs(playbackVideo.currentTime - autoTrimEnd) <= 0.35) {
+              playbackVideo.pause();
+              playbackVideo.currentTime = autoTrimEnd;
+              document.getElementById('pbPlayIcon').textContent = '▶';
+            }
+          }
+          populateLiveEndSlateCard(totalDeduct, netScore);
+          endSlateEl.classList.add('visible');
+        }
+        summaryCard.classList.remove('visible');
+      } else {
+        if (endSlateEl) endSlateEl.classList.remove('visible');
+        document.getElementById('summaryCardNet').textContent = netScore.toFixed(2);
+        document.getElementById('summaryCardDeduct').textContent = `Total Deductions: -${totalDeduct.toFixed(1)}`;
+        summaryCard.classList.add('visible');
+      }
       endNavBox.classList.add('visible');
     } else {
+      if (endSlateEl) endSlateEl.classList.remove('visible');
       summaryCard.classList.remove('visible');
       endNavBox.classList.remove('visible');
     }
