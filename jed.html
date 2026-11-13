@@ -1805,6 +1805,11 @@
 
         <div id="batchQueueList" class="batch-queue-list"></div>
 
+        <label class="branding-toggle-lbl" style="padding: 4px 2px; color: var(--fig-orange);">
+          <input type="checkbox" id="batchSliceSkillsCheckbox" onchange="handleSliceSkillsSettingChange(this.checked)">
+          Also slice &amp; export individual skill clips (prev skill → +0.5s)
+        </label>
+
         <div class="batch-actions-grid">
           <button type="button" class="btn-primary btn-download" onclick="startBatchExport('standard')">🎬 Bulk Export Videos</button>
           <button type="button" class="btn-primary btn-training" onclick="startBatchExport('training')">🎓 Bulk Export Training Videos</button>
@@ -1829,6 +1834,12 @@
           <div id="selectedVideoName" class="selected-video-badge hidden">No File Loaded</div>
         </div>
         <input type="file" id="videoFileInput" accept="video/*" class="hidden" onchange="handleVideoFileSelected(event)">
+
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:4px; border-top:1px solid rgba(255,255,255,0.06);">
+          <span id="loadedJsonStatus" style="font-size:0.75rem; color:var(--text-sub);">Have an exported routine <code style="color:var(--fig-blue);">.json</code> or <code style="color:var(--fig-green);">.csv</code> file?</span>
+          <button type="button" class="btn-header" style="border-color:var(--fig-green); color:var(--fig-green); font-weight:700;" onclick="document.getElementById('routineJsonInput').click()">📂 Load Routine File</button>
+          <input type="file" id="routineJsonInput" accept=".json,.csv,application/json,text/csv" class="hidden" onchange="handleRoutineJsonSelected(event)">
+        </div>
       </div>
 
       <!-- STEP 2: DISCIPLINE SELECTOR -->
@@ -2228,6 +2239,13 @@
               Include End Card
             </label>
           </div>
+          <div class="branding-label-row" style="margin-top:4px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.06);">
+            <span>Slice Individual Skill Clips</span>
+            <label class="branding-toggle-lbl" style="color:var(--fig-orange);">
+              <input type="checkbox" id="modalSliceSkillsCheckbox" onchange="handleSliceSkillsSettingChange(this.checked)">
+              Separate Clip Per Skill
+            </label>
+          </div>
         </div>
 
         <div class="trainer-btn-group">
@@ -2362,7 +2380,8 @@
     slateDurationSec: 3,
     endSlateEnabled: true,
     endSlateDurationSec: 4,
-    watermarkText: ''
+    watermarkText: '',
+    sliceSkillsEnabled: false
   };
 
   function loadSavedBrandingSettings() {
@@ -2384,10 +2403,20 @@
             ? Number(parsed.endSlateDurationSec)
             : 4;
           brandingState.watermarkText = String(parsed.watermarkText || '');
+          brandingState.sliceSkillsEnabled = Boolean(parsed.sliceSkillsEnabled);
         }
       }
     } catch (e) {}
     applyBrandingStateToInputs();
+  }
+
+  function handleSliceSkillsSettingChange(checked) {
+    brandingState.sliceSkillsEnabled = Boolean(checked);
+    const modalCb = document.getElementById('modalSliceSkillsCheckbox');
+    const batchCb = document.getElementById('batchSliceSkillsCheckbox');
+    if (modalCb) modalCb.checked = brandingState.sliceSkillsEnabled;
+    if (batchCb) batchCb.checked = brandingState.sliceSkillsEnabled;
+    persistBrandingSettings();
   }
 
   function persistBrandingSettings() {
@@ -2402,12 +2431,16 @@
     const subEl        = document.getElementById('introSlateSubtitleInput');
     const endEnabledEl = document.getElementById('endSlateEnabledCheckbox');
     const wmEl         = document.getElementById('watermarkTextInput');
+    const modalSliceEl = document.getElementById('modalSliceSkillsCheckbox');
+    const batchSliceEl = document.getElementById('batchSliceSkillsCheckbox');
 
     if (enabledEl) enabledEl.checked = brandingState.slateEnabled;
     if (titleEl) titleEl.value = brandingState.slateTitle;
     if (subEl) subEl.value = brandingState.slateSubtitle;
     if (endEnabledEl) endEnabledEl.checked = brandingState.endSlateEnabled;
     if (wmEl) wmEl.value = brandingState.watermarkText;
+    if (modalSliceEl) modalSliceEl.checked = brandingState.sliceSkillsEnabled;
+    if (batchSliceEl) batchSliceEl.checked = brandingState.sliceSkillsEnabled;
 
     const pills = document.querySelectorAll('#slateDurationPills .duration-pill-btn');
     pills.forEach(btn => {
@@ -2972,6 +3005,7 @@
     batchQueue.push({
       id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       videoObjectUrl: videoObjectUrl,
+      rawVideoBaseName: loadedVideoBaseName || `Routine_${queueNum}`,
       outputBaseName: defaultOutputName,
       discipline: currentDiscipline,
       skillsPerformed: skillsPerformed,
@@ -3691,6 +3725,7 @@
   function getActiveRoutineSnapshot(customOutputName = '') {
     return {
       videoObjectUrl,
+      rawVideoBaseName: loadedVideoBaseName || `Routine_${currentDiscipline}`,
       outputBaseName: customOutputName,
       discipline: currentDiscipline,
       skillsPerformed,
@@ -3920,10 +3955,12 @@
     const mTitle      = document.getElementById('modalSlateTitleInput');
     const mSub        = document.getElementById('modalSlateSubtitleInput');
     const mEndEnabled = document.getElementById('modalEndSlateEnabledCheckbox');
+    const mSliceEl    = document.getElementById('modalSliceSkillsCheckbox');
     if (mEnabled) mEnabled.checked = brandingState.slateEnabled;
     if (mTitle) mTitle.value = brandingState.slateTitle;
     if (mSub) mSub.value = brandingState.slateSubtitle;
     if (mEndEnabled) mEndEnabled.checked = brandingState.endSlateEnabled;
+    if (mSliceEl) mSliceEl.checked = brandingState.sliceSkillsEnabled;
 
     document.getElementById('filenameModal').classList.remove('hidden');
     setTimeout(() => {
@@ -3958,6 +3995,398 @@
     link.click();
     document.body.removeChild(link);
     setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+
+  function buildRoutineFlatJsonPayload(routineData, mode = 'standard', exportedVideoFileName = '') {
+    const maxSkills = getMaxSkills(routineData.discipline);
+    const performed = Number(routineData.skillsPerformed || 0);
+    const isLandingActive = (performed === maxSkills);
+    const { totalDeduct, netScore } = computeRoutineScores(
+      routineData.discipline,
+      performed,
+      routineData.skillDeductions || [],
+      Number(routineData.landingDeduction || 0)
+    );
+
+    const skills = [];
+    for (let i = 0; i < performed; i++) {
+      const ddStr = String(routineData.skillDDs?.[i] || '').trim();
+      const deductVal = Number(routineData.skillDeductions?.[i] || 0);
+      const tsVal = Number(routineData.skillTimestamps?.[i] || 0);
+      const faultsArr = Array.isArray(routineData.skillFaults?.[i]) ? [...routineData.skillFaults[i]] : [];
+      skills.push({
+        skillNumber: i + 1,
+        timestampSec: Number(tsVal.toFixed(3)),
+        timestampFormatted: formatTime(tsVal),
+        dd: ddStr || null,
+        deduction: Number(deductVal.toFixed(1)),
+        faults: faultsArr
+      });
+    }
+
+    const payload = {
+      schemaVersion: 'judgle-routine-v1',
+      exportedAt: new Date().toISOString(),
+      exportMode: mode,
+      sourceVideoName: routineData.rawVideoBaseName || null,
+      exportedVideoFileName: exportedVideoFileName || null,
+      discipline: routineData.discipline,
+      maxSkills,
+      skillsPerformed: performed,
+      summary: {
+        totalDeductions: Number(totalDeduct.toFixed(1)),
+        netEScore: Number(netScore.toFixed(2)),
+        landingIncluded: isLandingActive
+      },
+      skills,
+      landing: isLandingActive ? {
+        timestampSec: Number((routineData.landingTimestamp || 0).toFixed(3)),
+        timestampFormatted: formatTime(routineData.landingTimestamp || 0),
+        deduction: Number((routineData.landingDeduction || 0).toFixed(1)),
+        faults: Array.isArray(routineData.landingFaults) ? [...routineData.landingFaults] : []
+      } : null,
+      branding: {
+        slateEnabled: Boolean(routineData.slateEnabled),
+        slateTitle: String(routineData.slateTitle || ''),
+        slateSubtitle: String(routineData.slateSubtitle || ''),
+        slateDurationSec: Number(routineData.slateDurationSec || 3),
+        endSlateEnabled: Boolean(routineData.endSlateEnabled),
+        endSlateDurationSec: Number(routineData.endSlateDurationSec || 4),
+        watermarkText: String(routineData.watermarkText || '')
+      }
+    };
+
+    const jsonText = JSON.stringify(payload, null, 2);
+    const blob = new Blob([jsonText], { type: 'application/json' });
+    const baseName = exportedVideoFileName
+      ? exportedVideoFileName.replace(/\.mp4$/i, '')
+      : sanitizeFileBaseName(routineData.outputBaseName, `Routine_${routineData.discipline}`);
+
+    return {
+      blob,
+      fileName: `${baseName}.json`,
+      payload
+    };
+  }
+
+  function escapeCsvCell(val) {
+    if (val === null || val === undefined) return '';
+    const str = String(val);
+    if (/[",\r\n]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  }
+
+  function buildRoutineFlatCsvPayload(routineData, mode = 'standard', exportedVideoFileName = '') {
+    const jsonBuilt = buildRoutineFlatJsonPayload(routineData, mode, exportedVideoFileName);
+    const p = jsonBuilt.payload;
+
+    const headers = [
+      'SchemaVersion',
+      'ExportedAt',
+      'ExportMode',
+      'SourceVideoName',
+      'ExportedVideoFileName',
+      'Discipline',
+      'MaxSkills',
+      'SkillsPerformed',
+      'TotalDeductions',
+      'NetEScore',
+      'EntryType',
+      'SkillNumber',
+      'TimestampSec',
+      'TimestampFormatted',
+      'DD',
+      'Deduction',
+      'Faults',
+      'SlateEnabled',
+      'SlateTitle',
+      'SlateSubtitle',
+      'SlateDurationSec',
+      'EndSlateEnabled',
+      'EndSlateDurationSec',
+      'WatermarkText'
+    ];
+
+    const makeRow = (entryType, skillNum, tsSec, tsFmt, dd, deduct, faultsArr) => [
+      p.schemaVersion,
+      p.exportedAt,
+      p.exportMode,
+      p.sourceVideoName || '',
+      p.exportedVideoFileName || '',
+      p.discipline,
+      p.maxSkills,
+      p.skillsPerformed,
+      p.summary.totalDeductions.toFixed(1),
+      p.summary.netEScore.toFixed(2),
+      entryType,
+      skillNum,
+      Number(tsSec || 0).toFixed(3),
+      tsFmt || formatTime(tsSec || 0),
+      dd || '',
+      Number(deduct || 0).toFixed(1),
+      Array.isArray(faultsArr) ? faultsArr.join('; ') : '',
+      p.branding.slateEnabled ? 'true' : 'false',
+      p.branding.slateTitle,
+      p.branding.slateSubtitle,
+      p.branding.slateDurationSec,
+      p.branding.endSlateEnabled ? 'true' : 'false',
+      p.branding.endSlateDurationSec,
+      p.branding.watermarkText
+    ].map(escapeCsvCell).join(',');
+
+    const lines = [headers.join(',')];
+
+    if (p.skills.length === 0 && !p.landing) {
+      lines.push(makeRow('Summary', '', 0, '00:00.0', '', 0, []));
+    } else {
+      p.skills.forEach((sk) => {
+        lines.push(makeRow(
+          'Skill',
+          sk.skillNumber,
+          sk.timestampSec,
+          sk.timestampFormatted,
+          sk.dd || '',
+          sk.deduction,
+          sk.faults
+        ));
+      });
+      if (p.landing) {
+        lines.push(makeRow(
+          'Landing',
+          '',
+          p.landing.timestampSec,
+          p.landing.timestampFormatted,
+          '',
+          p.landing.deduction,
+          p.landing.faults
+        ));
+      }
+    }
+
+    const csvText = '\uFEFF' + lines.join('\r\n');
+    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+    const baseName = exportedVideoFileName
+      ? exportedVideoFileName.replace(/\.mp4$/i, '')
+      : sanitizeFileBaseName(routineData.outputBaseName, `Routine_${routineData.discipline}`);
+
+    return {
+      blob,
+      fileName: `${baseName}.csv`
+    };
+  }
+
+  function parseCsvRows(csvText) {
+    const cleanText = String(csvText || '').replace(/^\uFEFF/, '');
+    const rows = [];
+    let currentRow = [];
+    let currentVal = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < cleanText.length; i++) {
+      const ch = cleanText[i];
+      const next = cleanText[i + 1];
+
+      if (inQuotes) {
+        if (ch === '"' && next === '"') {
+          currentVal += '"';
+          i++;
+        } else if (ch === '"') {
+          inQuotes = false;
+        } else {
+          currentVal += ch;
+        }
+      } else {
+        if (ch === '"') {
+          inQuotes = true;
+        } else if (ch === ',') {
+          currentRow.push(currentVal);
+          currentVal = '';
+        } else if (ch === '\r' && next === '\n') {
+          currentRow.push(currentVal);
+          rows.push(currentRow);
+          currentRow = [];
+          currentVal = '';
+          i++;
+        } else if (ch === '\n' || ch === '\r') {
+          currentRow.push(currentVal);
+          rows.push(currentRow);
+          currentRow = [];
+          currentVal = '';
+        } else {
+          currentVal += ch;
+        }
+      }
+    }
+    if (currentVal.length > 0 || currentRow.length > 0) {
+      currentRow.push(currentVal);
+      rows.push(currentRow);
+    }
+    return rows.filter(r => r.some(cell => cell.trim() !== ''));
+  }
+
+  function parseRoutineCsvToStructuredObject(csvText) {
+    const rows = parseCsvRows(csvText);
+    if (rows.length < 2) throw new Error('CSV file has no data rows.');
+
+    const headers = rows[0].map(h => h.trim());
+    const idxOf = (name) => headers.indexOf(name);
+
+    const discIdx = idxOf('Discipline');
+    const entryTypeIdx = idxOf('EntryType');
+    if (discIdx === -1 || entryTypeIdx === -1) {
+      throw new Error('Missing required CSV columns (Discipline, EntryType).');
+    }
+
+    const firstData = rows[1];
+    const discipline = firstData[discIdx] || 'TRP';
+    const skillsPerformed = Number(firstData[idxOf('SkillsPerformed')] || 0);
+    const sourceVideoName = firstData[idxOf('SourceVideoName')] || null;
+
+    const skills = [];
+    let landing = null;
+
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      const entryType = (row[entryTypeIdx] || '').trim().toLowerCase();
+      const faultsRaw = (row[idxOf('Faults')] || '').trim();
+      const faults = faultsRaw ? faultsRaw.split(/\s*;\s*/).filter(Boolean) : [];
+      const tsSec = Number(row[idxOf('TimestampSec')] || 0);
+      const deduct = Number(row[idxOf('Deduction')] || 0);
+
+      if (entryType === 'skill') {
+        skills.push({
+          skillNumber: Number(row[idxOf('SkillNumber')] || (skills.length + 1)),
+          timestampSec: tsSec,
+          dd: (row[idxOf('DD')] || '').trim() || null,
+          deduction: deduct,
+          faults
+        });
+      } else if (entryType === 'landing') {
+        landing = {
+          timestampSec: tsSec,
+          deduction: deduct,
+          faults
+        };
+      }
+    }
+
+    const slateEnabledIdx = idxOf('SlateEnabled');
+    const branding = slateEnabledIdx !== -1 ? {
+      slateEnabled: String(firstData[slateEnabledIdx] || '').toLowerCase() === 'true',
+      slateTitle: firstData[idxOf('SlateTitle')] || '',
+      slateSubtitle: firstData[idxOf('SlateSubtitle')] || '',
+      slateDurationSec: Number(firstData[idxOf('SlateDurationSec')] || 3),
+      endSlateEnabled: String(firstData[idxOf('EndSlateEnabled')] || 'true').toLowerCase() === 'true',
+      endSlateDurationSec: Number(firstData[idxOf('EndSlateDurationSec')] || 4),
+      watermarkText: firstData[idxOf('WatermarkText')] || ''
+    } : null;
+
+    return {
+      discipline,
+      skillsPerformed: skillsPerformed || skills.length,
+      sourceVideoName,
+      skills,
+      landing,
+      branding
+    };
+  }
+
+  function handleRoutineJsonSelected(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const rawContent = String(e.target.result || '');
+        const isCsvFile = file.name.toLowerCase().endsWith('.csv') || !rawContent.trim().startsWith('{');
+        const parsed = isCsvFile
+          ? parseRoutineCsvToStructuredObject(rawContent)
+          : JSON.parse(rawContent || '{}');
+        if (!parsed || !Array.isArray(parsed.skills) || !parsed.discipline) {
+          throw new Error('Invalid routine JSON/CSV format.');
+        }
+
+        const disc = ['TRP', 'DMT', 'TUM'].includes(parsed.discipline) ? parsed.discipline : 'TRP';
+        const discCardId = disc === 'DMT' ? 'discDmtCard' : (disc === 'TUM' ? 'discTumCard' : 'discTrpCard');
+        const discCardEl = document.getElementById(discCardId);
+        if (discCardEl) selectDiscipline(disc, discCardEl);
+
+        const maxSkills = getMaxSkills(disc);
+        const performed = Math.min(maxSkills, Math.max(0, Number(parsed.skillsPerformed ?? parsed.skills.length)));
+
+        skillDeductions = new Array(maxSkills).fill(0);
+        skillTimestamps = new Array(maxSkills).fill(0);
+        skillThumbnails = new Array(maxSkills).fill(null);
+        skillMatchScores = new Array(maxSkills).fill(null);
+        skillDDs = new Array(maxSkills).fill('');
+        skillFaults = Array.from({ length: maxSkills }, () => []);
+
+        parsed.skills.forEach((sk, idx) => {
+          const slot = (typeof sk.skillNumber === 'number' && sk.skillNumber >= 1 && sk.skillNumber <= maxSkills)
+            ? sk.skillNumber - 1
+            : idx;
+          if (slot < maxSkills) {
+            skillDeductions[slot] = Number(sk.deduction || 0);
+            skillTimestamps[slot] = Number(sk.timestampSec || 0);
+            skillDDs[slot] = sk.dd ? String(sk.dd) : '';
+            skillFaults[slot] = Array.isArray(sk.faults) ? sk.faults.map(String) : [];
+          }
+        });
+
+        if (parsed.landing && typeof parsed.landing === 'object') {
+          landingDeduction = Number(parsed.landing.deduction || 0);
+          landingTimestamp = Number(parsed.landing.timestampSec || 0);
+          landingFaults = Array.isArray(parsed.landing.faults) ? parsed.landing.faults.map(String) : [];
+        } else {
+          landingDeduction = 0;
+          landingTimestamp = 0;
+          landingFaults = [];
+        }
+        landingThumbnail = null;
+        landingMatchScore = null;
+        skillsPerformed = performed;
+
+        if (parsed.branding && typeof parsed.branding === 'object') {
+          brandingState.slateEnabled = Boolean(parsed.branding.slateEnabled);
+          brandingState.slateTitle = String(parsed.branding.slateTitle || '');
+          brandingState.slateSubtitle = String(parsed.branding.slateSubtitle || '');
+          if ([2, 3, 4, 5].includes(Number(parsed.branding.slateDurationSec))) {
+            brandingState.slateDurationSec = Number(parsed.branding.slateDurationSec);
+          }
+          if (parsed.branding.endSlateEnabled !== undefined) {
+            brandingState.endSlateEnabled = Boolean(parsed.branding.endSlateEnabled);
+          }
+          if ([3, 4, 5, 6].includes(Number(parsed.branding.endSlateDurationSec))) {
+            brandingState.endSlateDurationSec = Number(parsed.branding.endSlateDurationSec);
+          }
+          brandingState.watermarkText = String(parsed.branding.watermarkText || '');
+          applyBrandingStateToInputs();
+          persistBrandingSettings();
+        }
+
+        const statusEl = document.getElementById('loadedJsonStatus');
+        if (statusEl) {
+          const hintVid = parsed.sourceVideoName ? ` (match with "${escapeHtml(parsed.sourceVideoName)}")` : '';
+          statusEl.innerHTML = `<span style="color:var(--fig-green); font-weight:700;">✓ Loaded ${escapeHtml(file.name)}</span>${hintVid}`;
+        }
+
+        triggerFeedback('complete');
+        if (videoObjectUrl) {
+          enterReviewPhase();
+        } else {
+          alert(`Loaded routine data from "${file.name}". Select the matching routine video above, or click Review to inspect deductions.`);
+          enterReviewPhase();
+        }
+      } catch (err) {
+        alert('Could not load routine JSON: ' + err.message);
+      } finally {
+        event.target.value = '';
+      }
+    };
+    reader.readAsText(file);
   }
 
   function openShareReadyModal(videoFile) {
@@ -4947,6 +5376,184 @@
     return null;
   }
 
+  function buildSkillSliceFileName(routineData, skillIdx) {
+    const rawVidName = sanitizeFileBaseName(
+      routineData.rawVideoBaseName || routineData.outputBaseName,
+      `Routine_${routineData.discipline}`
+    );
+    const skillPart = `Skill_${skillIdx + 1}`;
+    const rawDD = String(routineData.skillDDs?.[skillIdx] || '').trim();
+    const ddPart = rawDD ? `_DD_${sanitizeFileBaseName(rawDD, '')}` : '';
+    const deductNum = Number(routineData.skillDeductions?.[skillIdx] || 0);
+    const deductPart = `_Deduct_${deductNum.toFixed(1)}`;
+    return `${rawVidName}_${skillPart}${ddPart}${deductPart}.mp4`;
+  }
+
+  async function renderIndividualSkillClips(routineData, progressMeta = null) {
+    const performedCount = routineData.skillsPerformed || 0;
+    if (performedCount <= 0) return [];
+
+    // Collect valid timestamps for skills in chronological order
+    const skillEntries = [];
+    for (let i = 0; i < performedCount; i++) {
+      const ts = Number(routineData.skillTimestamps?.[i] || 0);
+      if (ts > 0) {
+        skillEntries.push({ index: i, timestamp: ts });
+      }
+    }
+    if (skillEntries.length === 0) return [];
+
+    const pctLabel   = document.getElementById('exportPctLabel');
+    const fillBar    = document.getElementById('exportProgressFill');
+    const statusText = document.getElementById('exportStatusText');
+
+    const renderVideo = document.createElement('video');
+    renderVideo.src = routineData.videoObjectUrl;
+    renderVideo.muted = true;
+    renderVideo.volume = 0;
+    renderVideo.playsInline = true;
+    renderVideo.preload = 'auto';
+    renderVideo.crossOrigin = 'anonymous';
+    activeExportVideo = renderVideo;
+
+    await new Promise((resolve, reject) => {
+      renderVideo.onloadedmetadata = () => resolve();
+      renderVideo.onerror = () => reject(new Error(`Failed to load video metadata for skill slicing.`));
+    });
+
+    if (isExportCancelled || !activeExportVideo) return [];
+
+    const fullDur = renderVideo.duration || 1;
+    const rawW = renderVideo.videoWidth || 1280;
+    const rawH = renderVideo.videoHeight || 720;
+    const { w, h } = getSafeEncoderDimensions(rawW, rawH, 1920);
+    const encoderConfig = await getSupportedH264Config(w, h);
+
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = w;
+    offscreenCanvas.height = h;
+    const ctx = offscreenCanvas.getContext('2d', { alpha: false });
+
+    const FPS = 30;
+    const FRAME_DURATION_US = Math.round(1_000_000 / FPS);
+
+    const seekVideoTo = (targetTime) => {
+      return new Promise((resolve) => {
+        if (isExportCancelled || !activeExportVideo) return resolve();
+        if (Math.abs(renderVideo.currentTime - targetTime) < 0.001 && renderVideo.readyState >= 2) {
+          return resolve();
+        }
+        const onSeeked = () => {
+          renderVideo.removeEventListener('seeked', onSeeked);
+          resolve();
+        };
+        renderVideo.addEventListener('seeked', onSeeked, { once: true });
+        renderVideo.currentTime = targetTime;
+      });
+    };
+
+    const exportedClips = [];
+
+    for (let sIdx = 0; sIdx < skillEntries.length; sIdx++) {
+      if (isExportCancelled || !activeExportVideo) break;
+
+      const entry = skillEntries[sIdx];
+      const skillNumIdx = entry.index;
+
+      // Start from the skill before (or 2.0s before Skill 1), end 0.5s after this skill
+      let sliceStart;
+      if (sIdx > 0) {
+        sliceStart = Math.max(0, skillEntries[sIdx - 1].timestamp);
+      } else {
+        sliceStart = Math.max(0, entry.timestamp - 2.0);
+      }
+      const sliceEnd = Math.min(fullDur, entry.timestamp + 0.5);
+      const sliceDur = Math.max(0.15, sliceEnd - sliceStart);
+      const totalFrames = Math.max(1, Math.ceil(sliceDur * FPS));
+
+      const sliceFileName = buildSkillSliceFileName(routineData, skillNumIdx);
+
+      // Build single-skill routine data so the top-right badge shows only this skill's deduction/DD/faults cleanly
+      const singleSkillData = {
+        ...routineData,
+        skillsPerformed: skillNumIdx + 1,
+        skillTimestamps: routineData.skillTimestamps.map((t, idx) => (idx === skillNumIdx ? t : 0)),
+        landingTimestamp: 0
+      };
+
+      let encoderError = null;
+      const muxer = new Mp4Muxer.Muxer({
+        target: new Mp4Muxer.ArrayBufferTarget(),
+        video: { codec: 'avc', width: w, height: h },
+        fastStart: 'in-memory'
+      });
+
+      const videoEncoder = new VideoEncoder({
+        output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+        error: (err) => { encoderError = err; }
+      });
+      videoEncoder.configure(encoderConfig);
+      activeExportEncoder = videoEncoder;
+
+      for (let f = 0; f < totalFrames; f++) {
+        if (isExportCancelled || encoderError || !activeExportVideo) break;
+
+        const curTime = Math.min(sliceEnd, sliceStart + (f / FPS));
+        await seekVideoTo(curTime);
+        if (isExportCancelled || encoderError || !activeExportVideo) break;
+
+        ctx.drawImage(renderVideo, 0, 0, w, h);
+        drawBurnedOverlays(ctx, w, h, curTime, false, singleSkillData);
+        drawBurnedWatermark(ctx, w, h, routineData.watermarkText);
+
+        while (videoEncoder.encodeQueueSize > 8 && !isExportCancelled && !encoderError) {
+          await new Promise(r => setTimeout(r, 5));
+        }
+        if (isExportCancelled || encoderError || videoEncoder.state !== 'configured') break;
+
+        const frame = new VideoFrame(offscreenCanvas, {
+          timestamp: f * FRAME_DURATION_US,
+          duration: FRAME_DURATION_US
+        });
+        videoEncoder.encode(frame, { keyFrame: (f % (FPS * 2) === 0) });
+        frame.close();
+
+        if (f % 4 === 0 || f === totalFrames - 1) {
+          const clipFrac = (sIdx + (f + 1) / totalFrames) / skillEntries.length;
+          if (progressMeta && typeof progressMeta.onSliceProgress === 'function') {
+            progressMeta.onSliceProgress(clipFrac, `Slicing ${sliceFileName} (${sIdx + 1}/${skillEntries.length})...`);
+          } else {
+            const pct = Math.min(100, Math.round(clipFrac * 100));
+            pctLabel.textContent = `${pct}%`;
+            fillBar.style.width = `${pct}%`;
+            statusText.textContent = `Slicing ${sliceFileName} (${sIdx + 1}/${skillEntries.length})...`;
+          }
+          await new Promise(r => setTimeout(r, 0));
+        }
+      }
+
+      if (encoderError) {
+        try { if (videoEncoder.state !== 'closed') videoEncoder.close(); } catch (e) {}
+        throw encoderError;
+      }
+
+      if (!isExportCancelled) {
+        await videoEncoder.flush();
+        if (videoEncoder.state !== 'closed') videoEncoder.close();
+        muxer.finalize();
+
+        const blob = new Blob([muxer.target.buffer], { type: 'video/mp4' });
+        exportedClips.push({ blob, fileName: sliceFileName, mime: 'video/mp4' });
+      } else {
+        try { if (videoEncoder.state !== 'closed') videoEncoder.close(); } catch (e) {}
+      }
+    }
+
+    activeExportVideo = null;
+    activeExportEncoder = null;
+    return exportedClips;
+  }
+
   async function exportSingleRoutine(routineData, mode = 'standard', deliveryAction = 'download') {
     if (!routineData || !routineData.videoObjectUrl) {
       alert("No video loaded to export.");
@@ -4960,6 +5567,11 @@
     isExportCancelled = false;
     const exportModal = document.getElementById('exportModal');
     const modalTitle  = document.getElementById('exportModalTitle');
+    const pctLabel    = document.getElementById('exportPctLabel');
+    const fillBar     = document.getElementById('exportProgressFill');
+    const statusText  = document.getElementById('exportStatusText');
+
+    const alsoSliceSkills = Boolean(brandingState.sliceSkillsEnabled);
 
     modalTitle.textContent = (mode === 'training')
       ? 'Rendering Training MP4 Video'
@@ -4968,15 +5580,42 @@
 
     try {
       const result = await renderRoutineToBlob(routineData, mode, null);
+
+      let slicedClips = [];
+      if (!isExportCancelled && alsoSliceSkills) {
+        modalTitle.textContent = 'Slicing Individual Skill Clips';
+        slicedClips = await renderIndividualSkillClips(routineData, {
+          onSliceProgress: (frac, msg) => {
+            const pct = Math.min(100, Math.round(frac * 100));
+            pctLabel.textContent = `${pct}%`;
+            fillBar.style.width = `${pct}%`;
+            statusText.textContent = msg;
+          }
+        });
+      }
+
       cleanupVideoExport();
 
       if (!isExportCancelled && result && result.blob && result.blob.size > 0) {
-        if (deliveryAction === 'share') {
+        const jsonExport = buildRoutineFlatJsonPayload(routineData, mode, result.fileName);
+        const csvExport = buildRoutineFlatCsvPayload(routineData, mode, result.fileName);
+        if (deliveryAction === 'share' && slicedClips.length === 0) {
           const videoFile = new File([result.blob], result.fileName, { type: result.mime });
+          triggerBlobDownload(jsonExport.blob, jsonExport.fileName);
+          await new Promise(r => setTimeout(r, 320));
+          triggerBlobDownload(csvExport.blob, csvExport.fileName);
           triggerFeedback('complete');
           openShareReadyModal(videoFile);
         } else {
           triggerBlobDownload(result.blob, result.fileName);
+          await new Promise(r => setTimeout(r, 320));
+          triggerBlobDownload(jsonExport.blob, jsonExport.fileName);
+          await new Promise(r => setTimeout(r, 320));
+          triggerBlobDownload(csvExport.blob, csvExport.fileName);
+          for (let c = 0; c < slicedClips.length; c++) {
+            await new Promise(r => setTimeout(r, 420));
+            triggerBlobDownload(slicedClips[c].blob, slicedClips[c].fileName);
+          }
           triggerFeedback('complete');
         }
       }
@@ -5027,7 +5666,30 @@
 
         if (result && result.blob && result.blob.size > 0) {
           triggerBlobDownload(result.blob, result.fileName);
+          const batchJsonExport = buildRoutineFlatJsonPayload(item, mode, result.fileName);
+          const batchCsvExport = buildRoutineFlatCsvPayload(item, mode, result.fileName);
+          await new Promise(r => setTimeout(r, 320));
+          triggerBlobDownload(batchJsonExport.blob, batchJsonExport.fileName);
+          await new Promise(r => setTimeout(r, 320));
+          triggerBlobDownload(batchCsvExport.blob, batchCsvExport.fileName);
           exportedCount++;
+
+          if (brandingState.sliceSkillsEnabled) {
+            const clips = await renderIndividualSkillClips(item, {
+              onSliceProgress: (frac, msg) => {
+                const overallPct = Math.min(100, Math.round(((i + frac) / total) * 100));
+                pctLabel.textContent = `${overallPct}%`;
+                fillBar.style.width = `${overallPct}%`;
+                document.getElementById('exportStatusText').textContent = `[Routine ${i + 1} of ${total}] ${msg}`;
+              }
+            });
+            for (let c = 0; c < clips.length; c++) {
+              if (isExportCancelled) break;
+              await new Promise(r => setTimeout(r, 420));
+              triggerBlobDownload(clips[c].blob, clips[c].fileName);
+            }
+          }
+
           if (i < total - 1) {
             await new Promise(r => setTimeout(r, 650));
           }
