@@ -4197,18 +4197,57 @@
       }
     };
 
-    const renderVideoPass = async ({ drawOverlay, fadeInSec = 0, progressOffset = 0, progressSpan = 100, labelPrefix = '' }) => {
-      const dur = renderVideo.duration || 1;
-      const totalFrames = Math.max(1, Math.ceil(dur * FPS));
+    // =========================================================================
+    // [AUTO-TRIM & FADE-IN CONFIG]
+    // Default export behavior: 3.0s pre-roll before Skill 1, 2.0s post-roll
+    // after the final deduction (or landing), and a 0.5s fade-in transition.
+    // =========================================================================
+    const TRIM_CONFIG = {
+      leadInSeconds: 3.0,   // Seconds before first deduction
+      tailSeconds: 3.0,     // Seconds after final deduction (or landing)
+      fadeInSeconds: 0.5    // Duration of subtle fade-in at start of trimmed clip
+    };
+
+    const getTrimmedWindow = (videoDur) => {
+      const validTimestamps = [];
+      for (let i = 0; i < routineData.skillsPerformed; i++) {
+        if (routineData.skillTimestamps[i] > 0) {
+          validTimestamps.push(routineData.skillTimestamps[i]);
+        }
+      }
+      if (routineData.skillsPerformed === getMaxSkills(routineData.discipline) && routineData.landingTimestamp > 0) {
+        validTimestamps.push(routineData.landingTimestamp);
+      }
+
+      if (validTimestamps.length === 0) {
+        return { startTime: 0, endTime: videoDur, clipDuration: videoDur };
+      }
+
+      validTimestamps.sort((a, b) => a - b);
+      const firstTs = validTimestamps[0];
+      const lastTs = validTimestamps[validTimestamps.length - 1];
+
+      const startTime = Math.max(0, firstTs - TRIM_CONFIG.leadInSeconds);
+      const endTime = Math.min(videoDur, lastTs + TRIM_CONFIG.tailSeconds);
+      const clipDuration = Math.max(0.1, endTime - startTime);
+
+      return { startTime, endTime, clipDuration };
+    };
+
+    const renderVideoPass = async ({ drawOverlay, fadeInSec = TRIM_CONFIG.fadeInSeconds, progressOffset = 0, progressSpan = 100, labelPrefix = '' }) => {
+      const fullDur = renderVideo.duration || 1;
+      const { startTime, endTime, clipDuration } = getTrimmedWindow(fullDur);
+      const totalFrames = Math.max(1, Math.ceil(clipDuration * FPS));
 
       for (let f = 0; f < totalFrames; f++) {
         if (isExportCancelled || encoderError || !activeExportVideo) return;
 
-        const curTime = Math.min(dur, f / FPS);
+        const elapsedInClip = f / FPS;
+        const curTime = Math.min(endTime, startTime + elapsedInClip);
         await seekVideoTo(curTime);
         if (isExportCancelled || encoderError || !activeExportVideo) return;
 
-        const isEnded = (curTime >= dur - (1 / FPS)) || (routineData.landingTimestamp > 0 && curTime >= (routineData.landingTimestamp + 2.2));
+        const isEnded = (curTime >= endTime - (1 / FPS)) || (routineData.landingTimestamp > 0 && curTime >= (routineData.landingTimestamp + 1.8));
 
         ctx.drawImage(renderVideo, 0, 0, w, h);
 
@@ -4218,8 +4257,10 @@
 
         drawBurnedWatermark(ctx, w, h, routineData.watermarkText);
 
-        if (fadeInSec > 0 && curTime < fadeInSec) {
-          const alpha = Math.max(0, 1 - (curTime / fadeInSec));
+        // [AUTO-TRIM & FADE-IN CONFIG] Subtle fade-in at start of trimmed clip
+        if (fadeInSec > 0 && elapsedInClip < fadeInSec) {
+          const progress = elapsedInClip / fadeInSec;
+          const alpha = Math.pow(1 - progress, 1.5);
           ctx.fillStyle = `rgba(0, 0, 0, ${alpha.toFixed(3)})`;
           ctx.fillRect(0, 0, w, h);
         }
@@ -4284,7 +4325,7 @@
 
       await renderVideoPass({
         drawOverlay: true,
-        fadeInSec: useSlate ? 0.35 : 0,
+        fadeInSec: TRIM_CONFIG.fadeInSeconds,
         progressOffset: offset,
         progressSpan: span,
         labelPrefix: `Encoding ${finalFileName}`
@@ -4300,7 +4341,7 @@
 
       await renderVideoPass({
         drawOverlay: false,
-        fadeInSec: useSlate ? 0.35 : 0,
+        fadeInSec: TRIM_CONFIG.fadeInSeconds,
         progressOffset: pass1Offset,
         progressSpan: pass1Span,
         labelPrefix: `Pass 1/2: Clean Routine (${finalFileName})`
