@@ -10,7 +10,7 @@
        ========================================================================== */
 
     :root {
-      /* World Gymnastics Ribbon Palette */
+      /* World Gymnastics Ribbon Palette (Default) */
       --fig-blue:   #4495e5;
       --fig-purple: #7d5fb3;
       --fig-pink:   #dc5183;
@@ -24,6 +24,39 @@
       --border-col: #2c2940;
       --text-main:  #ffffff;
       --text-sub:   #8a8a9e;
+
+      /* Theme-adaptive accents */
+      --accent-soft-bg:    rgba(68, 149, 229, 0.15);
+      --dropzone-soft-bg:  rgba(68, 149, 229, 0.05);
+      --dropzone-hover-bg: rgba(68, 149, 229, 0.12);
+      --landing-row-bg:    rgba(220, 81, 131, 0.08);
+      --speaking-row-bg:   rgba(230, 138, 0, 0.22);
+      --danger-btn-bg:     #2a1b24;
+      --dot-shadow:        rgba(125, 95, 179, 0.8);
+    }
+
+    /* Monochromatic Theme Overrides */
+    body.theme-mono {
+      --fig-blue:   #d4d4dc;
+      --fig-purple: #8e8e9e;
+      --fig-pink:   #b0b0be;
+      --fig-green:  #f2f2f7;
+      --fig-orange: #ffffff;
+      --fig-red:    #9e9eae;
+
+      --bg-dark:    #09090b;
+      --card-bg:    #141417;
+      --border-col: #2b2b33;
+      --text-main:  #ffffff;
+      --text-sub:   #8e8e98;
+
+      --accent-soft-bg:    rgba(255, 255, 255, 0.12);
+      --dropzone-soft-bg:  rgba(255, 255, 255, 0.04);
+      --dropzone-hover-bg: rgba(255, 255, 255, 0.10);
+      --landing-row-bg:    rgba(255, 255, 255, 0.07);
+      --speaking-row-bg:   rgba(255, 255, 255, 0.20);
+      --danger-btn-bg:     #232329;
+      --dot-shadow:        rgba(255, 255, 255, 0.65);
     }
 
     * {
@@ -88,6 +121,13 @@
     .badge-review  { background: var(--fig-green); color: #111; }
     .badge-overlay { background: var(--fig-orange); color: #fff; }
 
+    body.theme-mono .badge-setup,
+    body.theme-mono .badge-routine,
+    body.theme-mono .badge-landing,
+    body.theme-mono .badge-overlay {
+      color: #111;
+    }
+
     .btn-header {
       background: #1d1b2a;
       border: 1px solid var(--border-col);
@@ -101,6 +141,10 @@
       gap: 4px;
     }
 
+    body.theme-mono .btn-header {
+      background: #1c1c21;
+    }
+
     .btn-header:active { background: var(--fig-purple); color: #fff; }
 
     .btn-finish-routine {
@@ -108,6 +152,10 @@
       color: #ffffff;
       border: none;
       font-weight: 700;
+    }
+
+    body.theme-mono .btn-finish-routine {
+      color: #111;
     }
 
     .main-content {
@@ -185,15 +233,34 @@
       padding: 10px;
       cursor: pointer;
       text-align: center;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    body.theme-mono .preset-card {
+      background: #1b1b20;
     }
 
     .preset-card.selected {
       border-color: var(--fig-blue);
-      background: rgba(68, 149, 229, 0.15);
+      background: var(--accent-soft-bg);
     }
 
     .preset-card h4 { font-size: 0.9rem; margin-bottom: 2px; color: var(--text-main); }
     .preset-card p { font-size: 0.72rem; color: var(--text-sub); }
+
+    .theme-swatches {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .theme-swatch-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
 
     /* NUMBER RECOGNITION PATTERN TRAINER CARDS */
     .num-guide-grid {
@@ -213,9 +280,13 @@
       transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
     }
 
+    body.theme-mono .num-guide-card {
+      background: #1b1b20;
+    }
+
     .num-guide-card:hover {
       border-color: var(--fig-green);
-      background: rgba(155, 217, 139, 0.1);
+      background: var(--accent-soft-bg);
     }
 
     .num-guide-card:active { transform: scale(0.97); }
@@ -248,7 +319,7 @@
     }
 
     .btn-reset-patterns {
-      background: #2a1b24;
+      background: var(--danger-btn-bg);
       border: 1px solid var(--fig-pink);
       color: var(--fig-pink);
       padding: 3px 8px;
@@ -263,13 +334,13 @@
 
     .btn-reset-patterns:active {
       background: var(--fig-pink);
-      color: #fff;
+      color: #111;
     }
 
     /* VIDEO UPLOAD DROP ZONE */
     .video-file-dropzone {
       border: 2px dashed var(--fig-blue);
-      background: rgba(68, 149, 229, 0.05);
+      background: var(--dropzone-soft-bg);
       border-radius: 12px;
       padding: 24px 16px;
       text-align: center;
@@ -282,7 +353,7 @@
     }
 
     .video-file-dropzone:hover {
-      background: rgba(68, 149, 229, 0.12);
+      background: var(--dropzone-hover-bg);
       border-color: var(--fig-green);
     }
 
@@ -321,11 +392,17 @@
       gap: 6px;
     }
 
+    body.theme-mono .btn-primary {
+      color: #111;
+    }
+
     .btn-primary:active { opacity: 0.9; transform: scale(0.99); }
     .btn-secondary { background: #1e1c2e; border: 1px solid var(--border-col); color: var(--text-sub); }
+    body.theme-mono .btn-secondary { background: #1e1e24; color: var(--text-sub); }
     .btn-secondary:active { background: var(--fig-purple); color: var(--text-main); }
     .btn-download { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; font-weight: 800; }
     .btn-training { background: linear-gradient(135deg, var(--fig-purple), var(--fig-blue)); color: #fff; font-weight: 800; }
+    body.theme-mono .btn-training { color: #111; }
     .btn-swipe-start { background: linear-gradient(135deg, var(--fig-purple), var(--fig-pink)); }
     .btn-recognizer-start { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; }
 
@@ -469,10 +546,14 @@
       flex-shrink: 0;
     }
 
+    body.theme-mono .btn-step {
+      background: #1f1f26;
+    }
+
     .btn-step:active {
       background: var(--fig-blue);
       border-color: var(--fig-blue);
-      color: #fff;
+      color: #111;
     }
 
     .review-list {
@@ -505,7 +586,7 @@
 
     .review-row.landing-row {
       border-color: var(--fig-pink);
-      background: rgba(220, 81, 131, 0.08);
+      background: var(--landing-row-bg);
     }
 
     .sk-lbl {
@@ -768,7 +849,7 @@
 
     .running-list-item.current-speaking {
       border-color: var(--fig-orange);
-      background: rgba(230, 138, 0, 0.22);
+      background: var(--speaking-row-bg);
     }
 
     .item-skill-lbl {
@@ -880,6 +961,10 @@
       white-space: nowrap;
     }
 
+    body.theme-mono .btn-summary-action {
+      background: #1e1e24;
+    }
+
     .btn-summary-action:active { opacity: 0.85; transform: scale(0.98); }
 
     /* PLAYBACK BOTTOM BAR CONTROLS */
@@ -936,7 +1021,7 @@
       background-color: var(--fig-purple);
       border: 1.5px solid #111118;
       transform: translate(-50%, -50%);
-      box-shadow: 0 0 4px rgba(125, 95, 179, 0.8);
+      box-shadow: 0 0 4px var(--dot-shadow);
     }
 
     /* MODAL OVERLAYS, TRAINER, FILENAME & VIDEO EXPORT PROGRESS */
@@ -999,12 +1084,14 @@
     }
 
     .btn-clear { background: #1e1c2e; color: var(--text-sub); }
+    body.theme-mono .btn-clear { background: #1e1e24; }
     .btn-clear:active { background: var(--fig-purple); color: #fff; }
-    .btn-cancel { background: #2a1b24; border-color: var(--fig-pink); color: var(--fig-pink); }
-    .btn-cancel:active { background: var(--fig-pink); color: #fff; }
+    .btn-cancel { background: var(--danger-btn-bg); border-color: var(--fig-pink); color: var(--fig-pink); }
+    .btn-cancel:active { background: var(--fig-pink); color: #111; }
     .btn-save { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; border: none; }
     .btn-save:active { opacity: 0.9; }
     .btn-share-action { background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple)); color: #fff; border: none; }
+    body.theme-mono .btn-share-action { color: #111; }
     .btn-share-action:active { opacity: 0.9; }
 
     /* FILENAME INPUT BOX */
@@ -1153,7 +1240,7 @@
             <path d="M2 2l7.58 7.58"></path>
             <circle cx="11" cy="11" r="2"></circle>
           </svg>
-          Number Recogniser Pattern Trainer
+          3. Number Recogniser Pattern Trainer
           <button id="btnResetPatterns" class="btn-reset-patterns hidden" onclick="resetSavedTemplates()">Reset Saved</button>
         </div>
         <div class="section-desc">Train custom stroke handwriting styles (saved automatically in browser storage). Landing scale uses 0, 1, 2, 3, 5, 10 (-0.0 to -1.0).</div>
@@ -1213,6 +1300,43 @@
         <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-top:4px;">
           <button class="btn-primary btn-swipe-start" onclick="startVideoJudging('swipe')">Start Directional Swipe</button>
           <button class="btn-primary btn-recognizer-start" onclick="startVideoJudging('recognizer')">Start Number Recognizer</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: COLOUR SCHEME SELECTOR -->
+      <div class="setup-section-card">
+        <div class="section-title" style="color:var(--fig-pink);">
+          <svg class="section-title-icon" style="stroke:var(--fig-pink);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2a10 10 0 0 1 0 20z"></path>
+          </svg>
+          5. Colour Scheme
+        </div>
+        <div class="section-desc">Switch between the default World Gymnastics ribbon palette and a clean monochromatic theme for the interface and video overlays.</div>
+
+        <div class="preset-group" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="preset-card selected" id="themeDefaultCard" onclick="setColorScheme('default')">
+            <h4>Default (WGYM)</h4>
+            <p>Full ribbon colour palette</p>
+            <div class="theme-swatches">
+              <span class="theme-swatch-dot" style="background:#4495e5;"></span>
+              <span class="theme-swatch-dot" style="background:#7d5fb3;"></span>
+              <span class="theme-swatch-dot" style="background:#dc5183;"></span>
+              <span class="theme-swatch-dot" style="background:#9bd98b;"></span>
+              <span class="theme-swatch-dot" style="background:#e68a00;"></span>
+            </div>
+          </div>
+          <div class="preset-card" id="themeMonoCard" onclick="setColorScheme('mono')">
+            <h4>Monochromatic</h4>
+            <p>High-contrast greyscale</p>
+            <div class="theme-swatches">
+              <span class="theme-swatch-dot" style="background:#ffffff;"></span>
+              <span class="theme-swatch-dot" style="background:#d4d4dc;"></span>
+              <span class="theme-swatch-dot" style="background:#9e9eae;"></span>
+              <span class="theme-swatch-dot" style="background:#6e6e7a;"></span>
+              <span class="theme-swatch-dot" style="background:#3a3a44;"></span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1299,10 +1423,10 @@
         <!-- END OF REPLAY CENTERED BOTTOM NAVIGATION BOX -->
         <div id="overlayEndNavBox" class="overlay-end-nav-box">
           <button class="btn-summary-action" style="background:linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color:#111; border:none;" onclick="openFilenameModal('standard')">🎬 Export Video</button>
-          <button class="btn-summary-action" style="background:linear-gradient(135deg, var(--fig-purple), var(--fig-blue)); color:#fff; border:none;" onclick="openFilenameModal('training')">🎓 Create Training Video</button>
+          <button class="btn-summary-action" style="background:linear-gradient(135deg, var(--fig-purple), var(--fig-blue)); color:#111; border:none;" onclick="openFilenameModal('training')">🎓 Create Training Video</button>
           <button class="btn-summary-action" onclick="exitOverlayToReview()">✏️ Adjust Deductions</button>
           <button class="btn-summary-action" onclick="restartOverlayPlayback()">🔁 Replay Video</button>
-          <button class="btn-summary-action" style="background:#2a1b24; border-color:var(--fig-pink); color:var(--fig-pink);" onclick="resetToSetup()">🏠 Start Screen</button>
+          <button class="btn-summary-action" style="background:var(--danger-btn-bg); border-color:var(--fig-pink); color:var(--fig-pink);" onclick="resetToSetup()">🏠 Start Screen</button>
         </div>
 
         <!-- BOTTOM PLAYBACK BAR -->
@@ -1399,6 +1523,78 @@
 </div>
 
 <script>
+  /* ==========================================================================
+     COLOUR SCHEME MANAGEMENT (DEFAULT WGYM VS MONOCHROMATIC)
+     ========================================================================== */
+  const COLOR_SCHEME_STORAGE_KEY = 'judgle_overlay_color_scheme_v1';
+  let currentColorScheme = 'default';
+
+  function setColorScheme(scheme, persist = true) {
+    currentColorScheme = (scheme === 'mono') ? 'mono' : 'default';
+
+    if (currentColorScheme === 'mono') {
+      document.body.classList.add('theme-mono');
+    } else {
+      document.body.classList.remove('theme-mono');
+    }
+
+    const defaultCard = document.getElementById('themeDefaultCard');
+    const monoCard = document.getElementById('themeMonoCard');
+    if (defaultCard && monoCard) {
+      defaultCard.classList.toggle('selected', currentColorScheme === 'default');
+      monoCard.classList.toggle('selected', currentColorScheme === 'mono');
+    }
+
+    if (persist) {
+      try {
+        localStorage.setItem(COLOR_SCHEME_STORAGE_KEY, currentColorScheme);
+      } catch (e) {}
+    }
+  }
+
+  function loadSavedColorScheme() {
+    try {
+      const saved = localStorage.getItem(COLOR_SCHEME_STORAGE_KEY);
+      if (saved === 'mono' || saved === 'default') {
+        setColorScheme(saved, false);
+      }
+    } catch (e) {}
+  }
+
+  function getThemeCanvasColors() {
+    if (currentColorScheme === 'mono') {
+      return {
+        blue: '#d4d4dc',
+        purple: '#8e8e9e',
+        pink: '#b0b0be',
+        green: '#f2f2f7',
+        orange: '#ffffff',
+        red: '#9e9eae',
+        border: '#2b2b33',
+        textSub: '#8e8e98',
+        speakingBg: 'rgba(255, 255, 255, 0.22)',
+        strokeDraw: '#ffffff',
+        strokeTrain: '#f2f2f7'
+      };
+    }
+    return {
+      blue: '#4495e5',
+      purple: '#7d5fb3',
+      pink: '#dc5183',
+      green: '#9bd98b',
+      orange: '#e68a00',
+      red: '#f44336',
+      border: '#2c2940',
+      textSub: '#8a8a9e',
+      speakingBg: 'rgba(230, 138, 0, 0.25)',
+      strokeDraw: '#e68a00',
+      strokeTrain: '#9bd98b'
+    };
+  }
+
+  // Hydrate saved colour scheme immediately on load
+  loadSavedColorScheme();
+
   /* ==========================================================================
      $P POINT SPACE RECOGNIZER CLASS IMPLEMENTATION
      ========================================================================== */
@@ -1775,10 +1971,11 @@
   }
 
   function getDeductionHexColor(deductionVal) {
+    const c = getThemeCanvasColors();
     const tenths = Math.round(deductionVal * 10);
-    if (tenths <= 1) return '#9bd98b';
-    if (tenths <= 3) return '#e68a00';
-    return '#f44336';
+    if (tenths <= 1) return c.green;
+    if (tenths <= 3) return c.orange;
+    return c.red;
   }
 
   /* ==========================================================================
@@ -1901,7 +2098,7 @@
       if (trainerCtx) {
         trainerCtx.beginPath();
         trainerCtx.moveTo(x, y);
-        trainerCtx.strokeStyle = '#9bd98b';
+        trainerCtx.strokeStyle = getThemeCanvasColors().strokeTrain;
         trainerCtx.lineWidth = 8;
         trainerCtx.lineCap = 'round';
         trainerCtx.lineJoin = 'round';
@@ -2145,7 +2342,7 @@
         }
         overlayCtx.beginPath();
         overlayCtx.moveTo(x, y);
-        overlayCtx.strokeStyle = '#e68a00';
+        overlayCtx.strokeStyle = getThemeCanvasColors().strokeDraw;
         overlayCtx.lineWidth = 8;
         overlayCtx.lineCap = 'round';
         overlayCtx.lineJoin = 'round';
@@ -2610,6 +2807,7 @@
   }
 
   function drawBurnedOverlays(ctx, w, h, currentTime, isEnded) {
+    const themeCols = getThemeCanvasColors();
     const scale = Math.max(0.5, h / 720);
     const pad = 20 * scale;
     const fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -2646,7 +2844,7 @@
 
       ctx.textAlign = 'right';
       ctx.font = `800 ${13 * scale}px ${fontFamily}`;
-      ctx.fillStyle = '#4495e5';
+      ctx.fillStyle = themeCols.blue;
       ctx.fillText(activeEvent.label, badgeX + badgeW - 14 * scale, badgeY + 11 * scale);
 
       ctx.font = `900 ${36 * scale}px ${fontFamily}`;
@@ -2667,7 +2865,7 @@
         ctx.fill();
 
         ctx.lineWidth = 1.5 * scale;
-        ctx.strokeStyle = '#4495e5';
+        ctx.strokeStyle = themeCols.blue;
         ctx.stroke();
 
         ctx.textAlign = 'right';
@@ -2715,22 +2913,22 @@
       itemsToDraw.forEach((item, idx) => {
         const y = listTop + idx * (itemH + itemGap);
 
-        ctx.fillStyle = item.isCurrent ? 'rgba(230, 138, 0, 0.25)' : 'rgba(20, 20, 31, 0.84)';
+        ctx.fillStyle = item.isCurrent ? themeCols.speakingBg : 'rgba(20, 20, 31, 0.84)';
         drawRoundedRect(ctx, listX, y, itemW, itemH, 8 * scale);
         ctx.fill();
 
         ctx.lineWidth = 1.5 * scale;
-        ctx.strokeStyle = item.isCurrent ? '#e68a00' : '#2c2940';
+        ctx.strokeStyle = item.isCurrent ? themeCols.orange : themeCols.border;
         ctx.stroke();
 
         ctx.font = `700 ${13 * scale}px ${fontFamily}`;
         ctx.textAlign = 'left';
-        ctx.fillStyle = item.isLanding ? '#dc5183' : '#8a8a9e';
+        ctx.fillStyle = item.isLanding ? themeCols.pink : themeCols.textSub;
         ctx.fillText(item.label, listX + 11 * scale, y + 8 * scale);
 
         ctx.font = `800 ${13 * scale}px ${fontFamily}`;
         ctx.textAlign = 'right';
-        ctx.fillStyle = '#dc5183';
+        ctx.fillStyle = themeCols.pink;
         ctx.fillText(item.val, listX + itemW - 11 * scale, y + 8 * scale);
       });
     }
@@ -2754,20 +2952,20 @@
       ctx.fill();
 
       ctx.lineWidth = 2.5 * scale;
-      ctx.strokeStyle = '#9bd98b';
+      ctx.strokeStyle = themeCols.green;
       ctx.stroke();
 
       ctx.textAlign = 'right';
       ctx.font = `800 ${13 * scale}px ${fontFamily}`;
-      ctx.fillStyle = '#9bd98b';
+      ctx.fillStyle = themeCols.green;
       ctx.fillText('ROUTINE SCORE', cardX + cardW - 16 * scale, cardY + 13 * scale);
 
       ctx.font = `900 ${40 * scale}px ${fontFamily}`;
-      ctx.fillStyle = '#9bd98b';
+      ctx.fillStyle = themeCols.green;
       ctx.fillText(netScore.toFixed(2), cardX + cardW - 16 * scale, cardY + 32 * scale);
 
       ctx.font = `700 ${13 * scale}px ${fontFamily}`;
-      ctx.fillStyle = '#dc5183';
+      ctx.fillStyle = themeCols.pink;
       ctx.fillText(`Total Deductions: -${totalDeduct.toFixed(1)}`, cardX + cardW - 16 * scale, cardY + 78 * scale);
     }
 
