@@ -2787,6 +2787,7 @@
         ctx.strokeStyle = '#e68a00';
         ctx.lineWidth = 6;
         ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
       }
     });
 
@@ -2807,12 +2808,79 @@
       try { swipeScreen.releasePointerCapture(e.pointerId); } catch(err) {}
 
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-      pointerPoints.forEach(p => {
+      let pathLen = 0;
+
+      pointerPoints.forEach((p, idx) => {
         if (p.x < minX) minX = p.x;
         if (p.x > maxX) maxX = p.x;
         if (p.y < minY) minY = p.y;
         if (p.y > maxY) maxY = p.y;
+        if (idx > 0) {
+          const dx = p.x - pointerPoints[idx - 1].x;
+          const dy = p.y - pointerPoints[idx - 1].y;
+          pathLen += Math.sqrt(dx * dx + dy * dy);
+        }
       });
+
+      // Decorate thumbnail stroke with origin dot + directional arrowhead at release end
+      if (ctx && pointerPoints.length > 0) {
+        const startPt = pointerPoints[0];
+        const endPt = pointerPoints[pointerPoints.length - 1];
+
+        ctx.fillStyle = '#e68a00';
+        ctx.strokeStyle = '#e68a00';
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        if (pathLen < 30) {
+          // Tap gesture: render a clean dot
+          ctx.beginPath();
+          ctx.arc(startPt.x, startPt.y, 10, 0, Math.PI * 2);
+          ctx.fill();
+          minX = Math.min(minX, startPt.x - 10);
+          maxX = Math.max(maxX, startPt.x + 10);
+          minY = Math.min(minY, startPt.y - 10);
+          maxY = Math.max(maxY, startPt.y + 10);
+        } else {
+          // Origin marker dot so start vs. end is clear
+          ctx.beginPath();
+          ctx.arc(startPt.x, startPt.y, 6, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Find reference point ~12px back along the trail for a stable tangent angle
+          let refPt = pointerPoints[0];
+          for (let i = pointerPoints.length - 2; i >= 0; i--) {
+            const dx = endPt.x - pointerPoints[i].x;
+            const dy = endPt.y - pointerPoints[i].y;
+            if (Math.sqrt(dx * dx + dy * dy) >= 12) {
+              refPt = pointerPoints[i];
+              break;
+            }
+          }
+
+          const angle = Math.atan2(endPt.y - refPt.y, endPt.x - refPt.x);
+          const headLen = 20;
+          const wingAngle = Math.PI / 5.5;
+
+          const leftX = endPt.x - headLen * Math.cos(angle - wingAngle);
+          const leftY = endPt.y - headLen * Math.sin(angle - wingAngle);
+          const rightX = endPt.x - headLen * Math.cos(angle + wingAngle);
+          const rightY = endPt.y - headLen * Math.sin(angle + wingAngle);
+
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.moveTo(leftX, leftY);
+          ctx.lineTo(endPt.x, endPt.y);
+          ctx.lineTo(rightX, rightY);
+          ctx.stroke();
+
+          // Expand bounding box so arrowhead wings aren't clipped
+          minX = Math.min(minX, leftX, rightX);
+          maxX = Math.max(maxX, leftX, rightX);
+          minY = Math.min(minY, leftY, rightY);
+          maxY = Math.max(maxY, leftY, rightY);
+        }
+      }
 
       const thumbData = createCroppedThumbnail(canvas, minX, minY, maxX, maxY, 20);
 
