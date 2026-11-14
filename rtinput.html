@@ -43,6 +43,11 @@
       touch-action: manipulation;
     }
 
+    input, textarea {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
     body, html {
       width: 100%;
       height: 100%;
@@ -819,6 +824,99 @@
       color: #fff;
     }
 
+    /* LOG TITLE / ATHLETE LABEL INPUT BAR */
+    .review-title-section {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 6px;
+      flex-shrink: 0;
+    }
+
+    .review-title-input-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #141321;
+      border: 1px solid var(--border-col);
+      border-radius: 8px;
+      padding: 4px 10px;
+    }
+
+    .review-title-input-row:focus-within {
+      border-color: var(--fig-blue);
+      background: #19182b;
+    }
+
+    .title-input-icon {
+      font-size: 0.85rem;
+      color: var(--fig-blue);
+      flex-shrink: 0;
+    }
+
+    .routine-title-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 3px 0;
+      width: 100%;
+    }
+
+    .routine-title-input::placeholder {
+      color: var(--text-sub);
+      font-weight: 500;
+    }
+
+    .btn-clear-title {
+      background: transparent;
+      border: none;
+      color: var(--text-sub);
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 2px 4px;
+      line-height: 1;
+    }
+
+    .btn-clear-title:active {
+      color: var(--fig-pink);
+    }
+
+    .recent-chips-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+
+    .recent-chips-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .title-chip {
+      background: #1b192b;
+      border: 1px solid var(--border-col);
+      color: #d0d0e0;
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .title-chip:active {
+      background: var(--fig-blue);
+      border-color: var(--fig-blue);
+      color: #fff;
+    }
+
     .score-banner {
       background: var(--card-bg);
       border: 1px solid var(--border-col);
@@ -854,7 +952,7 @@
 
     .review-row {
       flex: 1;
-      min-height: 38px;
+      min-height: 36px;
       background: var(--card-bg);
       border: 1px solid var(--border-col);
       border-radius: 6px;
@@ -899,7 +997,7 @@
 
     .review-thumb-box {
       width: 38px;
-      height: 32px;
+      height: 30px;
       background: #08080d;
       border: 1px solid #3c3954;
       border-radius: 4px;
@@ -1053,15 +1151,23 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
     }
 
     .log-num-badge {
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       font-weight: 800;
       color: var(--fig-green);
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .log-sub-num {
+      font-size: 0.72rem;
+      color: var(--text-sub);
+      font-weight: 600;
     }
 
     .log-disc-tag {
@@ -1630,6 +1736,24 @@
         <button class="btn-log-nav" id="btnNavNext" onclick="cycleLogEntry(1)">▶</button>
       </div>
 
+      <!-- LOG TITLE / ATHLETE LABEL INPUT + RECENT CHIPS -->
+      <div class="review-title-section">
+        <div class="review-title-input-row">
+          <span class="title-input-icon">🏷️</span>
+          <input
+            type="text"
+            id="routineTitleInput"
+            class="routine-title-input"
+            placeholder="Routine title / Athlete name..."
+            maxlength="40"
+            onfocus="this.select()"
+            oninput="handleRoutineTitleInput()"
+          />
+          <button type="button" class="btn-clear-title" onclick="clearRoutineTitleInput()" title="Clear title">✕</button>
+        </div>
+        <div id="recentTitleChips" class="recent-chips-row hidden"></div>
+      </div>
+
       <div class="score-banner">
         <div class="score-box">
           <span class="score-lbl">Skills</span>
@@ -1931,6 +2055,7 @@
 
   const dollarRecognizer = new PDollarRecognizer();
   const CUSTOM_TEMPLATES_STORAGE_KEY = 'judgle_custom_templates_v1';
+  const ROUTINE_LOGS_STORAGE_KEY     = 'judgle_routine_logs_v1';
 
   // Presets & FIG Landing Scale
   const PRESETS = {
@@ -1967,6 +2092,7 @@
   let landingMatchScore = null;
   let skillsPerformed = 10;
   let customTrainedDigits = {};
+  let currentRoutineTitle = '';
 
   let routineLogHistory = [];
   let routineCounter = 1;
@@ -1988,6 +2114,8 @@
   const headerLogCountBadge  = document.getElementById('headerLogCountBadge');
   const reviewLogCountBadge  = document.getElementById('reviewLogCountBadge');
   const btnResetPatterns     = document.getElementById('btnResetPatterns');
+  const routineTitleInput    = document.getElementById('routineTitleInput');
+  const recentTitleChips     = document.getElementById('recentTitleChips');
 
   const canvas               = document.getElementById('gestureCanvas');
   const ctx                  = canvas ? canvas.getContext('2d') : null;
@@ -1999,7 +2127,41 @@
   const recCtx               = recCanvas ? recCanvas.getContext('2d') : null;
 
   /* ==========================================================================
-     LOCAL STORAGE PERSISTENCE FOR CUSTOM TRAINED PATTERNS
+     SCREEN WAKE LOCK MANAGEMENT (KEEPS DISPLAY AWAKE DURING JUDGING)
+     ========================================================================== */
+  let wakeLockSentinel = null;
+
+  async function requestWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    try {
+      if (wakeLockSentinel) return;
+      wakeLockSentinel = await navigator.wakeLock.request('screen');
+      wakeLockSentinel.addEventListener('release', () => {
+        wakeLockSentinel = null;
+      });
+    } catch (err) {
+      // Silently ignore if low-battery mode or platform blocks wake lock
+    }
+  }
+
+  async function releaseWakeLock() {
+    if (!wakeLockSentinel) return;
+    try {
+      await wakeLockSentinel.release();
+      wakeLockSentinel = null;
+    } catch (err) {
+      wakeLockSentinel = null;
+    }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && (phase === 'routine' || phase === 'landing')) {
+      requestWakeLock();
+    }
+  });
+
+  /* ==========================================================================
+     LOCAL STORAGE PERSISTENCE FOR CUSTOM PATTERNS & ROUTINE LOGS
      ========================================================================== */
   function loadCustomTemplatesFromStorage() {
     try {
@@ -2057,6 +2219,46 @@
     showUndoToast('Custom patterns reset');
   }
 
+  function loadLogsFromStorage() {
+    try {
+      const raw = localStorage.getItem(ROUTINE_LOGS_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        routineLogHistory = parsed;
+        routineCounter = routineLogHistory.length > 0
+          ? (Math.max(...routineLogHistory.map(r => r.routineNum || 0)) + 1)
+          : 1;
+        updateLogBadges();
+      }
+    } catch (e) {
+      console.warn('Unable to load routine logs from localStorage:', e);
+    }
+  }
+
+  function persistLogsToStorage() {
+    try {
+      localStorage.setItem(ROUTINE_LOGS_STORAGE_KEY, JSON.stringify(routineLogHistory));
+    } catch (e) {
+      // If storage quota is exceeded due to base64 thumbnails on older logs, strip thumbnails from oldest logs and retry
+      try {
+        const trimmedLogs = routineLogHistory.map((entry, idx) => {
+          if (idx < routineLogHistory.length - 10) {
+            return {
+              ...entry,
+              skillThumbnails: [],
+              landingThumbnail: null
+            };
+          }
+          return entry;
+        });
+        localStorage.setItem(ROUTINE_LOGS_STORAGE_KEY, JSON.stringify(trimmedLogs));
+      } catch (innerErr) {
+        console.warn('Unable to save routine logs to localStorage:', innerErr);
+      }
+    }
+  }
+
   /* ==========================================================================
      CANVAS BOUNDING BOX CROPPING UTILITY
      ========================================================================== */
@@ -2090,7 +2292,7 @@
   }
 
   /* ==========================================================================
-     AUDIO SYNTHESIS FEEDBACK & PITCH STEPPING
+     AUDIO & HAPTIC FEEDBACK WITH PITCH STEPPING
      ========================================================================== */
   let audioCtx = null;
 
@@ -2108,7 +2310,24 @@
     osc.stop(startTime + duration);
   }
 
+  function triggerHaptic(type) {
+    if (!('vibrate' in navigator)) return;
+    try {
+      if (type === 'landing') {
+        navigator.vibrate([45, 50, 45]);
+      } else if (type === 'complete') {
+        navigator.vibrate([35, 45, 70]);
+      } else if (type === 'transition') {
+        navigator.vibrate(15);
+      } else {
+        navigator.vibrate(25);
+      }
+    } catch (e) {}
+  }
+
   function triggerFeedback(type = 'tap') {
+    triggerHaptic(type);
+
     try {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -2331,6 +2550,12 @@
     }
   }
 
+  function getNextRoutineNumber() {
+    return routineLogHistory.length > 0
+      ? (Math.max(...routineLogHistory.map(r => r.routineNum)) + 1)
+      : 1;
+  }
+
   function startRoutine(mode) {
     if (mode) {
       currentInterface = mode;
@@ -2339,6 +2564,7 @@
     phase = 'routine';
     currentSkillIndex = 0;
     currentViewingLogIndex = -1;
+    currentRoutineTitle = `Routine #${getNextRoutineNumber()}`;
     skillDeductions = new Array(maxSkills).fill(0);
     skillThumbnails = new Array(maxSkills).fill(null);
     skillMatchScores = new Array(maxSkills).fill(null);
@@ -2381,6 +2607,7 @@
     phaseBadge.className = 'phase-badge badge-routine';
     updateCounter();
 
+    requestWakeLock();
     triggerFeedback('transition');
   }
 
@@ -2397,6 +2624,8 @@
 
   function enterReviewPhase() {
     phase = 'review';
+    releaseWakeLock();
+
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
     multiTouchScreen.classList.add('hidden');
@@ -2411,6 +2640,7 @@
     updateCounter();
 
     currentViewingLogIndex = -1;
+    currentRoutineTitle = `Routine #${getNextRoutineNumber()}`;
 
     renderReviewSummary();
     triggerFeedback('complete');
@@ -2999,6 +3229,74 @@
     });
   }
 
+  /* ==========================================================================
+     REVIEW TITLE & DYNAMIC RECENT-NAME CHIPS
+     ========================================================================== */
+  function handleRoutineTitleInput() {
+    if (!routineTitleInput) return;
+    currentRoutineTitle = routineTitleInput.value;
+    if (currentViewingLogIndex >= 0 && currentViewingLogIndex < routineLogHistory.length) {
+      const fallbackTitle = `Routine #${routineLogHistory[currentViewingLogIndex].routineNum}`;
+      routineLogHistory[currentViewingLogIndex].title = currentRoutineTitle.trim() || fallbackTitle;
+      persistLogsToStorage();
+    }
+  }
+
+  function clearRoutineTitleInput() {
+    if (!routineTitleInput) return;
+    routineTitleInput.value = '';
+    currentRoutineTitle = '';
+    routineTitleInput.focus();
+  }
+
+  function applyTitleChip(label) {
+    if (!routineTitleInput) return;
+    routineTitleInput.value = label;
+    currentRoutineTitle = label;
+    triggerFeedback('transition');
+    if (currentViewingLogIndex >= 0 && currentViewingLogIndex < routineLogHistory.length) {
+      routineLogHistory[currentViewingLogIndex].title = label;
+      persistLogsToStorage();
+    }
+  }
+
+  function renderRecentTitleChips() {
+    if (!recentTitleChips) return;
+
+    const seen = new Set();
+    const uniqueNames = [];
+
+    for (let i = routineLogHistory.length - 1; i >= 0; i--) {
+      const title = (routineLogHistory[i].title || '').trim();
+      if (!title) continue;
+      if (/^Routine #\d+$/i.test(title)) continue;
+
+      const lowerKey = title.toLowerCase();
+      if (!seen.has(lowerKey)) {
+        seen.add(lowerKey);
+        uniqueNames.push(title);
+      }
+      if (uniqueNames.length >= 8) break;
+    }
+
+    if (uniqueNames.length === 0) {
+      recentTitleChips.classList.add('hidden');
+      recentTitleChips.innerHTML = '';
+      return;
+    }
+
+    recentTitleChips.innerHTML = '';
+    uniqueNames.forEach(name => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'title-chip';
+      chip.textContent = name;
+      chip.onclick = () => applyTitleChip(name);
+      recentTitleChips.appendChild(chip);
+    });
+    recentTitleChips.classList.remove('hidden');
+  }
+
   function adjustSkillsCount(delta) {
     triggerFeedback('transition');
     const maxSkills = getMaxSkills();
@@ -3009,6 +3307,11 @@
   function renderReviewSummary() {
     const maxSkills = getMaxSkills();
     document.getElementById('skillsCountDisplay').textContent = skillsPerformed;
+
+    if (routineTitleInput) {
+      routineTitleInput.value = currentRoutineTitle;
+    }
+    renderRecentTitleChips();
 
     const isLandingActive = (skillsPerformed === maxSkills);
 
@@ -3191,11 +3494,14 @@
 
     const netScore = Math.max(0, baseScore - totalDeduct);
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const rawTitleInput = routineTitleInput ? routineTitleInput.value.trim() : currentRoutineTitle.trim();
 
     if (currentViewingLogIndex >= 0 && currentViewingLogIndex < routineLogHistory.length) {
       const existingEntry = routineLogHistory[currentViewingLogIndex];
+      const finalTitle = rawTitleInput || `Routine #${existingEntry.routineNum}`;
       routineLogHistory[currentViewingLogIndex] = {
         ...existingEntry,
+        title: finalTitle,
         discipline: currentDiscipline,
         skillsPerformed: skillsPerformed,
         maxSkills: maxSkills,
@@ -3209,9 +3515,11 @@
         netScore: netScore
       };
     } else {
-      const nextNum = routineLogHistory.length > 0 ? (Math.max(...routineLogHistory.map(r => r.routineNum)) + 1) : 1;
+      const nextNum = getNextRoutineNumber();
+      const finalTitle = rawTitleInput || `Routine #${nextNum}`;
       const logEntry = {
         routineNum: nextNum,
+        title: finalTitle,
         time: timeStr,
         discipline: currentDiscipline,
         interface: currentInterface.toUpperCase(),
@@ -3231,6 +3539,7 @@
     }
 
     updateLogBadges();
+    persistLogsToStorage();
   }
 
   function loadLogEntryToReview(logIndex, closeModal = true) {
@@ -3240,6 +3549,7 @@
     currentViewingLogIndex = logIndex;
     currentDiscipline = entry.discipline;
     skillsPerformed = entry.skillsPerformed;
+    currentRoutineTitle = entry.title || `Routine #${entry.routineNum}`;
 
     const maxSkills = getMaxSkills();
     skillDeductions = new Array(maxSkills).fill(0);
@@ -3261,6 +3571,8 @@
     }
 
     phase = 'review';
+    releaseWakeLock();
+
     setupScreen.classList.add('hidden');
     gridScreen.classList.add('hidden');
     swipeScreen.classList.add('hidden');
@@ -3291,6 +3603,14 @@
     logModal.classList.add('hidden');
   }
 
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   function renderLogList() {
     logListContainer.innerHTML = '';
 
@@ -3305,6 +3625,10 @@
       card.className = 'log-entry-card';
       card.onclick = () => loadLogEntryToReview(actualIndex, true);
 
+      const defaultTitle = `Routine #${entry.routineNum}`;
+      const displayTitle = escapeHtml(entry.title || defaultTitle);
+      const hasCustomTitle = entry.title && entry.title.trim() !== defaultTitle;
+
       let breakdownStr = entry.skillDeductions.slice(0, entry.skillsPerformed).map((d, idx) => `S${idx+1}: -${d.toFixed(1)}`).join(' | ');
       if (entry.skillsPerformed === entry.maxSkills && entry.landingDeduction !== null) {
         breakdownStr += ` | L: -${entry.landingDeduction.toFixed(1)}`;
@@ -3313,10 +3637,11 @@
       card.innerHTML = `
         <div class="log-entry-header">
           <div class="log-num-badge">
-            <span>Routine #${entry.routineNum}</span>
+            <span>${displayTitle}</span>
+            ${hasCustomTitle ? `<span class="log-sub-num">#${entry.routineNum}</span>` : ''}
             <span class="log-disc-tag">${entry.discipline}</span>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
             <span class="log-time">🕒 ${entry.time}</span>
             <button class="btn-delete-log" onclick="deleteLogEntry(event, ${actualIndex})" title="Delete routine">🗑️</button>
           </div>
@@ -3345,7 +3670,7 @@
 
     if (index < 0 || index >= routineLogHistory.length) return;
 
-    const removedNum = routineLogHistory[index].routineNum;
+    const removedLabel = routineLogHistory[index].title || `Routine #${routineLogHistory[index].routineNum}`;
     routineLogHistory.splice(index, 1);
 
     if (currentViewingLogIndex === index) {
@@ -3355,6 +3680,7 @@
     }
 
     updateLogBadges();
+    persistLogsToStorage();
     renderLogList();
 
     if (phase === 'review') {
@@ -3362,7 +3688,7 @@
     }
 
     triggerFeedback('transition');
-    showUndoToast(`Routine #${removedNum} deleted`);
+    showUndoToast(`${removedLabel} deleted`);
   }
 
   function clearLogHistory() {
@@ -3372,6 +3698,7 @@
       routineCounter = 1;
       currentViewingLogIndex = -1;
       updateLogBadges();
+      persistLogsToStorage();
       renderLogList();
       if (phase === 'review') {
         renderReviewSummary();
@@ -3391,7 +3718,7 @@
       return;
     }
 
-    let csvContent = "Routine #,Time,Discipline,Interface,Skills Performed,Max Skills,Total Deductions,Net Score,Deduction Breakdown\n";
+    let csvContent = "Routine #,Title,Time,Discipline,Interface,Skills Performed,Max Skills,Total Deductions,Net Score,Deduction Breakdown\n";
 
     routineLogHistory.forEach(entry => {
       let breakdownStr = entry.skillDeductions.slice(0, entry.skillsPerformed).map((d, idx) => `S${idx+1}:-${d.toFixed(1)}`).join(' ');
@@ -3399,8 +3726,11 @@
         breakdownStr += ` L:-${entry.landingDeduction.toFixed(1)}`;
       }
 
+      const safeTitle = (entry.title || `Routine #${entry.routineNum}`).replace(/"/g, '""');
+
       const row = [
         entry.routineNum,
+        `"${safeTitle}"`,
         `"${entry.time}"`,
         entry.discipline,
         entry.interface,
@@ -3431,6 +3761,8 @@
     }
 
     phase = 'setup';
+    releaseWakeLock();
+
     currentViewingLogIndex = -1;
     const maxSkills = getMaxSkills();
     skillsPerformed = maxSkills;
@@ -3459,8 +3791,9 @@
     }
   }
 
-  // Restore any saved custom digit patterns on startup
+  // Restore saved custom digit patterns and routine history logs on startup
   loadCustomTemplatesFromStorage();
+  loadLogsFromStorage();
 </script>
 </body>
 </html>
