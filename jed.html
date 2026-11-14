@@ -649,6 +649,17 @@
     .btn-queue-add:active { background: var(--fig-green); color: #111; }
     .btn-swipe-start { background: linear-gradient(135deg, var(--fig-purple), var(--fig-pink)); }
     .btn-recognizer-start { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; }
+    .btn-keyboard-start { background: linear-gradient(135deg, var(--fig-blue), var(--fig-orange)); color: #111; }
+
+    /* Hide Keyboard / Numpad input mode on mobile / coarse-pointer touch devices */
+    @media (hover: none) and (pointer: coarse), (max-width: 768px) {
+      .keyboard-only-ui {
+        display: none !important;
+      }
+      .input-mode-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
 
     /* LIVE VIDEO JUDGING CONTAINER */
     .video-judging-wrapper {
@@ -1929,16 +1940,17 @@
             <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"></path>
             <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
           </svg>
-          4. Choose Live Gesture Interface
+          4. Choose Live Judging Input Interface
         </div>
-        <div class="section-desc">Perform gesture swipes or write digits over the playing video. Timestamps and cropped drawing thumbnails lock in automatically per gesture.</div>
+        <div class="section-desc">Perform gesture swipes, write digits over the playing video, or type deductions directly using a PC keyboard / numpad.</div>
 
-        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-top:4px;">
-          <button class="btn-primary btn-swipe-start" onclick="startVideoJudging('swipe')">Start Directional Swipe</button>
-          <button class="btn-primary btn-recognizer-start" onclick="startVideoJudging('recognizer')">Start Number Recognizer</button>
+        <div class="input-mode-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:4px;">
+          <button class="btn-primary btn-swipe-start" onclick="startVideoJudging('swipe')">Directional Swipe</button>
+          <button class="btn-primary btn-recognizer-start" onclick="startVideoJudging('recognizer')">Number Recognizer</button>
+          <button class="btn-primary btn-keyboard-start keyboard-only-ui" onclick="startVideoJudging('keyboard')">⌨️ Keyboard / Numpad</button>
         </div>
 
-        <!-- Swipe Gesture Guide / Cheat Sheet Reminder -->
+        <!-- Swipe & Keyboard Guide / Cheat Sheet Reminder -->
         <div class="swipe-cheat-sheet">
           <div class="cheat-item"><span class="cheat-arrow">👆</span><span>Tap: <span class="cheat-val">-0.0</span></span></div>
           <div class="cheat-item"><span class="cheat-arrow">⬆️</span><span>Up: <span class="cheat-val">-0.1</span></span></div>
@@ -1946,6 +1958,10 @@
           <div class="cheat-item"><span class="cheat-arrow">⬇️</span><span>Down: <span class="cheat-val">-0.3</span></span></div>
           <div class="cheat-item"><span class="cheat-arrow">⬅️</span><span>Left: <span class="cheat-val">-0.4</span></span></div>
           <div class="cheat-item"><span class="cheat-arrow">⭕</span><span>Circle: <span class="cheat-val">-0.5</span></span></div>
+        </div>
+        <div class="swipe-cheat-sheet keyboard-only-ui" style="margin-top:4px;">
+          <div class="cheat-item" style="grid-column: span 2;"><span class="cheat-arrow">⌨️</span><span>Skills Keys: <span class="cheat-val">0, 1, 2, 3, 4, 5</span> (-0.0 to -0.5)</span></div>
+          <div class="cheat-item"><span class="cheat-arrow">🎯</span><span>Landing: <span class="cheat-val">0–3, 5, 9 (-1.0)</span></span></div>
         </div>
       </div>
 
@@ -3279,11 +3295,15 @@
 
     initCanvasOverlaySize();
 
+    if (gestureOverlayCanvas) {
+      gestureOverlayCanvas.style.pointerEvents = (mode === 'keyboard') ? 'none' : 'auto';
+    }
+
     judgingVideo.currentTime = 0;
     judgingVideo.play().catch(() => {});
     document.getElementById('playPauseIcon').textContent = '⏸️';
 
-    updateLiveHud(0.0, "Ready for input");
+    updateLiveHud(0.0, mode === 'keyboard' ? "Type 0–5 (Landing: 0–3, 5, 9)" : "Ready for input");
   }
 
   function initCanvasOverlaySize() {
@@ -3497,6 +3517,53 @@
     gestureOverlayCanvas.addEventListener('pointerup', handleGesturePointerEnd);
     gestureOverlayCanvas.addEventListener('pointercancel', handleGesturePointerEnd);
   }
+
+  function handleLiveKeyboardDeduction(event) {
+    if (currentInterface !== 'keyboard') return;
+    if (phase !== 'routine' && phase !== 'landing') return;
+    if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+
+    const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+    if (activeTag === 'input' || activeTag === 'textarea') return;
+
+    // Resolve digit from event.code (Numpad0-9 / Digit0-9) or event.key
+    let digit = null;
+    if (/^Numpad([0-9])$/.test(event.code)) {
+      digit = event.code.replace('Numpad', '');
+    } else if (/^Digit([0-9])$/.test(event.code)) {
+      digit = event.code.replace('Digit', '');
+    } else if (/^[0-9]$/.test(event.key)) {
+      digit = event.key;
+    }
+
+    if (digit === null) return;
+
+    const exactTime = judgingVideo ? judgingVideo.currentTime : 0;
+
+    if (phase === 'routine') {
+      if (['0', '1', '2', '3', '4', '5'].includes(digit)) {
+        event.preventDefault();
+        const val = parseInt(digit, 10) * 0.1;
+        recordLiveDeduction(val, `Key ${digit} (-${val.toFixed(1)})`, null, null, exactTime);
+      }
+    } else if (phase === 'landing') {
+      // For landing: ignore 4, map 0,1,2,3,5 -> 0.0..0.5, and map 9 -> 1.0 (10 deduction)
+      if (digit === '4') {
+        event.preventDefault();
+        return;
+      }
+      if (['0', '1', '2', '3', '5'].includes(digit)) {
+        event.preventDefault();
+        const val = parseInt(digit, 10) * 0.1;
+        recordLiveDeduction(val, `Key ${digit} (-${val.toFixed(1)})`, null, null, exactTime);
+      } else if (digit === '9') {
+        event.preventDefault();
+        recordLiveDeduction(1.0, `Key 9 (-1.0)`, null, null, exactTime);
+      }
+    }
+  }
+
+  document.addEventListener('keydown', handleLiveKeyboardDeduction);
 
   function processSwipePoints(points, thumbData, exactTime) {
     if (!points || points.length === 0) return;
