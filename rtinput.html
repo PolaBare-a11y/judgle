@@ -836,16 +836,19 @@
     .review-title-input-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      background: #141321;
-      border: 1px solid var(--border-col);
+      gap: 8px;
+      background: #161526;
+      border: 1px dashed var(--fig-blue);
       border-radius: 8px;
-      padding: 4px 10px;
+      padding: 6px 10px;
+      transition: border-style 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
     }
 
     .review-title-input-row:focus-within {
+      border-style: solid;
       border-color: var(--fig-blue);
-      background: #19182b;
+      background: #1c1b30;
+      box-shadow: 0 0 0 2px rgba(68, 149, 229, 0.2);
     }
 
     .title-input-icon {
@@ -862,23 +865,38 @@
       color: var(--text-main);
       font-size: 0.88rem;
       font-weight: 700;
-      padding: 3px 0;
+      padding: 2px 0;
       width: 100%;
     }
 
     .routine-title-input::placeholder {
-      color: var(--text-sub);
+      color: #9ba0b8;
       font-weight: 500;
+    }
+
+    .title-edit-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--fig-blue);
+      background: rgba(68, 149, 229, 0.15);
+      border: 1px solid rgba(68, 149, 229, 0.35);
+      border-radius: 4px;
+      padding: 2px 6px;
+      pointer-events: none;
+      flex-shrink: 0;
     }
 
     .btn-clear-title {
       background: transparent;
       border: none;
       color: var(--text-sub);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       cursor: pointer;
       padding: 2px 4px;
       line-height: 1;
+      flex-shrink: 0;
     }
 
     .btn-clear-title:active {
@@ -1036,14 +1054,26 @@
 
     .sk-val {
       font-size: 1.05rem;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-main);
       min-width: 44px;
       text-align: center;
     }
 
-    .landing-row .sk-val {
-      color: var(--fig-pink);
+    /* FIG DEDUCTION SEVERITY COLOURS (0/1 = Green, 2/3 = Orange, 4/5/10 = Red) */
+    .sk-val.deduct-col-green,
+    .landing-row .sk-val.deduct-col-green {
+      color: var(--fig-green);
+    }
+
+    .sk-val.deduct-col-orange,
+    .landing-row .sk-val.deduct-col-orange {
+      color: var(--fig-orange);
+    }
+
+    .sk-val.deduct-col-red,
+    .landing-row .sk-val.deduct-col-red {
+      color: var(--fig-red);
     }
 
     .disabled-row .sk-val {
@@ -1739,17 +1769,17 @@
       <!-- LOG TITLE / ATHLETE LABEL INPUT + RECENT CHIPS -->
       <div class="review-title-section">
         <div class="review-title-input-row">
-          <span class="title-input-icon">🏷️</span>
+          <span class="title-input-icon">✏️</span>
           <input
             type="text"
             id="routineTitleInput"
             class="routine-title-input"
-            placeholder="Routine title / Athlete name..."
+            placeholder="Tap to add athlete / routine title..."
             maxlength="40"
-            onfocus="this.select()"
             oninput="handleRoutineTitleInput()"
           />
-          <button type="button" class="btn-clear-title" onclick="clearRoutineTitleInput()" title="Clear title">✕</button>
+          <span id="titleEditBadge" class="title-edit-badge">Optional</span>
+          <button type="button" id="btnClearTitle" class="btn-clear-title hidden" onclick="clearRoutineTitleInput()" title="Clear title">✕</button>
         </div>
         <div id="recentTitleChips" class="recent-chips-row hidden"></div>
       </div>
@@ -2115,6 +2145,8 @@
   const reviewLogCountBadge  = document.getElementById('reviewLogCountBadge');
   const btnResetPatterns     = document.getElementById('btnResetPatterns');
   const routineTitleInput    = document.getElementById('routineTitleInput');
+  const titleEditBadge       = document.getElementById('titleEditBadge');
+  const btnClearTitle        = document.getElementById('btnClearTitle');
   const recentTitleChips     = document.getElementById('recentTitleChips');
 
   const canvas               = document.getElementById('gestureCanvas');
@@ -2240,7 +2272,6 @@
     try {
       localStorage.setItem(ROUTINE_LOGS_STORAGE_KEY, JSON.stringify(routineLogHistory));
     } catch (e) {
-      // If storage quota is exceeded due to base64 thumbnails on older logs, strip thumbnails from oldest logs and retry
       try {
         const trimmedLogs = routineLogHistory.map((entry, idx) => {
           if (idx < routineLogHistory.length - 10) {
@@ -2564,7 +2595,7 @@
     phase = 'routine';
     currentSkillIndex = 0;
     currentViewingLogIndex = -1;
-    currentRoutineTitle = `Routine #${getNextRoutineNumber()}`;
+    currentRoutineTitle = '';
     skillDeductions = new Array(maxSkills).fill(0);
     skillThumbnails = new Array(maxSkills).fill(null);
     skillMatchScores = new Array(maxSkills).fill(null);
@@ -2640,7 +2671,7 @@
     updateCounter();
 
     currentViewingLogIndex = -1;
-    currentRoutineTitle = `Routine #${getNextRoutineNumber()}`;
+    currentRoutineTitle = '';
 
     renderReviewSummary();
     triggerFeedback('complete');
@@ -3232,9 +3263,21 @@
   /* ==========================================================================
      REVIEW TITLE & DYNAMIC RECENT-NAME CHIPS
      ========================================================================== */
+  function syncTitleFieldControls() {
+    const hasText = routineTitleInput && routineTitleInput.value.trim().length > 0;
+    if (titleEditBadge) {
+      titleEditBadge.classList.toggle('hidden', hasText);
+    }
+    if (btnClearTitle) {
+      btnClearTitle.classList.toggle('hidden', !hasText);
+    }
+  }
+
   function handleRoutineTitleInput() {
     if (!routineTitleInput) return;
     currentRoutineTitle = routineTitleInput.value;
+    syncTitleFieldControls();
+
     if (currentViewingLogIndex >= 0 && currentViewingLogIndex < routineLogHistory.length) {
       const fallbackTitle = `Routine #${routineLogHistory[currentViewingLogIndex].routineNum}`;
       routineLogHistory[currentViewingLogIndex].title = currentRoutineTitle.trim() || fallbackTitle;
@@ -3246,6 +3289,11 @@
     if (!routineTitleInput) return;
     routineTitleInput.value = '';
     currentRoutineTitle = '';
+    syncTitleFieldControls();
+    if (currentViewingLogIndex >= 0 && currentViewingLogIndex < routineLogHistory.length) {
+      routineLogHistory[currentViewingLogIndex].title = `Routine #${routineLogHistory[currentViewingLogIndex].routineNum}`;
+      persistLogsToStorage();
+    }
     routineTitleInput.focus();
   }
 
@@ -3253,6 +3301,7 @@
     if (!routineTitleInput) return;
     routineTitleInput.value = label;
     currentRoutineTitle = label;
+    syncTitleFieldControls();
     triggerFeedback('transition');
     if (currentViewingLogIndex >= 0 && currentViewingLogIndex < routineLogHistory.length) {
       routineLogHistory[currentViewingLogIndex].title = label;
@@ -3297,6 +3346,15 @@
     recentTitleChips.classList.remove('hidden');
   }
 
+  /* ==========================================================================
+     DEDUCTION SEVERITY COLOUR MAPPING (0/1 = Green, 2/3 = Orange, 4/5/10 = Red)
+     ========================================================================== */
+  function getDeductionColorClass(val) {
+    if (val <= 0.101) return 'deduct-col-green';
+    if (val <= 0.301) return 'deduct-col-orange';
+    return 'deduct-col-red';
+  }
+
   function adjustSkillsCount(delta) {
     triggerFeedback('transition');
     const maxSkills = getMaxSkills();
@@ -3311,6 +3369,7 @@
     if (routineTitleInput) {
       routineTitleInput.value = currentRoutineTitle;
     }
+    syncTitleFieldControls();
     renderRecentTitleChips();
 
     const isLandingActive = (skillsPerformed === maxSkills);
@@ -3349,6 +3408,7 @@
       const thumbUrl = skillThumbnails[i];
       const matchScore = skillMatchScores[i];
       const scoreStr = (matchScore !== null && matchScore !== undefined) ? `${matchScore}%` : '';
+      const valColorClass = isPerformed ? getDeductionColorClass(val) : '';
 
       row.innerHTML = `
         <span class="sk-lbl">Skill ${i + 1} ${isPerformed ? '' : '<small>(Excl)</small>'}</span>
@@ -3362,7 +3422,7 @@
         ` : ''}
         <div class="value-controls-group">
           ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, -1)">−</button>` : ''}
-          <span class="sk-val">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
+          <span class="sk-val ${valColorClass}">${isPerformed ? `-${val.toFixed(1)}` : '—'}</span>
           ${isPerformed ? `<button class="btn-step" onclick="stepSkillValue(${i}, 1)">+</button>` : ''}
         </div>
       `;
@@ -3372,6 +3432,7 @@
     const landingRow = document.createElement('div');
     landingRow.className = `review-row landing-row ${isLandingActive ? '' : 'disabled-row'}`;
     const landingScoreStr = (landingMatchScore !== null && landingMatchScore !== undefined) ? `${landingMatchScore}%` : '';
+    const landingColorClass = isLandingActive ? getDeductionColorClass(landingDeduction) : '';
 
     landingRow.innerHTML = `
       <span class="sk-lbl">Landing ${isLandingActive ? '' : '<small>(Excl)</small>'}</span>
@@ -3385,7 +3446,7 @@
       ` : ''}
       <div class="value-controls-group">
         ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(-1)">−</button>` : ''}
-        <span class="sk-val">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
+        <span class="sk-val ${landingColorClass}">${isLandingActive ? `-${landingDeduction.toFixed(1)}` : '—'}</span>
         ${isLandingActive ? `<button class="btn-step" onclick="stepLandingValue(1)">+</button>` : ''}
       </div>
     `;
@@ -3549,7 +3610,9 @@
     currentViewingLogIndex = logIndex;
     currentDiscipline = entry.discipline;
     skillsPerformed = entry.skillsPerformed;
-    currentRoutineTitle = entry.title || `Routine #${entry.routineNum}`;
+
+    const rawSavedTitle = (entry.title || '').trim();
+    currentRoutineTitle = /^Routine #\d+$/i.test(rawSavedTitle) ? '' : rawSavedTitle;
 
     const maxSkills = getMaxSkills();
     skillDeductions = new Array(maxSkills).fill(0);
