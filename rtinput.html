@@ -905,10 +905,12 @@
 
     .recent-chips-row {
       display: flex;
+      flex-wrap: nowrap;
       align-items: center;
       gap: 6px;
       overflow-x: auto;
-      padding-bottom: 2px;
+      overflow-y: hidden;
+      height: 24px;
       scrollbar-width: none;
     }
 
@@ -921,10 +923,13 @@
       border: 1px solid var(--border-col);
       color: #d0d0e0;
       border-radius: 12px;
-      padding: 3px 10px;
+      padding: 3px 9px;
       font-size: 0.72rem;
       font-weight: 600;
       white-space: nowrap;
+      max-width: 115px;
+      overflow: hidden;
+      text-overflow: ellipsis;
       cursor: pointer;
       flex-shrink: 0;
     }
@@ -1766,7 +1771,7 @@
         <button class="btn-log-nav" id="btnNavNext" onclick="cycleLogEntry(1)">▶</button>
       </div>
 
-      <!-- LOG TITLE / ATHLETE LABEL INPUT + RECENT CHIPS -->
+      <!-- LOG TITLE / ATHLETE LABEL INPUT + RECENT CHIPS (ROLLING LAST 4) -->
       <div class="review-title-section">
         <div class="review-title-input-row">
           <span class="title-input-icon">✏️</span>
@@ -2833,7 +2838,6 @@
         ctx.lineJoin = 'round';
 
         if (pathLen < 30) {
-          // Tap gesture: render a clean dot
           ctx.beginPath();
           ctx.arc(startPt.x, startPt.y, 10, 0, Math.PI * 2);
           ctx.fill();
@@ -2842,12 +2846,10 @@
           minY = Math.min(minY, startPt.y - 10);
           maxY = Math.max(maxY, startPt.y + 10);
         } else {
-          // Origin marker dot so start vs. end is clear
           ctx.beginPath();
           ctx.arc(startPt.x, startPt.y, 6, 0, Math.PI * 2);
           ctx.fill();
 
-          // Find reference point ~12px back along the trail for a stable tangent angle
           let refPt = pointerPoints[0];
           for (let i = pointerPoints.length - 2; i >= 0; i--) {
             const dx = endPt.x - pointerPoints[i].x;
@@ -2874,7 +2876,6 @@
           ctx.lineTo(rightX, rightY);
           ctx.stroke();
 
-          // Expand bounding box so arrowhead wings aren't clipped
           minX = Math.min(minX, leftX, rightX);
           maxX = Math.max(maxX, leftX, rightX);
           minY = Math.min(minY, leftY, rightY);
@@ -3329,7 +3330,7 @@
   }
 
   /* ==========================================================================
-     REVIEW TITLE & DYNAMIC RECENT-NAME CHIPS
+     REVIEW TITLE & DYNAMIC RECENT-NAME CHIPS (ROLLING LAST 4, SINGLE ROW)
      ========================================================================== */
   function syncTitleFieldControls() {
     const hasText = routineTitleInput && routineTitleInput.value.trim().length > 0;
@@ -3393,7 +3394,7 @@
         seen.add(lowerKey);
         uniqueNames.push(title);
       }
-      if (uniqueNames.length >= 8) break;
+      if (uniqueNames.length >= 4) break;
     }
 
     if (uniqueNames.length === 0) {
@@ -3408,6 +3409,7 @@
       chip.type = 'button';
       chip.className = 'title-chip';
       chip.textContent = name;
+      chip.title = name;
       chip.onclick = () => applyTitleChip(name);
       recentTitleChips.appendChild(chip);
     });
