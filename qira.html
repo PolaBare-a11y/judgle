@@ -2280,8 +2280,8 @@
         const d = Math.max(nx, ny * 0.92);
         if (d <= 0.32) return 0.0;
         if (d <= 0.56) return 0.1;
-        if (d <= 0.78) return 0.2;
-        return 0.3;
+        if (d <= 0.78) return 0.3;
+        return 0.5;
       }
 
       function generateLandingInZone(targetDed, tof) {
@@ -2291,8 +2291,8 @@
         const bands = {
           0.0: [0.02, 0.30],
           0.1: [0.34, 0.54],
-          0.2: [0.58, 0.76],
-          0.3: [0.80, 0.96]
+          0.3: [0.58, 0.76],
+          0.5: [0.80, 0.96]
         };
         const [minR, maxR] = bands[targetDed] || [0.05, 0.90];
         const primaryR = minR + Math.random() * (maxR - minR);
@@ -2311,7 +2311,7 @@
 
       let routineZonePool = [];
       function resetRoutineZonePool() {
-        const baseZones = [0.0, 0.0, 0.0, 0.1, 0.1, 0.1, 0.2, 0.2, 0.3, 0.3];
+        const baseZones = [0.0, 0.0, 0.0, 0.1, 0.1, 0.1, 0.3, 0.3, 0.5, 0.5];
         for (let i = baseZones.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [baseZones[i], baseZones[j]] = [baseZones[j], baseZones[i]];
@@ -2341,21 +2341,21 @@
                 routineNum: 1,
                 athlete: { last: "UNNO", first: "Hiroto", order: 1 },
                 warmups: 5,
-                zones: [0.0, 0.0, 0.1, 0.1, 0.2, 0.1, 0.0, 0.1, 0.2, 0.1],
+                zones: [0.0, 0.0, 0.1, 0.1, 0.3, 0.1, 0.0, 0.1, 0.5, 0.1],
                 breakAfter: 12.0
               },
               {
                 routineNum: 2,
                 athlete: { last: "LITVINOVICH", first: "Ivan", order: 3 },
                 warmups: 6,
-                zones: [0.0, 0.1, 0.0, 0.1, 0.1, 0.0, 0.2, 0.1, 0.1, 0.0],
+                zones: [0.0, 0.1, 0.0, 0.1, 0.1, 0.0, 0.3, 0.1, 0.1, 0.0],
                 breakAfter: 12.5
               },
               {
                 routineNum: 3,
                 athlete: { last: "MORANTE", first: "Allan", order: 5 },
                 warmups: 5,
-                zones: [0.1, 0.1, 0.0, 0.2, 0.1, 0.2, 0.1, 0.0, 0.1, 0.1],
+                zones: [0.1, 0.1, 0.0, 0.3, 0.1, 0.3, 0.1, 0.0, 0.1, 0.1],
                 breakAfter: 3.0
               }
             ]
@@ -2378,7 +2378,7 @@
                 routineNum: 3,
                 athlete: { last: "SAKAI", first: "Ryosuke", order: 6 },
                 warmups: 5,
-                zones: [0.1, 0.0, 0.0, 0.2, 0.1, 0.3, 0.1, 0.0, 0.2, 0.1],
+                zones: [0.1, 0.0, 0.0, 0.3, 0.1, 0.5, 0.1, 0.0, 0.3, 0.1],
                 breakAfter: 3.0
               }
             ];
