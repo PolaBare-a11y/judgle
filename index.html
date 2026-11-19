@@ -473,12 +473,8 @@
             }
         }
 
-        const savedTheme = localStorage.getItem("judgle_theme");
-        if (savedTheme) {
-            applyTheme(savedTheme);
-        } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
-            applyTheme("light");
-        }
+        const savedTheme = localStorage.getItem("judgle_theme") || "dark";
+        applyTheme(savedTheme);
 
         themeToggleBtn.addEventListener("click", () => {
             const isLight = document.body.classList.contains("light-mode");
