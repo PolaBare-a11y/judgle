@@ -580,16 +580,18 @@
 
     /* VIDEO UPLOAD DROP ZONE */
     .video-file-dropzone {
-      border: 2px dashed var(--fig-blue);
+      border: 1.5px dashed var(--fig-blue);
       background: var(--dropzone-soft-bg);
-      border-radius: 12px;
-      padding: 24px 16px;
-      text-align: center;
+      border-radius: 8px;
+      padding: 9px 14px;
+      min-height: 42px;
       cursor: pointer;
       transition: background 0.15s ease, border-color 0.15s ease;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
       gap: 8px;
     }
 
@@ -598,21 +600,20 @@
       border-color: var(--fig-green);
     }
 
-    .dropzone-icon { font-size: 2.2rem; }
-    .dropzone-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
-    .dropzone-sub { font-size: 0.75rem; color: var(--text-sub); }
+    .dropzone-icon { font-size: 1.15rem; line-height: 1; }
+    .dropzone-title { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
+    .dropzone-sub { font-size: 0.72rem; color: var(--text-sub); }
 
     .selected-video-badge {
-      margin-top: 6px;
-      padding: 4px 10px;
+      padding: 3px 9px;
       background: var(--fig-green);
       color: #111;
       font-weight: 700;
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       border-radius: 6px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
 
     /* BUTTON STYLING */
@@ -638,6 +639,7 @@
     }
 
     .btn-primary:active { opacity: 0.9; transform: scale(0.99); }
+    .btn-primary:disabled { opacity: 0.42; cursor: not-allowed; transform: none; }
     .btn-secondary { background: #1e1c2e; border: 1px solid var(--border-col); color: var(--text-sub); }
     body.theme-mono .btn-secondary { background: #1e1e24; color: var(--text-sub); }
     .btn-secondary:active { background: var(--fig-purple); color: var(--text-main); }
@@ -650,6 +652,289 @@
     .btn-swipe-start { background: linear-gradient(135deg, var(--fig-purple), var(--fig-pink)); }
     .btn-recognizer-start { background: linear-gradient(135deg, var(--fig-green), var(--fig-blue)); color: #111; }
     .btn-keyboard-start { background: linear-gradient(135deg, var(--fig-blue), var(--fig-orange)); color: #111; }
+
+    /* ==========================================================================
+       SECTION 7: BATCH CSV SYNC & SPACEBAR WAVE ANCHOR WORKSPACE
+       ========================================================================== */
+    .batch-sync-section {
+      border-color: var(--fig-purple);
+      background: linear-gradient(180deg, rgba(125, 95, 179, 0.08) 0%, var(--card-bg) 100%);
+    }
+
+    .batch-sync-layout {
+      display: grid;
+      grid-template-columns: 310px minmax(0, 1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .batch-sync-layout { grid-template-columns: 1fr; }
+    }
+
+    .batch-sync-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bs-dropzone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 68px;
+      border: 2px dashed var(--border-col);
+      border-radius: 10px;
+      padding: 10px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.15s border-color, 0.15s background;
+      background: rgba(8, 8, 13, 0.72);
+    }
+
+    .bs-dropzone:hover, .bs-dropzone.dragover {
+      border-color: var(--fig-blue);
+      background: var(--dropzone-hover-bg);
+    }
+
+    .bs-dropzone strong {
+      font-size: 0.84rem;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    .bs-dropzone span {
+      font-size: 0.74rem;
+      color: var(--text-sub);
+      word-break: break-word;
+    }
+
+    .bs-routine-list {
+      max-height: 330px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .bs-routine-item {
+      background: #0b0b12;
+      border: 1px solid var(--border-col);
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bs-routine-item.selected {
+      border-color: var(--fig-blue);
+      background: var(--accent-soft-bg);
+    }
+
+    .bs-routine-item .meta {
+      font-size: 0.72rem;
+      color: var(--text-sub);
+    }
+
+    .bs-status-pill {
+      font-size: 0.68rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .bs-st-unmatched { background: rgba(244, 67, 54, 0.2); color: #fca5a5; }
+    .bs-st-ready     { background: rgba(138, 138, 158, 0.22); color: #cbd5e1; }
+    .bs-st-scanned   { background: rgba(125, 95, 179, 0.28); color: #d8b4fe; }
+    .bs-st-queued    { background: rgba(155, 217, 139, 0.25); color: var(--fig-green); }
+
+    .bs-workspace {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .bs-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bs-btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .bs-video-stage {
+      position: relative;
+      background: #000;
+      border-radius: 10px;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      max-height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-col);
+    }
+
+    .bs-video-stage video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .bs-hud-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 12px;
+    }
+
+    .bs-hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .bs-hud-title-box {
+      background: rgba(10, 10, 15, 0.82);
+      border-left: 3px solid var(--fig-blue);
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+
+    .bs-hud-title-box .t1 { font-weight: 800; font-size: 0.85rem; }
+    .bs-hud-title-box .t2 { font-size: 0.72rem; color: var(--text-sub); }
+
+    .bs-hud-score-box {
+      background: rgba(10, 10, 15, 0.85);
+      padding: 5px 10px;
+      border-radius: 8px;
+      text-align: right;
+      border: 1px solid var(--border-col);
+    }
+
+    .bs-hud-score-box .lbl { font-size: 0.64rem; color: var(--text-sub); text-transform: uppercase; }
+    .bs-hud-score-box .val { font-size: 1.1rem; font-weight: 900; color: var(--fig-green); }
+
+    .bs-skill-popup {
+      align-self: center;
+      background: rgba(10, 10, 15, 0.9);
+      border: 2px solid var(--fig-green);
+      border-radius: 10px;
+      padding: 8px 16px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(6px) scale(0.96);
+      transition: 0.15s ease;
+    }
+
+    .bs-skill-popup.visible { opacity: 1; transform: translateY(0) scale(1); }
+    .bs-skill-popup .sp-head { font-size: 0.74rem; color: var(--text-sub); font-weight: 800; }
+    .bs-skill-popup .sp-ded { font-size: 1.55rem; font-weight: 900; line-height: 1.1; }
+    .bs-skill-popup .sp-faults { font-size: 0.72rem; color: #fff; margin-top: 2px; }
+
+    .bs-anchor-banner {
+      background: rgba(125, 95, 179, 0.92);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .bs-anchor-banner.pending {
+      background: rgba(230, 138, 0, 0.92);
+      color: #111;
+    }
+
+    .bs-anchor-banner.done {
+      background: #0d0d14;
+      border: 1px solid var(--border-col);
+      color: var(--text-sub);
+      font-weight: 600;
+    }
+
+    .bs-wave-wrap {
+      background: #08080d;
+      border: 1px solid var(--border-col);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .bs-wave-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.73rem;
+      color: var(--text-sub);
+      margin-bottom: 5px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    canvas#bsWaveCanvas {
+      width: 100%;
+      height: 135px;
+      display: block;
+      cursor: ew-resize;
+      border-radius: 6px;
+      background: #050509;
+    }
+
+    .bs-progress-bar {
+      height: 4px;
+      background: var(--border-col);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 6px;
+      display: none;
+    }
+
+    .bs-progress-bar.active { display: block; }
+    .bs-progress-bar > div {
+      height: 100%;
+      width: 0%;
+      background: var(--fig-purple);
+      transition: width 0.08s;
+    }
+
+    .bs-skills-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 6px;
+    }
+
+    .bs-skill-chip {
+      background: #0b0b12;
+      border: 1px solid var(--border-col);
+      border-radius: 8px;
+      padding: 6px 8px;
+      cursor: pointer;
+    }
+
+    .bs-skill-chip:hover { border-color: var(--fig-blue); }
+    .bs-skill-chip .sc-top { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; }
+    .bs-skill-chip .sc-ded { font-size: 0.96rem; font-weight: 800; margin: 1px 0; }
+    .bs-skill-chip .sc-fault { font-size: 0.65rem; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .bs-c-green  { color: var(--fig-green);  border-color: var(--fig-green) !important; }
+    .bs-c-orange { color: var(--fig-orange); border-color: var(--fig-orange) !important; }
+    .bs-c-red    { color: var(--fig-red);    border-color: var(--fig-red) !important; }
 
     /* Hide Keyboard / Numpad input mode on mobile / coarse-pointer touch devices */
     @media (hover: none) and (pointer: coarse), (max-width: 768px) {
@@ -2067,6 +2352,98 @@
         </div>
       </div>
 
+      <!-- STEP 7: BATCH CSV SYNC & BULK MP4 EXPORT -->
+      <div class="setup-section-card batch-sync-section" id="batchCsvSyncSection">
+        <div class="section-title" style="color:var(--fig-purple);">
+          <svg class="section-title-icon" style="stroke:var(--fig-purple);" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          7. Batch CSV Sync &amp; Bulk MP4 Export
+          <button type="button" class="btn-header" style="margin-left:auto;" onclick="downloadBatchSampleCsv()">📄 Sample CSV</button>
+        </div>
+        <div class="section-desc">
+          Load a Master CSV (1 row per routine) and multi-select matching videos. Press <strong>SPACEBAR</strong> on Skill 1 — Skill 1 snaps uniformly to its closest purple trough dot, S2–S10 snap to consecutive purple dots, Landing = +3.0s, then add to the Batch Export Queue or bulk render MP4s directly.
+        </div>
+
+        <div class="batch-sync-layout">
+          <!-- LEFT COLUMN: CSV + VIDEO DROPZONES & MATCHED LIST -->
+          <div class="batch-sync-sidebar">
+            <label class="bs-dropzone" id="bsCsvDrop">
+              <strong>1) Drop Master CSV (1 row / routine)</strong>
+              <span id="bsCsvStatus">Click or drag .csv file here</span>
+              <input type="file" id="bsCsvInput" accept=".csv,text/csv" class="hidden" />
+            </label>
+
+            <label class="bs-dropzone" id="bsVidDrop">
+              <strong>2) Drop Routine Videos (Multi-select)</strong>
+              <span id="bsVidStatus">Click or drag .mp4 / .mov / .webm files</span>
+              <input type="file" id="bsVidInput" accept="video/*" multiple class="hidden" />
+            </label>
+
+            <div class="section-subtitle">Matched Routines (<span id="bsMatchCount">0</span>)</div>
+            <div class="bs-routine-list" id="bsRoutineList">
+              <div style="font-size:0.78rem; color:var(--text-sub); padding:6px;">
+                Load a Master CSV and matching video files to begin.
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: VIDEO PLAYER, CENTROID WAVE & QUEUE/EXPORT CONTROLS -->
+          <div class="bs-workspace">
+            <div class="bs-toolbar">
+              <div class="bs-btn-group">
+                <button type="button" id="bsBtnMarkSkill1" class="btn-header" style="background:var(--fig-purple); color:#fff; border:none; font-weight:700;" disabled>Mark Skill 1 (Spacebar)</button>
+                <button type="button" id="bsBtnSpeed" class="btn-header" disabled>Speed: 1.5x</button>
+                <button type="button" id="bsBtnQueueRoutine" class="btn-header" style="border-color:var(--fig-green); color:var(--fig-green); font-weight:700;" disabled>➕ Confirm &amp; Add to Batch Queue</button>
+              </div>
+              <div class="bs-btn-group">
+                <button type="button" id="bsBtnExportStandard" class="btn-header" style="background:var(--fig-green); color:#111; border:none; font-weight:800;" disabled onclick="startBatchExport('standard')">🎬 Bulk Export MP4s (0)</button>
+                <button type="button" id="bsBtnExportTraining" class="btn-header" style="background:var(--fig-blue); color:#111; border:none; font-weight:800;" disabled onclick="startBatchExport('training')">🎓 Bulk Training MP4s (0)</button>
+              </div>
+            </div>
+
+            <div class="bs-video-stage">
+              <video id="bsVideoPlayer" controls playsinline></video>
+              <div class="bs-hud-overlay">
+                <div class="bs-hud-top">
+                  <div class="bs-hud-title-box" id="bsHudTitleBox" style="display:none;">
+                    <div class="t1" id="bsHudTitle"></div>
+                    <div class="t2" id="bsHudSubtitle"></div>
+                  </div>
+                  <div class="bs-hud-score-box" id="bsHudScoreBox" style="display:none;">
+                    <div class="lbl">Net Execution</div>
+                    <div class="val" id="bsHudScore">10.00</div>
+                  </div>
+                </div>
+
+                <div class="bs-skill-popup" id="bsSkillPopup">
+                  <div class="sp-head" id="bsSpHead">SKILL 1</div>
+                  <div class="sp-ded" id="bsSpDed">-0.2</div>
+                  <div class="sp-faults" id="bsSpFaults"></div>
+                </div>
+                <div></div>
+              </div>
+            </div>
+
+            <div class="bs-anchor-banner" id="bsAnchorBanner">
+              <span id="bsAnchorPrompt">Press SPACEBAR on Skill 1 anytime — S1 snaps to closest purple dot, S2–S10 map to subsequent dots, Landing = +3.0s.</span>
+            </div>
+
+            <div class="bs-wave-wrap">
+              <div class="bs-wave-header">
+                <span><strong>Athlete Vertical Height Y(t)</strong> — Drag markers to adjust • Click wave to seek</span>
+                <span id="bsWaveInfo">Load a video to generate wave</span>
+              </div>
+              <canvas id="bsWaveCanvas" width="900" height="135"></canvas>
+              <div class="bs-progress-bar" id="bsScanProgress"><div id="bsScanProgressFill"></div></div>
+            </div>
+
+            <div class="bs-skills-strip" id="bsSkillsStrip"></div>
+          </div>
+        </div>
+        <canvas id="bsProcCanvas" width="96" height="54" style="display:none;"></canvas>
+      </div>
+
     </div>
 
     <!-- 2. LIVE VIDEO JUDGING STAGE -->
@@ -3072,7 +3449,8 @@
     if (
       removed.videoObjectUrl &&
       removed.videoObjectUrl !== videoObjectUrl &&
-      !isObjectUrlInBatchQueue(removed.videoObjectUrl)
+      !isObjectUrlInBatchQueue(removed.videoObjectUrl) &&
+      !isObjectUrlInBatchSync(removed.videoObjectUrl)
     ) {
       URL.revokeObjectURL(removed.videoObjectUrl);
     }
@@ -3089,7 +3467,7 @@
     batchQueue = [];
 
     urlsToCheck.forEach(url => {
-      if (url && url !== videoObjectUrl && !isObjectUrlInBatchQueue(url)) {
+      if (url && url !== videoObjectUrl && !isObjectUrlInBatchQueue(url) && !isObjectUrlInBatchSync(url)) {
         URL.revokeObjectURL(url);
       }
     });
@@ -3102,6 +3480,18 @@
     const cardEl = document.getElementById('batchQueueCard');
     const countEl = document.getElementById('batchQueueCountLabel');
     const listEl = document.getElementById('batchQueueList');
+    const bsStdBtn = document.getElementById('bsBtnExportStandard');
+    const bsTrnBtn = document.getElementById('bsBtnExportTraining');
+
+    if (bsStdBtn) {
+      bsStdBtn.disabled = batchQueue.length === 0;
+      bsStdBtn.textContent = `🎬 Bulk Export MP4s (${batchQueue.length})`;
+    }
+    if (bsTrnBtn) {
+      bsTrnBtn.disabled = batchQueue.length === 0;
+      bsTrnBtn.textContent = `🎓 Bulk Training MP4s (${batchQueue.length})`;
+    }
+
     if (!cardEl || !countEl || !listEl) return;
 
     if (batchQueue.length === 0) {
@@ -3526,7 +3916,6 @@
     const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
     if (activeTag === 'input' || activeTag === 'textarea') return;
 
-    // Resolve digit from event.code (Numpad0-9 / Digit0-9) or event.key
     let digit = null;
     if (/^Numpad([0-9])$/.test(event.code)) {
       digit = event.code.replace('Numpad', '');
@@ -3547,7 +3936,6 @@
         recordLiveDeduction(val, `Key ${digit} (-${val.toFixed(1)})`, null, null, exactTime);
       }
     } else if (phase === 'landing') {
-      // For landing: ignore 4, map 0,1,2,3,5 -> 0.0..0.5, and map 9 -> 1.0 (10 deduction)
       if (digit === '4') {
         event.preventDefault();
         return;
@@ -3937,7 +4325,6 @@
       h = Math.round(h * scale);
     }
 
-    // H.264 requires dimensions divisible by 2
     w = w % 2 === 0 ? w : w - 1;
     h = h % 2 === 0 ? h : h - 1;
     return { w, h };
@@ -3952,15 +4339,15 @@
     }
 
     const codecs = [
-      'avc1.640033', // High Profile Level 5.1 (4K / tall mobile screens)
-      'avc1.4d0033', // Main Profile Level 5.1
-      'avc1.640032', // High Profile Level 5.0
-      'avc1.64002a', // High Profile Level 4.2 (1080p60)
-      'avc1.4d002a', // Main Profile Level 4.2 (1080p)
-      'avc1.42002a', // Baseline Level 4.2
-      'avc1.64001f', // High Profile Level 3.1 (720p)
-      'avc1.4d001f', // Main Profile Level 3.1 (720p)
-      'avc1.42001f'  // Baseline Level 3.1 (720p)
+      'avc1.640033',
+      'avc1.4d0033',
+      'avc1.640032',
+      'avc1.64002a',
+      'avc1.4d002a',
+      'avc1.42002a',
+      'avc1.64001f',
+      'avc1.4d001f',
+      'avc1.42001f'
     ];
 
     const evenW = width % 2 === 0 ? width : width - 1;
@@ -4696,7 +5083,6 @@
 
     ctx.save();
 
-    // Keep the frozen last frame at the auto-trim mark as the full background
     if (bgCanvas) {
       ctx.drawImage(bgCanvas, 0, 0, w, h);
     } else {
@@ -4707,7 +5093,6 @@
     const alpha = Math.min(1, Math.max(0, cardAlpha));
     ctx.globalAlpha = alpha;
 
-    // Subtle dark tint over the frozen last frame for legibility
     ctx.fillStyle = 'rgba(10, 10, 15, 0.38)';
     ctx.fillRect(0, 0, w, h);
 
@@ -4727,7 +5112,6 @@
     const cardX = (w - cardW) / 2;
     const cardY = (h - cardH) / 2;
 
-    // Outer container card
     ctx.fillStyle = themeCols.cardBg;
     drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 18 * scale);
     ctx.fill();
@@ -4739,7 +5123,6 @@
     const innerW = cardW - cardPadX * 2;
     const headerTop = cardY + cardPadY;
 
-    // Header Left: Discipline kicker, Routine Title & Subtitle
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
 
@@ -4755,7 +5138,6 @@
     ctx.fillStyle = themeCols.textSub;
     ctx.fillText(subMeta, innerX, headerTop + 48 * scale, innerW - 195 * scale);
 
-    // Header Right: Net E-Score & Total Deductions Pill
     const pillW = 178 * scale;
     const pillH = 68 * scale;
     const pillX = innerX + innerW - pillW;
@@ -4783,7 +5165,6 @@
     ctx.fillStyle = themeCols.pink;
     ctx.fillText(`Deductions: -${totalDeduct.toFixed(1)}`, pillX + pillW - 12 * scale, pillY + 50 * scale);
 
-    // Horizontal divider line under header
     const divY = headerTop + headerH - 6 * scale;
     ctx.beginPath();
     ctx.moveTo(innerX, divY);
@@ -4792,7 +5173,6 @@
     ctx.strokeStyle = themeCols.border;
     ctx.stroke();
 
-    // Rows Grid (1 column on portrait/short, 2 columns on landscape)
     const gridTop = divY + 12 * scale;
     const colGap = 14 * scale;
     const colW = (innerW - (cols - 1) * colGap) / cols;
@@ -4815,7 +5195,6 @@
 
       const textY = ry + (rowH - 14 * scale) / 2;
 
-      // Left: Skill Label + optional DD tag
       ctx.textAlign = 'left';
       ctx.font = `800 ${13.5 * scale}px ${fontFamily}`;
       ctx.fillStyle = item.isLanding ? themeCols.pink : '#ffffff';
@@ -4840,7 +5219,6 @@
         leftOffset += ddW + 8 * scale;
       }
 
-      // Right: Deduction Value + Faults
       const valStr = `-${item.valNum.toFixed(1)}`;
       const valColor = getDeductionHexColor(item.valNum);
       const rightEdge = rx + colW - 11 * scale;
@@ -4876,7 +5254,6 @@
     ctx.save();
     ctx.textBaseline = 'top';
 
-    // 1. TOP-RIGHT ACTIVE DEDUCTION BADGE + FAULT REASONING UNDER VALUE + DD SUB-BOX
     const activeEvent = getActiveOverlayEvent(currentTime, routineData);
 
     if (activeEvent) {
@@ -4948,7 +5325,6 @@
       ctx.restore();
     }
 
-    // 2. RUNNING LIST DOWN RIGHT SIDE (SHOWN ONLY 150MS AFTER LANDING DEDUCTION; SHOWS FAULTS BESIDE DEDUCTION)
     if (shouldShowRunningList(currentTime, isEnded, routineData)) {
       const listTop = pad + 152 * scale;
       const itemW = 235 * scale;
@@ -5015,7 +5391,6 @@
       });
     }
 
-    // 3. END OF ROUTINE SCORE CARD (BOTTOM RIGHT)
     if (isEnded) {
       const { totalDeduct, netScore } = computeRoutineScores(
         routineData.discipline,
@@ -5144,7 +5519,6 @@
 
     const encodeCurrentCanvasFrame = async () => {
       if (isExportCancelled || encoderError) return;
-      // Backpressure guard if encoder queue builds up
       while (videoEncoder.encodeQueueSize > 8 && !isExportCancelled && !encoderError) {
         await new Promise(r => setTimeout(r, 5));
       }
@@ -5209,7 +5583,6 @@
       await seekVideoTo(endTime);
       if (isExportCancelled || encoderError || !activeExportVideo) return;
 
-      // Capture the exact last frame at the auto-trim end mark
       const lastFrameCanvas = document.createElement('canvas');
       lastFrameCanvas.width = w;
       lastFrameCanvas.height = h;
@@ -5240,15 +5613,10 @@
       }
     };
 
-    // =========================================================================
-    // [AUTO-TRIM & FADE-IN CONFIG]
-    // Default export behavior: 3.0s pre-roll before Skill 1, 2.0s post-roll
-    // after the final deduction (or landing), and a 0.5s fade-in transition.
-    // =========================================================================
     const TRIM_CONFIG = {
-      leadInSeconds: 3.0,   // Seconds before first deduction
-      tailSeconds: 2.0,     // Seconds after final deduction (or landing)
-      fadeInSeconds: 0.5    // Duration of subtle fade-in at start of trimmed clip
+      leadInSeconds: 3.0,
+      tailSeconds: 2.0,
+      fadeInSeconds: 0.5
     };
 
     const getTrimmedWindow = (videoDur) => {
@@ -5300,7 +5668,6 @@
 
         drawBurnedWatermark(ctx, w, h, routineData.watermarkText);
 
-        // [AUTO-TRIM & FADE-IN CONFIG] Subtle fade-in at start of trimmed clip
         if (fadeInSec > 0 && elapsedInClip < fadeInSec) {
           const progress = elapsedInClip / fadeInSec;
           const alpha = Math.pow(1 - progress, 1.5);
@@ -5460,7 +5827,6 @@
     const performedCount = routineData.skillsPerformed || 0;
     if (performedCount <= 0) return [];
 
-    // Collect valid timestamps for skills in chronological order
     const skillEntries = [];
     for (let i = 0; i < performedCount; i++) {
       const ts = Number(routineData.skillTimestamps?.[i] || 0);
@@ -5527,7 +5893,6 @@
       const entry = skillEntries[sIdx];
       const skillNumIdx = entry.index;
 
-      // Start from the skill before (or 2.0s before Skill 1), end 0.5s after this skill
       let sliceStart;
       if (sIdx > 0) {
         sliceStart = Math.max(0, skillEntries[sIdx - 1].timestamp);
@@ -5540,7 +5905,6 @@
 
       const sliceFileName = buildSkillSliceFileName(routineData, skillNumIdx);
 
-      // Build single-skill routine data so the top-right badge shows only this skill's deduction/DD/faults cleanly
       const singleSkillData = {
         ...routineData,
         skillsPerformed: skillNumIdx + 1,
@@ -5582,119 +5946,100 @@
           timestamp: f * FRAME_DURATION_US,
           duration: FRAME_DURATION_US
         });
-        videoEncoder.encode(frame, { keyFrame: (f % (FPS * 2) === 0) });
+        videoEncoder.encode(frame, { keyFrame: f % (FPS * 2) === 0 });
         frame.close();
 
         if (f % 4 === 0 || f === totalFrames - 1) {
-          const clipFrac = (sIdx + (f + 1) / totalFrames) / skillEntries.length;
-          if (progressMeta && typeof progressMeta.onSliceProgress === 'function') {
-            progressMeta.onSliceProgress(clipFrac, `Slicing ${sliceFileName} (${sIdx + 1}/${skillEntries.length})...`);
-          } else {
-            const pct = Math.min(100, Math.round(clipFrac * 100));
-            pctLabel.textContent = `${pct}%`;
-            fillBar.style.width = `${pct}%`;
-            statusText.textContent = `Slicing ${sliceFileName} (${sIdx + 1}/${skillEntries.length})...`;
-          }
+          const clipRatio = (sIdx + (f + 1) / totalFrames) / skillEntries.length;
+          const pct = Math.min(100, Math.round(clipRatio * 100));
+          const prefixTag = progressMeta?.prefix ? `${progressMeta.prefix} ` : '';
+          pctLabel.textContent = `${pct}%`;
+          fillBar.style.width = `${pct}%`;
+          statusText.textContent = `${prefixTag}Slicing Skill ${skillNumIdx + 1}/${performedCount} (${sliceFileName})...`;
           await new Promise(r => setTimeout(r, 0));
         }
       }
 
-      if (encoderError) {
-        try { if (videoEncoder.state !== 'closed') videoEncoder.close(); } catch (e) {}
-        throw encoderError;
-      }
-
-      if (!isExportCancelled) {
+      if (!isExportCancelled && !encoderError) {
         await videoEncoder.flush();
         if (videoEncoder.state !== 'closed') videoEncoder.close();
         muxer.finalize();
-
-        const blob = new Blob([muxer.target.buffer], { type: 'video/mp4' });
-        exportedClips.push({ blob, fileName: sliceFileName, mime: 'video/mp4' });
+        const { buffer } = muxer.target;
+        exportedClips.push({
+          blob: new Blob([buffer], { type: 'video/mp4' }),
+          fileName: sliceFileName
+        });
       } else {
         try { if (videoEncoder.state !== 'closed') videoEncoder.close(); } catch (e) {}
       }
+      activeExportEncoder = null;
     }
 
     activeExportVideo = null;
-    activeExportEncoder = null;
     return exportedClips;
   }
 
   async function exportSingleRoutine(routineData, mode = 'standard', deliveryAction = 'download') {
-    if (!routineData || !routineData.videoObjectUrl) {
-      alert("No video loaded to export.");
-      return;
-    }
-
-    if (judgingVideo) judgingVideo.pause();
-    if (playbackVideo) playbackVideo.pause();
-    document.getElementById('pbPlayIcon').textContent = '▶';
+    const isTraining = (mode === 'training');
+    const modal      = document.getElementById('exportModal');
+    const titleEl    = document.getElementById('exportModalTitle');
+    const pctLabel   = document.getElementById('exportPctLabel');
+    const fillBar    = document.getElementById('exportProgressFill');
+    const statusText = document.getElementById('exportStatusText');
 
     isExportCancelled = false;
-    const exportModal = document.getElementById('exportModal');
-    const modalTitle  = document.getElementById('exportModalTitle');
-    const pctLabel    = document.getElementById('exportPctLabel');
-    const fillBar     = document.getElementById('exportProgressFill');
-    const statusText  = document.getElementById('exportStatusText');
-
-    const alsoSliceSkills = Boolean(brandingState.sliceSkillsEnabled);
-
-    modalTitle.textContent = (mode === 'training')
-      ? 'Rendering Training MP4 Video'
-      : 'Rendering Burned MP4 Video';
-    exportModal.classList.remove('hidden');
+    titleEl.textContent = isTraining ? 'Creating Training Video (MP4)' : 'Rendering Burned MP4 Video';
+    pctLabel.textContent = '0%';
+    fillBar.style.width = '0%';
+    statusText.textContent = 'Initializing H.264 MP4 encoder... Keep this tab active.';
+    modal.classList.remove('hidden');
 
     try {
       const result = await renderRoutineToBlob(routineData, mode, null);
-
-      let slicedClips = [];
-      if (!isExportCancelled && alsoSliceSkills) {
-        modalTitle.textContent = 'Slicing Individual Skill Clips';
-        slicedClips = await renderIndividualSkillClips(routineData, {
-          onSliceProgress: (frac, msg) => {
-            const pct = Math.min(100, Math.round(frac * 100));
-            pctLabel.textContent = `${pct}%`;
-            fillBar.style.width = `${pct}%`;
-            statusText.textContent = msg;
-          }
-        });
+      if (!result || isExportCancelled) {
+        modal.classList.add('hidden');
+        return;
       }
 
-      cleanupVideoExport();
+      const jsonExport = buildRoutineFlatJsonPayload(routineData, mode, result.fileName);
+      const csvExport = buildRoutineFlatCsvPayload(routineData, mode, result.fileName);
 
-      if (!isExportCancelled && result && result.blob && result.blob.size > 0) {
-        const jsonExport = buildRoutineFlatJsonPayload(routineData, mode, result.fileName);
-        const csvExport = buildRoutineFlatCsvPayload(routineData, mode, result.fileName);
-        if (deliveryAction === 'share' && slicedClips.length === 0) {
-          const videoFile = new File([result.blob], result.fileName, { type: result.mime });
-          triggerBlobDownload(jsonExport.blob, jsonExport.fileName);
-          await new Promise(r => setTimeout(r, 320));
-          triggerBlobDownload(csvExport.blob, csvExport.fileName);
-          triggerFeedback('complete');
-          openShareReadyModal(videoFile);
-        } else {
-          triggerBlobDownload(result.blob, result.fileName);
-          await new Promise(r => setTimeout(r, 320));
-          triggerBlobDownload(jsonExport.blob, jsonExport.fileName);
-          await new Promise(r => setTimeout(r, 320));
-          triggerBlobDownload(csvExport.blob, csvExport.fileName);
-          for (let c = 0; c < slicedClips.length; c++) {
-            await new Promise(r => setTimeout(r, 420));
-            triggerBlobDownload(slicedClips[c].blob, slicedClips[c].fileName);
+      if (deliveryAction === 'share') {
+        const videoFile = new File([result.blob], result.fileName, { type: 'video/mp4' });
+        triggerBlobDownload(jsonExport.blob, jsonExport.fileName);
+        setTimeout(() => triggerBlobDownload(csvExport.blob, csvExport.fileName), 200);
+        modal.classList.add('hidden');
+        openShareReadyModal(videoFile);
+      } else {
+        triggerBlobDownload(result.blob, result.fileName);
+        setTimeout(() => triggerBlobDownload(jsonExport.blob, jsonExport.fileName), 250);
+        setTimeout(() => triggerBlobDownload(csvExport.blob, csvExport.fileName), 500);
+
+        if (brandingState.sliceSkillsEnabled) {
+          titleEl.textContent = 'Slicing Individual Skill Clips (MP4)';
+          const skillClips = await renderIndividualSkillClips(routineData, null);
+          for (let c = 0; c < skillClips.length; c++) {
+            if (isExportCancelled) break;
+            await new Promise(r => setTimeout(r, 250));
+            triggerBlobDownload(skillClips[c].blob, skillClips[c].fileName);
           }
-          triggerFeedback('complete');
         }
+
+        modal.classList.add('hidden');
+        triggerFeedback('complete');
       }
     } catch (err) {
-      alert("Unable to render MP4 video: " + err.message);
-      cancelVideoExport();
+      modal.classList.add('hidden');
+      if (!isExportCancelled) {
+        console.error('Burned MP4 video export error:', err);
+        alert('Unable to render MP4 video: ' + err.message);
+      }
     }
   }
 
   async function startBatchExport(mode = 'standard') {
     if (batchQueue.length === 0) {
-      alert("Your batch queue is empty.");
+      alert("Your batch queue is empty. Add one or more routines first.");
       return;
     }
 
@@ -5703,304 +6048,167 @@
       return;
     }
 
-    if (judgingVideo) judgingVideo.pause();
-    if (playbackVideo) playbackVideo.pause();
+    const isTraining = (mode === 'training');
+    const modal      = document.getElementById('exportModal');
+    const titleEl    = document.getElementById('exportModalTitle');
+    const pctLabel   = document.getElementById('exportPctLabel');
+    const fillBar    = document.getElementById('exportProgressFill');
+    const statusText = document.getElementById('exportStatusText');
 
     isExportCancelled = false;
-    const exportModal = document.getElementById('exportModal');
-    const modalTitle  = document.getElementById('exportModalTitle');
-    const pctLabel    = document.getElementById('exportPctLabel');
-    const fillBar     = document.getElementById('exportProgressFill');
-
-    const total = batchQueue.length;
-    modalTitle.textContent = (mode === 'training')
-      ? `Bulk Exporting ${total} Training MP4${total > 1 ? 's' : ''}`
-      : `Bulk Exporting ${total} MP4 Video${total > 1 ? 's' : ''}`;
+    const totalCount = batchQueue.length;
+    titleEl.textContent = isTraining
+      ? `Bulk Exporting ${totalCount} Training MP4${totalCount > 1 ? 's' : ''}`
+      : `Bulk Exporting ${totalCount} Burned MP4${totalCount > 1 ? 's' : ''}`;
     pctLabel.textContent = '0%';
     fillBar.style.width = '0%';
-    exportModal.classList.remove('hidden');
+    statusText.textContent = `Starting batch export of ${totalCount} routine(s)... Keep this tab active.`;
+    modal.classList.remove('hidden');
 
     let exportedCount = 0;
 
     try {
-      for (let i = 0; i < total; i++) {
+      for (let i = 0; i < totalCount; i++) {
         if (isExportCancelled) break;
-
         const item = batchQueue[i];
-        const result = await renderRoutineToBlob(item, mode, { index: i, total });
 
-        if (isExportCancelled) break;
+        const result = await renderRoutineToBlob(item, mode, { index: i, total: totalCount });
+        if (isExportCancelled || !result) break;
 
-        if (result && result.blob && result.blob.size > 0) {
-          triggerBlobDownload(result.blob, result.fileName);
-          const batchJsonExport = buildRoutineFlatJsonPayload(item, mode, result.fileName);
-          const batchCsvExport = buildRoutineFlatCsvPayload(item, mode, result.fileName);
-          await new Promise(r => setTimeout(r, 320));
-          triggerBlobDownload(batchJsonExport.blob, batchJsonExport.fileName);
-          await new Promise(r => setTimeout(r, 320));
-          triggerBlobDownload(batchCsvExport.blob, batchCsvExport.fileName);
-          exportedCount++;
+        triggerBlobDownload(result.blob, result.fileName);
+        await new Promise(r => setTimeout(r, 250));
+        const jsonExport = buildRoutineFlatJsonPayload(item, mode, result.fileName);
+        triggerBlobDownload(jsonExport.blob, jsonExport.fileName);
+        await new Promise(r => setTimeout(r, 250));
+        const csvExport = buildRoutineFlatCsvPayload(item, mode, result.fileName);
+        triggerBlobDownload(csvExport.blob, csvExport.fileName);
 
-          if (brandingState.sliceSkillsEnabled) {
-            const clips = await renderIndividualSkillClips(item, {
-              onSliceProgress: (frac, msg) => {
-                const overallPct = Math.min(100, Math.round(((i + frac) / total) * 100));
-                pctLabel.textContent = `${overallPct}%`;
-                fillBar.style.width = `${overallPct}%`;
-                document.getElementById('exportStatusText').textContent = `[Routine ${i + 1} of ${total}] ${msg}`;
-              }
-            });
-            for (let c = 0; c < clips.length; c++) {
-              if (isExportCancelled) break;
-              await new Promise(r => setTimeout(r, 420));
-              triggerBlobDownload(clips[c].blob, clips[c].fileName);
-            }
+        if (brandingState.sliceSkillsEnabled) {
+          titleEl.textContent = `Slicing Skill Clips (${i + 1}/${totalCount})`;
+          const skillClips = await renderIndividualSkillClips(item, {
+            prefix: `[Routine ${i + 1}/${totalCount}]`
+          });
+          for (let c = 0; c < skillClips.length; c++) {
+            if (isExportCancelled) break;
+            await new Promise(r => setTimeout(r, 250));
+            triggerBlobDownload(skillClips[c].blob, skillClips[c].fileName);
           }
+          titleEl.textContent = isTraining
+            ? `Bulk Exporting ${totalCount} Training MP4${totalCount > 1 ? 's' : ''}`
+            : `Bulk Exporting ${totalCount} Burned MP4${totalCount > 1 ? 's' : ''}`;
+        }
 
-          if (i < total - 1) {
-            await new Promise(r => setTimeout(r, 650));
-          }
+        exportedCount++;
+
+        if (i < totalCount - 1 && !isExportCancelled) {
+          await new Promise(r => setTimeout(r, 450));
         }
       }
-    } catch (err) {
-      alert("Batch export stopped: " + err.message);
-    } finally {
-      cleanupVideoExport();
+
+      modal.classList.add('hidden');
       if (!isExportCancelled && exportedCount > 0) {
         triggerFeedback('complete');
+      }
+    } catch (err) {
+      modal.classList.add('hidden');
+      if (!isExportCancelled) {
+        console.error('Batch MP4 export error:', err);
+        alert(`Batch export stopped after ${exportedCount} video(s): ` + err.message);
       }
     }
   }
 
   function cancelVideoExport() {
     isExportCancelled = true;
-    if (activeExportVideo) {
-      activeExportVideo.pause();
-      activeExportVideo.src = '';
-    }
     if (activeExportEncoder) {
       try { if (activeExportEncoder.state !== 'closed') activeExportEncoder.close(); } catch (e) {}
+      activeExportEncoder = null;
     }
-    cleanupVideoExport();
-  }
-
-  function cleanupVideoExport() {
-    activeExportVideo = null;
-    activeExportEncoder = null;
+    if (activeExportVideo) {
+      try { activeExportVideo.pause(); } catch (e) {}
+      activeExportVideo = null;
+    }
     document.getElementById('exportModal').classList.add('hidden');
   }
 
   /* ==========================================================================
-     SYNCHRONIZED VIDEO PLAYBACK OVERLAY ENGINE (WITH INTRO SLATE & WATERMARK)
+     PHASE 3: SYNCHRONIZED VIDEO PLAYBACK & OVERLAY STAGE (WITH INTRO & END SLATE)
      ========================================================================== */
-  let playbackAnimFrame = null;
-  let lastOverlayEventKey = null;
-  let introSlateTimer = null;
-
-  function clearIntroSlatePreview() {
-    if (introSlateTimer) {
-      clearTimeout(introSlateTimer);
-      introSlateTimer = null;
-    }
-    const slateEl = document.getElementById('overlayIntroSlate');
-    if (slateEl) slateEl.classList.remove('visible');
-  }
-
-  function applyWatermarkPreview() {
-    const wmEl = document.getElementById('overlayBottomLeftWatermark');
-    if (!wmEl) return;
-    const text = (brandingState.watermarkText || '').trim();
-    if (text) {
-      wmEl.textContent = text;
-      wmEl.classList.remove('hidden');
-    } else {
-      wmEl.textContent = '';
-      wmEl.classList.add('hidden');
-    }
-  }
-
-  function startPlaybackWithOptionalSlate() {
-    clearIntroSlatePreview();
-    applyWatermarkPreview();
-
-    if (isIntroSlateActive()) {
-      const slateEl   = document.getElementById('overlayIntroSlate');
-      const discEl    = document.getElementById('overlaySlateDisc');
-      const titleEl   = document.getElementById('overlaySlateTitle');
-      const subEl     = document.getElementById('overlaySlateSubtitle');
-
-      if (discEl) discEl.textContent = `${getDisciplineFullName(currentDiscipline)} • JUDGE EDUCATION`;
-      if (titleEl) {
-        const t = brandingState.slateTitle.trim();
-        titleEl.textContent = t;
-        titleEl.classList.toggle('hidden', !t);
-      }
-      if (subEl) {
-        const s = brandingState.slateSubtitle.trim();
-        subEl.textContent = s;
-        subEl.classList.toggle('hidden', !s);
-      }
-
-      playbackVideo.pause();
-      playbackVideo.currentTime = 0;
-      document.getElementById('pbPlayIcon').textContent = '⏸️';
-      if (slateEl) slateEl.classList.add('visible');
-
-      const holdMs = Math.max(1500, (brandingState.slateDurationSec * 1000) - 350);
-      introSlateTimer = setTimeout(() => {
-        if (slateEl) slateEl.classList.remove('visible');
-        introSlateTimer = setTimeout(() => {
-          introSlateTimer = null;
-          if (phase === 'playback') {
-            playbackVideo.play().catch(() => {});
-            document.getElementById('pbPlayIcon').textContent = '⏸️';
-          }
-        }, 350);
-      }, holdMs);
-    } else {
-      playbackVideo.currentTime = 0;
-      playbackVideo.play().catch(() => {});
-      document.getElementById('pbPlayIcon').textContent = '⏸️';
-    }
-  }
+  let overlayAnimFrameId = null;
+  let lastAnimatedSkillKey = null;
+  let introSlateTimerId = null;
+  let isIntroSlatePlaying = false;
 
   function confirmAndEnterOverlayPlayback() {
-    phase = 'playback';
-    lastOverlayEventKey = null;
+    phase = 'overlay';
     reviewScreen.classList.add('hidden');
+    judgingStage.classList.add('hidden');
     playbackOverlayStage.classList.remove('hidden');
+    btnFinishRoutine.classList.add('hidden');
     skillCounter.classList.add('hidden');
 
-    phaseBadge.textContent = 'Overlay Playback';
+    phaseBadge.textContent = 'Overlay Replay';
     phaseBadge.className = 'phase-badge badge-overlay';
 
-    buildRightSideRunningList();
-    renderScrubberSkillDots();
-    startPlaybackWithOptionalSlate();
+    lastAnimatedSkillKey = null;
+    renderRunningListItems();
 
-    if (playbackAnimFrame) cancelAnimationFrame(playbackAnimFrame);
-    syncOverlayLoop();
-  }
+    const maxSkills = getMaxSkills();
+    const isLandingActive = (skillsPerformed === maxSkills);
+    const { totalDeduct, netScore } = computeRoutineScores(
+      currentDiscipline,
+      skillsPerformed,
+      skillDeductions,
+      landingDeduction
+    );
 
-  function renderScrubberSkillDots() {
-    const dotsLayer = document.getElementById('scrubberDotsLayer');
-    if (!dotsLayer) return;
-    dotsLayer.innerHTML = '';
+    document.getElementById('summaryCardNet').textContent = netScore.toFixed(2);
+    document.getElementById('summaryCardDeduct').textContent = `Total Deductions: -${totalDeduct.toFixed(1)}`;
+    document.getElementById('overlaySummaryCard').classList.remove('visible');
+    document.getElementById('overlayEndNavBox').classList.remove('visible');
+    document.getElementById('overlayEndSlate').classList.remove('visible');
+    document.getElementById('overlayRightListPanel').classList.remove('visible');
 
-    const duration = playbackVideo.duration;
-    if (!duration || isNaN(duration) || duration <= 0) return;
-
-    for (let i = 0; i < skillsPerformed; i++) {
-      const t = skillTimestamps[i];
-      if (t > 0 && t <= duration) {
-        const pct = (t / duration) * 100;
-        const dot = document.createElement('div');
-        dot.className = 'scrubber-skill-dot';
-        dot.style.left = `${pct}%`;
-        dot.title = `Skill ${i + 1} (${formatTime(t)})`;
-        dotsLayer.appendChild(dot);
+    const wmEl = document.getElementById('overlayBottomLeftWatermark');
+    const wmText = (brandingState.watermarkText || '').trim();
+    if (wmEl) {
+      if (wmText) {
+        wmEl.textContent = wmText;
+        wmEl.classList.remove('hidden');
+      } else {
+        wmEl.textContent = '';
+        wmEl.classList.add('hidden');
       }
     }
 
-    if (skillsPerformed === getMaxSkills() && landingTimestamp > 0 && landingTimestamp <= duration) {
-      const pct = (landingTimestamp / duration) * 100;
-      const dot = document.createElement('div');
-      dot.className = 'scrubber-skill-dot';
-      dot.style.left = `${pct}%`;
-      dot.title = `Landing (${formatTime(landingTimestamp)})`;
-      dotsLayer.appendChild(dot);
-    }
+    populateLiveEndSlateCard(totalDeduct, netScore, isLandingActive);
+
+    playbackVideo.currentTime = 0;
+    renderScrubberSkillDots();
+
+    startPlaybackWithOptionalIntroSlate();
+
+    startOverlaySyncLoop();
+    triggerFeedback('complete');
   }
 
-  if (playbackVideo) {
-    playbackVideo.addEventListener('loadedmetadata', () => {
-      if (phase === 'playback') renderScrubberSkillDots();
-    });
-  }
-
-  function buildRightSideRunningList() {
-    const panel = document.getElementById('overlayRightListPanel');
-    panel.innerHTML = '';
-
-    for (let skillIdx = 0; skillIdx < skillsPerformed; skillIdx++) {
-      const item = document.createElement('div');
-      item.className = 'running-list-item';
-      item.id = `runningItemSkill_${skillIdx}`;
-
-      const targetSkillIdx = skillIdx;
-      const ddStr = (skillDDs[targetSkillIdx] || '').trim();
-      const labelText = ddStr
-        ? `Skill ${targetSkillIdx + 1} (${escapeHtml(ddStr)})`
-        : `Skill ${targetSkillIdx + 1}`;
-      const fArr = skillFaults[targetSkillIdx] || [];
-      const faultsStr = fArr.join(' • ');
-
-      item.onclick = (e) => {
-        e.stopPropagation();
-        clearIntroSlatePreview();
-        if (targetSkillIdx === 0) {
-          playbackVideo.currentTime = Math.max(0, skillTimestamps[0] - 2.0);
-        } else {
-          playbackVideo.currentTime = Math.max(0, skillTimestamps[targetSkillIdx - 1]);
-        }
-      };
-
-      item.innerHTML = `
-        <span class="item-skill-lbl">${labelText}</span>
-        <div class="item-right-group">
-          ${faultsStr ? `<span class="item-faults-lbl">${escapeHtml(faultsStr)}</span>` : ''}
-          <span class="item-deduct-val">-${skillDeductions[targetSkillIdx].toFixed(1)}</span>
-        </div>
-      `;
-      panel.appendChild(item);
-    }
-
-    if (skillsPerformed === getMaxSkills()) {
-      const item = document.createElement('div');
-      item.className = 'running-list-item';
-      item.id = `runningItemLanding`;
-      const landingFaultsStr = landingFaults.join(' • ');
-
-      item.onclick = (e) => {
-        e.stopPropagation();
-        clearIntroSlatePreview();
-        if (skillsPerformed > 0) {
-          playbackVideo.currentTime = Math.max(0, skillTimestamps[skillsPerformed - 1]);
-        } else {
-          playbackVideo.currentTime = Math.max(0, landingTimestamp - 2.0);
-        }
-      };
-      item.innerHTML = `
-        <span class="item-skill-lbl" style="color:var(--fig-pink);">Landing</span>
-        <div class="item-right-group">
-          ${landingFaultsStr ? `<span class="item-faults-lbl">${escapeHtml(landingFaultsStr)}</span>` : ''}
-          <span class="item-deduct-val">-${landingDeduction.toFixed(1)}</span>
-        </div>
-      `;
-      panel.appendChild(item);
-    }
-  }
-
-  function populateLiveEndSlateCard(totalDeduct, netScore) {
-    const maxSkills = getMaxSkills();
-    const isLandingActive = (skillsPerformed === maxSkills);
+  function populateLiveEndSlateCard(totalDeduct, netScore, isLandingActive) {
     const discFull = getDisciplineFullName(currentDiscipline);
-    const customTitle = String(brandingState.slateTitle || '').trim();
-
-    document.getElementById('endSlateKicker').textContent = `${discFull} • ROUTINE BREAKDOWN`;
-    document.getElementById('endSlateTitle').textContent = customTitle || 'Routine Execution Summary';
+    const customTitle = (brandingState.slateTitle || '').trim();
+    document.getElementById('endSlateKicker').textContent = `${discFull} • ROUTINE SUMMARY`;
+    document.getElementById('endSlateTitle').textContent = customTitle || 'Routine Execution Breakdown';
     document.getElementById('endSlateSubMeta').textContent = `${skillsPerformed} Skill${skillsPerformed === 1 ? '' : 's'}${isLandingActive ? ' + Landing' : ' (Incomplete Routine)'}`;
     document.getElementById('endSlateNetScore').textContent = netScore.toFixed(2);
     document.getElementById('endSlateTotalDeduct').textContent = `Deductions: -${totalDeduct.toFixed(1)}`;
 
-    const grid = document.getElementById('endSlateGrid');
-    grid.innerHTML = '';
+    const gridEl = document.getElementById('endSlateGrid');
+    gridEl.innerHTML = '';
 
     for (let i = 0; i < skillsPerformed; i++) {
-      const ddStr = String(skillDDs[i] || '').trim();
-      const faultsStr = (skillFaults[i] || []).join(' • ');
+      const ddStr = (skillDDs[i] || '').trim();
+      const faultsArr = Array.isArray(skillFaults[i]) ? skillFaults[i] : [];
       const val = skillDeductions[i] || 0;
-      const col = getDeductionBadgeColor(val);
+      const valCol = getDeductionBadgeColor(val);
 
       const row = document.createElement('div');
       row.className = 'end-slate-row';
@@ -6010,15 +6218,15 @@
           ${ddStr ? `<span class="end-slate-dd-tag">${escapeHtml(ddStr)}</span>` : ''}
         </div>
         <div class="end-slate-row-right">
-          ${faultsStr ? `<span class="end-slate-faults">${escapeHtml(faultsStr)}</span>` : ''}
-          <span class="end-slate-val" style="color:${col};">-${val.toFixed(1)}</span>
+          ${faultsArr.length > 0 ? `<span class="end-slate-faults">${escapeHtml(faultsArr.join(' • '))}</span>` : ''}
+          <span class="end-slate-val" style="color:${valCol};">-${val.toFixed(1)}</span>
         </div>
       `;
-      grid.appendChild(row);
+      gridEl.appendChild(row);
     }
 
     if (isLandingActive) {
-      const lFaultsStr = landingFaults.join(' • ');
+      const lFaults = Array.isArray(landingFaults) ? landingFaults : [];
       const lCol = getDeductionBadgeColor(landingDeduction);
       const lRow = document.createElement('div');
       lRow.className = 'end-slate-row landing-highlight';
@@ -6027,140 +6235,259 @@
           <span class="end-slate-sk-name" style="color:var(--fig-pink);">Landing</span>
         </div>
         <div class="end-slate-row-right">
-          ${lFaultsStr ? `<span class="end-slate-faults">${escapeHtml(lFaultsStr)}</span>` : ''}
+          ${lFaults.length > 0 ? `<span class="end-slate-faults">${escapeHtml(lFaults.join(' • '))}</span>` : ''}
           <span class="end-slate-val" style="color:${lCol};">-${landingDeduction.toFixed(1)}</span>
         </div>
       `;
-      grid.appendChild(lRow);
+      gridEl.appendChild(lRow);
     }
   }
 
-  function syncOverlayLoop() {
-    if (phase !== 'playback') return;
+  function clearIntroSlatePlayback() {
+    if (introSlateTimerId) {
+      clearTimeout(introSlateTimerId);
+      introSlateTimerId = null;
+    }
+    isIntroSlatePlaying = false;
+    const slateEl = document.getElementById('overlayIntroSlate');
+    if (slateEl) slateEl.classList.remove('visible');
+  }
 
-    const currentTime = playbackVideo.currentTime;
-    const duration = playbackVideo.duration || 1;
-    const isEnded = playbackVideo.ended || (landingTimestamp > 0 && currentTime >= (landingTimestamp + 2.2));
+  function startPlaybackWithOptionalIntroSlate() {
+    clearIntroSlatePlayback();
+    const slateEl = document.getElementById('overlayIntroSlate');
 
-    // Update bottom scrubber
-    const scrubber = document.getElementById('pbScrubber');
-    scrubber.value = (currentTime / duration) * 100;
-    document.getElementById('pbTimeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+    if (isIntroSlateActive()) {
+      isIntroSlatePlaying = true;
+      document.getElementById('overlaySlateDisc').textContent = `${getDisciplineFullName(currentDiscipline)} • JUDGE EDUCATION`;
+      document.getElementById('overlaySlateTitle').textContent = (brandingState.slateTitle || '').trim();
+      const subEl = document.getElementById('overlaySlateSubtitle');
+      const subText = (brandingState.slateSubtitle || '').trim();
+      subEl.textContent = subText;
+      subEl.style.display = subText ? 'block' : 'none';
 
-    // Top-Right Active Badge, Fault Reasoning Under Deduction Value & DD Sub-Box
-    const topRightStack = document.getElementById('overlayTopRightStack');
-    const topRightBadge = document.getElementById('overlayTopRightBadge');
-    const badgeValEl = document.getElementById('overlayBadgeVal');
-    const badgeFaultsEl = document.getElementById('overlayBadgeFaults');
-    const badgeDdEl = document.getElementById('overlayBadgeDD');
+      slateEl.classList.add('visible');
+      playbackVideo.pause();
+      document.getElementById('pbPlayIcon').textContent = '⏸️';
 
-    const activeEvent = getActiveOverlayEvent(currentTime);
-
-    if (!activeEvent) {
-      topRightBadge.classList.remove('visible');
-      badgeFaultsEl.classList.add('hidden');
-      badgeDdEl.classList.remove('visible');
-      topRightStack.classList.remove('skill-pop-anim');
-      lastOverlayEventKey = null;
+      const durationMs = (brandingState.slateDurationSec || 3) * 1000;
+      introSlateTimerId = setTimeout(() => {
+        introSlateTimerId = null;
+        isIntroSlatePlaying = false;
+        slateEl.classList.remove('visible');
+        playbackVideo.play().catch(() => {});
+        document.getElementById('pbPlayIcon').textContent = '⏸️';
+      }, durationMs);
     } else {
-      const col = getDeductionBadgeColor(activeEvent.val);
-      document.getElementById('overlayBadgeSkill').textContent = activeEvent.label;
-      badgeValEl.textContent = `-${activeEvent.val.toFixed(1)}`;
-      badgeValEl.style.color = col;
-      topRightBadge.style.borderColor = col;
-      topRightBadge.classList.add('visible');
+      playbackVideo.play().catch(() => {});
+      document.getElementById('pbPlayIcon').textContent = '⏸️';
+    }
+  }
 
-      if (activeEvent.faults && activeEvent.faults.length > 0) {
-        badgeFaultsEl.textContent = activeEvent.faults.join(' • ');
-        badgeFaultsEl.classList.remove('hidden');
-      } else {
-        badgeFaultsEl.textContent = '';
-        badgeFaultsEl.classList.add('hidden');
-      }
+  function restartOverlayPlayback() {
+    lastAnimatedSkillKey = null;
+    document.getElementById('overlaySummaryCard').classList.remove('visible');
+    document.getElementById('overlayEndNavBox').classList.remove('visible');
+    document.getElementById('overlayEndSlate').classList.remove('visible');
+    document.getElementById('overlayRightListPanel').classList.remove('visible');
+    playbackVideo.currentTime = 0;
+    startPlaybackWithOptionalIntroSlate();
+  }
 
-      if (activeEvent.dd) {
-        badgeDdEl.textContent = activeEvent.dd;
-        badgeDdEl.classList.add('visible');
-      } else {
-        badgeDdEl.classList.remove('visible');
-      }
+  function renderScrubberSkillDots() {
+    const dotsLayer = document.getElementById('scrubberDotsLayer');
+    if (!dotsLayer) return;
+    dotsLayer.innerHTML = '';
 
-      if (lastOverlayEventKey !== activeEvent.key) {
-        lastOverlayEventKey = activeEvent.key;
-        topRightStack.classList.remove('skill-pop-anim');
-        void topRightStack.offsetWidth;
-        topRightStack.classList.add('skill-pop-anim');
+    const dur = playbackVideo.duration;
+    if (!dur || isNaN(dur) || dur <= 0) return;
+
+    for (let i = 0; i < skillsPerformed; i++) {
+      const ts = skillTimestamps[i];
+      if (ts > 0 && ts <= dur) {
+        const pct = Math.min(100, Math.max(0, (ts / dur) * 100));
+        const dot = document.createElement('div');
+        dot.className = 'scrubber-skill-dot';
+        dot.style.left = `${pct}%`;
+        dotsLayer.appendChild(dot);
       }
     }
 
-    // Running List Down Right Side (Shown 150ms after landing deduction)
+    const maxSkills = getMaxSkills();
+    if (skillsPerformed === maxSkills && landingTimestamp > 0 && landingTimestamp <= dur) {
+      const pct = Math.min(100, Math.max(0, (landingTimestamp / dur) * 100));
+      const dot = document.createElement('div');
+      dot.className = 'scrubber-skill-dot';
+      dot.style.left = `${pct}%`;
+      dot.style.backgroundColor = 'var(--fig-pink)';
+      dotsLayer.appendChild(dot);
+    }
+  }
+
+  playbackVideo.addEventListener('loadedmetadata', () => {
+    if (phase === 'overlay') {
+      renderScrubberSkillDots();
+    }
+  });
+
+  function renderRunningListItems() {
     const listPanel = document.getElementById('overlayRightListPanel');
-    if (shouldShowRunningList(currentTime, isEnded)) {
-      listPanel.classList.add('visible');
-    } else {
-      listPanel.classList.remove('visible');
+    listPanel.innerHTML = '';
+
+    for (let i = 0; i < skillsPerformed; i++) {
+      const ddStr = (skillDDs[i] || '').trim();
+      const labelText = ddStr ? `Skill ${i + 1} (${ddStr})` : `Skill ${i + 1}`;
+      const faultsArr = skillFaults[i] || [];
+      const faultsText = faultsArr.join(' • ');
+
+      const item = document.createElement('div');
+      item.className = 'running-list-item';
+      item.innerHTML = `
+        <span class="item-skill-lbl">${escapeHtml(labelText)}</span>
+        <span class="item-right-group">
+          ${faultsText ? `<span class="item-faults-lbl">${escapeHtml(faultsText)}</span>` : ''}
+          <span class="item-deduct-val">-${skillDeductions[i].toFixed(1)}</span>
+        </span>
+      `;
+      item.onclick = () => {
+        clearIntroSlatePlayback();
+        playbackVideo.currentTime = Math.max(0, skillTimestamps[i] - 0.5);
+      };
+      listPanel.appendChild(item);
     }
 
-    // End of Routine Full-Screen Title Card / Score Card Overlay & Centered Bottom Navigation Box
-    const endSlateEl  = document.getElementById('overlayEndSlate');
+    const maxSkills = getMaxSkills();
+    if (skillsPerformed === maxSkills) {
+      const lFaultsText = (landingFaults || []).join(' • ');
+      const lItem = document.createElement('div');
+      lItem.className = 'running-list-item';
+      lItem.style.borderColor = 'var(--fig-pink)';
+      lItem.innerHTML = `
+        <span class="item-skill-lbl" style="color:var(--fig-pink);">Landing</span>
+        <span class="item-right-group">
+          ${lFaultsText ? `<span class="item-faults-lbl">${escapeHtml(lFaultsText)}</span>` : ''}
+          <span class="item-deduct-val">-${landingDeduction.toFixed(1)}</span>
+        </span>
+      `;
+      lItem.onclick = () => {
+        clearIntroSlatePlayback();
+        playbackVideo.currentTime = Math.max(0, landingTimestamp - 0.5);
+      };
+      listPanel.appendChild(lItem);
+    }
+  }
+
+  function startOverlaySyncLoop() {
+    if (overlayAnimFrameId) cancelAnimationFrame(overlayAnimFrameId);
+
+    const scrubber    = document.getElementById('pbScrubber');
+    const timeDisp    = document.getElementById('pbTimeDisplay');
+    const stackEl     = document.getElementById('overlayTopRightStack');
+    const badge       = document.getElementById('overlayTopRightBadge');
+    const badgeSkill  = document.getElementById('overlayBadgeSkill');
+    const badgeVal    = document.getElementById('overlayBadgeVal');
+    const badgeFaults = document.getElementById('overlayBadgeFaults');
+    const badgeDD     = document.getElementById('overlayBadgeDD');
+    const listPanel   = document.getElementById('overlayRightListPanel');
     const summaryCard = document.getElementById('overlaySummaryCard');
     const endNavBox   = document.getElementById('overlayEndNavBox');
+    const endSlateEl  = document.getElementById('overlayEndSlate');
 
-    if (isEnded) {
-      const { totalDeduct, netScore } = computeRoutineScores(
-        currentDiscipline,
-        skillsPerformed,
-        skillDeductions,
-        landingDeduction
-      );
+    const updateFrame = () => {
+      if (phase !== 'overlay') return;
 
-      if (isEndSlateActive()) {
-        if (endSlateEl && !endSlateEl.classList.contains('visible')) {
-          // Hold on the auto-trim end frame so the last frame acts as the card background
-          const validTs = [];
-          for (let i = 0; i < skillsPerformed; i++) {
-            if (skillTimestamps[i] > 0) validTs.push(skillTimestamps[i]);
-          }
-          if (skillsPerformed === getMaxSkills() && landingTimestamp > 0) {
-            validTs.push(landingTimestamp);
-          }
-          if (validTs.length > 0 && !playbackVideo.ended) {
-            validTs.sort((a, b) => a - b);
-            const autoTrimEnd = Math.min(duration, validTs[validTs.length - 1] + 2.0);
-            if (!playbackVideo.paused && Math.abs(playbackVideo.currentTime - autoTrimEnd) <= 0.35) {
-              playbackVideo.pause();
-              playbackVideo.currentTime = autoTrimEnd;
-              document.getElementById('pbPlayIcon').textContent = '▶';
-            }
-          }
-          populateLiveEndSlateCard(totalDeduct, netScore);
-          endSlateEl.classList.add('visible');
+      const cur = playbackVideo.currentTime || 0;
+      const dur = playbackVideo.duration || 1;
+      const isEnded = playbackVideo.ended || (dur > 0 && cur >= dur - 0.15);
+
+      scrubber.value = (cur / dur) * 100;
+      timeDisp.textContent = `${formatTime(cur).split('.')[0]} / ${formatTime(dur).split('.')[0]}`;
+
+      const activeEvent = isIntroSlatePlaying ? null : getActiveOverlayEvent(cur);
+
+      if (activeEvent) {
+        if (lastAnimatedSkillKey !== activeEvent.key) {
+          lastAnimatedSkillKey = activeEvent.key;
+          stackEl.classList.remove('skill-pop-anim');
+          void stackEl.offsetWidth;
+          stackEl.classList.add('skill-pop-anim');
         }
+
+        const badgeColor = getDeductionBadgeColor(activeEvent.val);
+        badgeSkill.textContent = activeEvent.label;
+        badgeVal.textContent = `-${activeEvent.val.toFixed(1)}`;
+        badgeVal.style.color = badgeColor;
+        badge.style.borderColor = badgeColor;
+        badge.classList.add('visible');
+
+        if (activeEvent.faults && activeEvent.faults.length > 0) {
+          badgeFaults.textContent = activeEvent.faults.join(' • ');
+          badgeFaults.classList.remove('hidden');
+        } else {
+          badgeFaults.textContent = '';
+          badgeFaults.classList.add('hidden');
+        }
+
+        if (activeEvent.dd) {
+          badgeDD.textContent = activeEvent.dd;
+          badgeDD.classList.add('visible');
+        } else {
+          badgeDD.textContent = '';
+          badgeDD.classList.remove('visible');
+        }
+      } else {
+        lastAnimatedSkillKey = null;
+        badge.classList.remove('visible');
+        badgeFaults.classList.add('hidden');
+        badgeDD.classList.remove('visible');
+        stackEl.classList.remove('skill-pop-anim');
+      }
+
+      const showEndSlateNow = !isIntroSlatePlaying && isEnded && isEndSlateActive();
+      if (showEndSlateNow) {
+        endSlateEl.classList.add('visible');
+        listPanel.classList.remove('visible');
         summaryCard.classList.remove('visible');
       } else {
-        if (endSlateEl) endSlateEl.classList.remove('visible');
-        document.getElementById('summaryCardNet').textContent = netScore.toFixed(2);
-        document.getElementById('summaryCardDeduct').textContent = `Total Deductions: -${totalDeduct.toFixed(1)}`;
-        summaryCard.classList.add('visible');
-      }
-      endNavBox.classList.add('visible');
-    } else {
-      if (endSlateEl) endSlateEl.classList.remove('visible');
-      summaryCard.classList.remove('visible');
-      endNavBox.classList.remove('visible');
-    }
+        endSlateEl.classList.remove('visible');
+        if (!isIntroSlatePlaying && shouldShowRunningList(cur, isEnded)) {
+          listPanel.classList.add('visible');
+        } else {
+          listPanel.classList.remove('visible');
+        }
 
-    playbackAnimFrame = requestAnimationFrame(syncOverlayLoop);
+        if (!isIntroSlatePlaying && isEnded) {
+          summaryCard.classList.add('visible');
+        } else {
+          summaryCard.classList.remove('visible');
+        }
+      }
+
+      if (!isIntroSlatePlaying && isEnded) {
+        endNavBox.classList.add('visible');
+      } else {
+        endNavBox.classList.remove('visible');
+      }
+
+      overlayAnimFrameId = requestAnimationFrame(updateFrame);
+    };
+
+    overlayAnimFrameId = requestAnimationFrame(updateFrame);
   }
 
   function togglePlayPausePlayback() {
-    if (introSlateTimer) {
-      clearIntroSlatePreview();
+    if (isIntroSlatePlaying) {
+      clearIntroSlatePlayback();
       playbackVideo.play().catch(() => {});
       document.getElementById('pbPlayIcon').textContent = '⏸️';
       return;
     }
+
     if (playbackVideo.paused) {
+      if (playbackVideo.ended) {
+        restartOverlayPlayback();
+        return;
+      }
       playbackVideo.play();
       document.getElementById('pbPlayIcon').textContent = '⏸️';
     } else {
@@ -6169,33 +6496,28 @@
     }
   }
 
-  function scrubPlaybackVideo(pct) {
-    clearIntroSlatePreview();
-    const duration = playbackVideo.duration || 1;
-    playbackVideo.currentTime = (pct / 100) * duration;
-  }
-
-  function restartOverlayPlayback() {
-    lastOverlayEventKey = null;
-    startPlaybackWithOptionalSlate();
+  function scrubPlaybackVideo(val) {
+    clearIntroSlatePlayback();
+    const dur = playbackVideo.duration || 1;
+    playbackVideo.currentTime = (val / 100) * dur;
   }
 
   function exitOverlayToReview() {
-    clearIntroSlatePreview();
-    if (playbackAnimFrame) cancelAnimationFrame(playbackAnimFrame);
+    clearIntroSlatePlayback();
+    if (overlayAnimFrameId) cancelAnimationFrame(overlayAnimFrameId);
     playbackVideo.pause();
     enterReviewPhase();
   }
 
+  /* ==========================================================================
+     GLOBAL RESET & FULLSCREEN
+     ========================================================================== */
   function resetToSetup() {
     clearPendingRecognizerState();
-    clearIntroSlatePreview();
-    closeFilenameModal();
-    closeShareReadyModal();
-    cancelVideoExport();
-    if (playbackAnimFrame) cancelAnimationFrame(playbackAnimFrame);
-    if (judgingVideo) judgingVideo.pause();
-    if (playbackVideo) playbackVideo.pause();
+    clearIntroSlatePlayback();
+    if (overlayAnimFrameId) cancelAnimationFrame(overlayAnimFrameId);
+    judgingVideo.pause();
+    playbackVideo.pause();
 
     phase = 'setup';
     setupScreen.classList.remove('hidden');
@@ -6213,9 +6535,844 @@
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});
     } else {
-      document.exitFullscreen().catch(() => {});
+      if (document.exitFullscreen) document.exitFullscreen();
     }
   }
+
+  /* ==========================================================================
+     SECTION 7: BATCH CSV SYNC & SPACEBAR WAVE ANCHOR ENGINE
+     ========================================================================== */
+  const batchSyncState = {
+    routines: [],
+    videoFiles: [],
+    selectedIndex: -1,
+    activeVideoUrl: null,
+    wave: null,
+    scanToken: 0,
+    scanCache: new Map(),
+    dragTarget: null,
+    speeds: [1.0, 1.5, 2.0, 0.5],
+    speedIndex: 1
+  };
+
+  function isObjectUrlInBatchSync(url) {
+    return Boolean(url) && (
+      batchSyncState.activeVideoUrl === url ||
+      batchSyncState.routines.some(r => r.videoObjectUrl === url)
+    );
+  }
+
+  const bsVideo        = document.getElementById('bsVideoPlayer');
+  const bsWaveCanvas   = document.getElementById('bsWaveCanvas');
+  const bsWaveCtx      = bsWaveCanvas ? bsWaveCanvas.getContext('2d') : null;
+  const bsProcCanvas   = document.getElementById('bsProcCanvas');
+  const bsProcCtx      = bsProcCanvas ? bsProcCanvas.getContext('2d', { willReadFrequently: true }) : null;
+  const bsRoutineList  = document.getElementById('bsRoutineList');
+  const bsSkillsStrip  = document.getElementById('bsSkillsStrip');
+  const bsAnchorBanner = document.getElementById('bsAnchorBanner');
+  const bsAnchorPrompt = document.getElementById('bsAnchorPrompt');
+  const bsBtnMarkSkill1 = document.getElementById('bsBtnMarkSkill1');
+  const bsBtnSpeed      = document.getElementById('bsBtnSpeed');
+  const bsBtnQueueRoutine = document.getElementById('bsBtnQueueRoutine');
+
+	function resizeHiDPICanvas(canvas) {
+    if (!canvas) return { width: 900, height: 135, dpr: 1 };
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const displayW = Math.max(1, Math.round(rect.width || 900));
+    const displayH = Math.max(1, Math.round(rect.height || 135));
+    const targetW = Math.round(displayW * dpr);
+    const targetH = Math.round(displayH * dpr);
+
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
+    }
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    return { width: displayW, height: displayH, dpr };
+  }
+
+  function bsNormalizeKey(name) {
+    return String(name || '').toLowerCase().replace(/\.[^/.]+$/, '').replace(/[^a-z0-9]/g, '');
+  }
+
+  function bsSplitList(val) {
+    if (!val) return [];
+    return String(val).split(/[;|,]/).map(s => s.trim()).filter(Boolean);
+  }
+
+  function bsParseOneRowCsv(text) {
+    const rows = parseCsvRows(text);
+    if (rows.length < 2) return [];
+    const rawHeaders = rows[0];
+    const normHeaders = rawHeaders.map(h => h.trim().toLowerCase().replace(/[^a-z0-9]/g, ''));
+
+    const findCol = (...candidates) => {
+      for (const cand of candidates) {
+        const idx = normHeaders.indexOf(cand);
+        if (idx !== -1) return idx;
+      }
+      return -1;
+    };
+
+    const colVid = findCol('videofilename', 'video', 'filename', 'file', 'sourcevideoname');
+    const colOut = findCol('outputfilename', 'output', 'exportname');
+    const colDisc = findCol('discipline', 'disc');
+    const colTitle = findCol('title', 'slatetitle', 'routine');
+    const colSub = findCol('subtitle', 'slatesubtitle', 'instructions');
+    const colLandDed = findCol('landingdeduction', 'landingded', 'landing');
+    const colLandFault = findCol('landingfaults', 'landingfault');
+
+    const skillDedCols = [];
+    const skillDdCols = [];
+    const skillFaultCols = [];
+    for (let s = 1; s <= 10; s++) {
+      skillDedCols[s] = findCol(`s${s}deduction`, `s${s}ded`, `skill${s}deduction`, `skill${s}`);
+      skillDdCols[s] = findCol(`s${s}dd`, `skill${s}dd`);
+      skillFaultCols[s] = findCol(`s${s}faults`, `s${s}fault`, `skill${s}faults`);
+    }
+
+    const routines = [];
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      const videoFileName = colVid !== -1 ? (row[colVid] || '').trim() : '';
+      if (!videoFileName) continue;
+
+      const discRaw = colDisc !== -1 ? (row[colDisc] || '').trim().toUpperCase() : 'TRP';
+      const discipline = ['TRP', 'DMT', 'TUM'].includes(discRaw) ? discRaw : 'TRP';
+      const maxSk = getMaxSkills(discipline);
+
+      const skills = [];
+      for (let s = 1; s <= maxSk; s++) {
+        const dedRaw = skillDedCols[s] !== -1 ? row[skillDedCols[s]] : '';
+        const ddRaw = skillDdCols[s] !== -1 ? row[skillDdCols[s]] : '';
+        const fltRaw = skillFaultCols[s] !== -1 ? row[skillFaultCols[s]] : '';
+
+        if (s > 1 && String(dedRaw || '').trim() === '' && String(ddRaw || '').trim() === '' && String(fltRaw || '').trim() === '') {
+          continue;
+        }
+        const dedNum = parseFloat(dedRaw);
+        skills.push({
+          skillNumber: s,
+          deduction: isNaN(dedNum) ? 0 : Math.abs(dedNum),
+          dd: String(ddRaw || '').trim(),
+          faults: bsSplitList(fltRaw),
+          timestampSec: null
+        });
+      }
+
+      const landNum = colLandDed !== -1 ? parseFloat(row[colLandDed]) : NaN;
+      const landingDeduction = isNaN(landNum) ? 0 : Math.abs(landNum);
+      const landingFaultsArr = colLandFault !== -1 ? bsSplitList(row[colLandFault]) : [];
+      const rawBase = videoFileName.replace(/\.[^/.]+$/, '');
+      const outName = colOut !== -1 && (row[colOut] || '').trim()
+        ? (row[colOut] || '').trim().replace(/\.mp4$/i, '')
+        : `${rawBase}_${discipline}`;
+
+      routines.push({
+        id: `bs_${r}_${Date.now()}`,
+        videoFileName,
+        rawVideoBaseName: rawBase,
+        outputBaseName: outName,
+        discipline,
+        title: colTitle !== -1 ? (row[colTitle] || '').trim() : '',
+        subtitle: colSub !== -1 ? (row[colSub] || '').trim() : '',
+        skills,
+        landingDeduction,
+        landingFaults: landingFaultsArr,
+        landingTimestamp: null,
+        videoFile: null,
+        videoObjectUrl: null,
+        status: 'unmatched'
+      });
+    }
+    return routines;
+  }
+
+  function downloadBatchSampleCsv() {
+    const sample = [
+      'VideoFileName,Discipline,Title,Subtitle,S1_DD,S1_Deduction,S1_Faults,S2_DD,S2_Deduction,S2_Faults,S3_DD,S3_Deduction,S3_Faults,S4_DD,S4_Deduction,S4_Faults,S5_DD,S5_Deduction,S5_Faults,S6_DD,S6_Deduction,S6_Faults,S7_DD,S7_Deduction,S7_Faults,S8_DD,S8_Deduction,S8_Faults,S9_DD,S9_Deduction,S9_Faults,S10_DD,S10_Deduction,S10_Faults,Landing_Deduction,Landing_Faults',
+      'Routine_01.mp4,TRP,TRP National Level 5 - Pass 1,Execution Judging Exercise,40/,0.1,Legs,41o,0.2,Shape;Opening,40<,0.0,,42/,0.2,Twist,40o,0.1,Keeping,41<,0.3,Legs;Arms,800/,0.2,Opening,40/,0.1,,801o,0.2,Shape,822/,0.3,Twist;Legs,0.2,Step',
+      'Routine_02.mp4,TRP,TRP National Level 5 - Pass 2,Execution Judging Exercise,41/,0.0,,40<,0.1,Shape,42o,0.2,Legs,40/,0.1,,800<,0.2,Opening,41o,0.1,Arms,40/,0.0,,801/,0.2,Twist,42<,0.3,Shape;Legs,831/,0.2,Opening,0.1,Arm'
+    ].join('\n');
+    const blob = new Blob([sample], { type: 'text/csv' });
+    triggerBlobDownload(blob, 'Batch_Routines_Master_Template.csv');
+  }
+
+  function bsMatchVideos() {
+    let matchedCount = 0;
+    for (const r of batchSyncState.routines) {
+      const targetKey = bsNormalizeKey(r.videoFileName);
+      const exact = batchSyncState.videoFiles.find(f => f.name.toLowerCase() === r.videoFileName.toLowerCase());
+      const fuzzy = exact || batchSyncState.videoFiles.find(f => {
+        const fk = bsNormalizeKey(f.name);
+        return fk === targetKey || fk.includes(targetKey) || targetKey.includes(fk);
+      });
+      r.videoFile = fuzzy || null;
+      if (r.videoFile) {
+        matchedCount++;
+        if (r.status === 'unmatched') r.status = 'ready';
+      } else {
+        r.status = 'unmatched';
+      }
+    }
+    const matchCountEl = document.getElementById('bsMatchCount');
+    if (matchCountEl) matchCountEl.textContent = `${matchedCount} / ${batchSyncState.routines.length}`;
+    bsRenderRoutineList();
+    if (batchSyncState.selectedIndex === -1 && batchSyncState.routines.length > 0) {
+      const firstReady = batchSyncState.routines.findIndex(r => r.videoFile);
+      bsSelectRoutine(firstReady !== -1 ? firstReady : 0);
+    }
+  }
+
+  function bsRenderRoutineList() {
+    if (!bsRoutineList) return;
+    if (!batchSyncState.routines.length) {
+      bsRoutineList.innerHTML = `<div style="font-size:0.78rem; color:var(--text-sub); padding:6px;">Load a Master CSV and matching video files to begin.</div>`;
+      return;
+    }
+    bsRoutineList.innerHTML = '';
+    batchSyncState.routines.forEach((r, idx) => {
+      const div = document.createElement('div');
+      div.className = 'bs-routine-item' + (idx === batchSyncState.selectedIndex ? ' selected' : '');
+      const statusMap = {
+        unmatched: ['No Video', 'bs-st-unmatched'],
+        ready: ['Ready', 'bs-st-ready'],
+        scanned: ['Wave Ready', 'bs-st-scanned'],
+        queued: ['Queued ✓', 'bs-st-queued']
+      };
+      const [stText, stClass] = statusMap[r.status] || statusMap.ready;
+      const skillDeds = r.skills.map(s => s.deduction);
+      const { netScore } = computeRoutineScores(r.discipline, r.skills.length, skillDeds, r.landingDeduction);
+      div.innerHTML = `
+        <div style="min-width:0;">
+          <div style="font-weight:700; font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(r.title || r.videoFileName)}</div>
+          <div class="meta">${escapeHtml(r.discipline)} • ${r.skills.length} skills • E: ${netScore.toFixed(2)}</div>
+        </div>
+        <span class="bs-status-pill ${stClass}">${stText}</span>
+      `;
+      div.onclick = () => bsSelectRoutine(idx);
+      bsRoutineList.appendChild(div);
+    });
+  }
+
+  async function bsSelectRoutine(idx) {
+    batchSyncState.selectedIndex = idx;
+    batchSyncState.wave = null;
+    batchSyncState.dragTarget = null;
+    bsRenderRoutineList();
+
+    const r = batchSyncState.routines[idx];
+    if (!r) return;
+
+    const hudTitleBox = document.getElementById('bsHudTitleBox');
+    const hudScoreBox = document.getElementById('bsHudScoreBox');
+    const hudTitle = document.getElementById('bsHudTitle');
+    const hudSub = document.getElementById('bsHudSubtitle');
+    const hudScore = document.getElementById('bsHudScore');
+
+    if (hudTitleBox) hudTitleBox.style.display = 'block';
+    if (hudScoreBox) hudScoreBox.style.display = 'block';
+    if (hudTitle) hudTitle.textContent = r.title || r.videoFileName;
+    if (hudSub) hudSub.textContent = `${r.discipline} • ${r.skills.length} Skills${r.subtitle ? ' • ' + r.subtitle : ''}`;
+
+    const { netScore } = computeRoutineScores(
+      r.discipline,
+      r.skills.length,
+      r.skills.map(s => s.deduction),
+      r.landingDeduction
+    );
+    if (hudScore) hudScore.textContent = netScore.toFixed(2);
+
+    bsRenderSkillsStrip();
+
+    if (!r.videoFile) {
+      if (bsBtnMarkSkill1) bsBtnMarkSkill1.disabled = true;
+      if (bsBtnSpeed) bsBtnSpeed.disabled = true;
+      if (bsBtnQueueRoutine) bsBtnQueueRoutine.disabled = true;
+      document.getElementById('bsWaveInfo').textContent = `Missing video file: ${r.videoFileName}`;
+      bsDrawWave();
+      return;
+    }
+
+    if (!r.videoObjectUrl) {
+      r.videoObjectUrl = URL.createObjectURL(r.videoFile);
+    }
+    batchSyncState.activeVideoUrl = r.videoObjectUrl;
+    bsVideo.src = r.videoObjectUrl;
+    bsVideo.playbackRate = batchSyncState.speeds[batchSyncState.speedIndex];
+
+    if (bsBtnMarkSkill1) bsBtnMarkSkill1.disabled = false;
+    if (bsBtnSpeed) bsBtnSpeed.disabled = false;
+    if (bsBtnQueueRoutine) bsBtnQueueRoutine.disabled = false;
+    bsUpdateAnchorBanner();
+
+    await new Promise(res => {
+      if (bsVideo.readyState >= 1) return res();
+      bsVideo.onloadedmetadata = () => res();
+    });
+
+    bsVideo.play().catch(() => {});
+
+    const cacheKey = `${r.videoFile.name}_${r.videoFile.size}`;
+    if (batchSyncState.scanCache.has(cacheKey)) {
+      batchSyncState.wave = batchSyncState.scanCache.get(cacheKey);
+      if (r.status === 'ready') r.status = 'scanned';
+      bsRenderRoutineList();
+      document.getElementById('bsWaveInfo').textContent = `${batchSyncState.wave.troughs.length} landing troughs detected (cached)`;
+      bsDrawWave();
+    } else {
+      await bsBuildCentroidWaveProgressive(r.videoFile, cacheKey);
+    }
+  }
+
+  async function bsBuildCentroidWaveProgressive(file, cacheKey) {
+    const token = ++batchSyncState.scanToken;
+    const progBar = document.getElementById('bsScanProgress');
+    const progFill = document.getElementById('bsScanProgressFill');
+    const waveInfo = document.getElementById('bsWaveInfo');
+
+    progBar.classList.add('active');
+    progFill.style.width = '0%';
+    waveInfo.textContent = 'Scanning motion wave in background... Press SPACEBAR on Skill 1 anytime';
+
+    const scanVid = document.createElement('video');
+    scanVid.muted = true;
+    scanVid.playsInline = true;
+    scanVid.preload = 'auto';
+    const scanUrl = URL.createObjectURL(file);
+    scanVid.src = scanUrl;
+
+    await new Promise(res => { scanVid.onloadedmetadata = () => res(); });
+    const duration = scanVid.duration || 1;
+    const sampleRate = 15;
+    const dt = 1 / sampleRate;
+    const totalSteps = Math.max(1, Math.floor(duration * sampleRate));
+
+    const w = bsProcCanvas.width;
+    const h = bsProcCanvas.height;
+    let prevGray = null;
+    const rawSamples = [];
+    const waveObj = { duration, samples: [], troughs: [], isPartial: true };
+    batchSyncState.wave = waveObj;
+
+    const finalizeWave = (samplesArr) => {
+      const smoothed = samplesArr.map((s, idx, arr) => {
+        let sum = 0, cnt = 0;
+        for (let k = -2; k <= 2; k++) {
+          if (arr[idx + k]) { sum += arr[idx + k].y; cnt++; }
+        }
+        return { t: s.t, y: sum / (cnt || 1) };
+      });
+      const troughs = [];
+      for (let i = 3; i < smoothed.length - 3; i++) {
+        const cur = smoothed[i].y;
+        if (
+          cur <= smoothed[i - 1].y &&
+          cur < smoothed[i + 1].y &&
+          cur <= smoothed[i - 2].y &&
+          cur <= smoothed[i + 2].y &&
+          cur < 0.72
+        ) {
+          const prevTrough = troughs[troughs.length - 1];
+          if (!prevTrough || (smoothed[i].t - prevTrough.t) >= 0.75) {
+            troughs.push({ t: smoothed[i].t, y: cur });
+          } else if (cur < prevTrough.y) {
+            troughs[troughs.length - 1] = { t: smoothed[i].t, y: cur };
+          }
+        }
+      }
+      return { smoothed, troughs };
+    };
+
+    for (let i = 0; i < totalSteps; i++) {
+      if (token !== batchSyncState.scanToken) {
+        URL.revokeObjectURL(scanUrl);
+        return;
+      }
+      const t = Math.min(duration - 0.01, i * dt);
+      scanVid.currentTime = t;
+      await new Promise(res => {
+        const onSeek = () => { scanVid.removeEventListener('seeked', onSeek); res(); };
+        scanVid.addEventListener('seeked', onSeek);
+        setTimeout(res, 120);
+      });
+
+      bsProcCtx.drawImage(scanVid, 0, 0, w, h);
+      const img = bsProcCtx.getImageData(0, 0, w, h).data;
+      const gray = new Float32Array(w * h);
+      for (let p = 0, px = 0; p < img.length; p += 4, px++) {
+        gray[px] = 0.299 * img[p] + 0.587 * img[p + 1] + 0.114 * img[p + 2];
+      }
+
+      let centroidY = 0.5;
+      if (prevGray) {
+        let weightSum = 0, yWeightSum = 0;
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const idx = y * w + x;
+            const diff = Math.abs(gray[idx] - prevGray[idx]);
+            if (diff > 18) {
+              weightSum += diff;
+              yWeightSum += diff * (1 - y / h);
+            }
+          }
+        }
+        if (weightSum > 250) {
+          centroidY = yWeightSum / weightSum;
+        } else if (rawSamples.length > 0) {
+          centroidY = rawSamples[rawSamples.length - 1].y;
+        }
+      }
+      prevGray = gray;
+      rawSamples.push({ t, y: centroidY });
+
+      if (i % 12 === 0) {
+        const { smoothed, troughs } = finalizeWave(rawSamples);
+        waveObj.samples = smoothed;
+        waveObj.troughs = troughs;
+        progFill.style.width = `${Math.round((i / totalSteps) * 100)}%`;
+        bsDrawWave();
+      }
+    }
+
+    URL.revokeObjectURL(scanUrl);
+    progBar.classList.remove('active');
+
+    const { smoothed, troughs } = finalizeWave(rawSamples);
+    const waveData = { duration, samples: smoothed, troughs, isPartial: false };
+    batchSyncState.scanCache.set(cacheKey, waveData);
+    batchSyncState.wave = waveData;
+
+    const r = batchSyncState.routines[batchSyncState.selectedIndex];
+    if (r) {
+      if (r.skills[0]?.timestampSec != null) {
+        bsApplySingleSkill1Anchor(r.skills[0].timestampSec);
+      }
+      if (r.status === 'ready') r.status = 'scanned';
+      bsRenderRoutineList();
+    }
+    waveInfo.textContent = `${troughs.length} landing troughs detected`;
+    bsDrawWave();
+  }
+
+  function bsFindNearestTrough(targetT, maxSearchWindowSec = 1.4) {
+    const wave = batchSyncState.wave;
+    if (!wave || !wave.troughs || !wave.troughs.length) return null;
+    let best = null;
+    let bestDiff = Infinity;
+    for (const tr of wave.troughs) {
+      const diff = Math.abs(tr.t - targetT);
+      if (diff <= maxSearchWindowSec && diff < bestDiff) {
+        bestDiff = diff;
+        best = tr;
+      }
+    }
+    return best;
+  }
+
+  function bsApplySingleSkill1Anchor(rawT) {
+    const r = batchSyncState.routines[batchSyncState.selectedIndex];
+    if (!r) return;
+
+    const duration = bsVideo.duration || (batchSyncState.wave ? batchSyncState.wave.duration : 60);
+    const wave = batchSyncState.wave;
+    const n = r.skills.length;
+
+    let skill1Time = rawT;
+    let snappedIdx = -1;
+
+    if (wave && wave.troughs && wave.troughs.length > 0) {
+      const nearestTrough = bsFindNearestTrough(rawT, 1.4);
+      if (nearestTrough) {
+        skill1Time = nearestTrough.t;
+        snappedIdx = wave.troughs.indexOf(nearestTrough);
+      }
+    }
+
+    r.skills[0].timestampSec = Math.max(0.1, Math.min(duration - 0.5, skill1Time));
+
+    let prevTime = r.skills[0].timestampSec;
+    for (let i = 1; i < n; i++) {
+      let nextTime = null;
+      if (snappedIdx !== -1 && wave && wave.troughs && (snappedIdx + i) < wave.troughs.length) {
+        const candidateT = wave.troughs[snappedIdx + i].t;
+        if (candidateT > prevTime + 0.45 && candidateT < duration - 0.3) {
+          nextTime = candidateT;
+        }
+      }
+      if (nextTime === null) {
+        nextTime = Math.min(duration - 0.3, prevTime + 1.55);
+      }
+      r.skills[i].timestampSec = nextTime;
+      prevTime = nextTime;
+    }
+
+    r.landingTimestamp = Math.min(duration - 0.1, prevTime + 3.0);
+
+    bsUpdateAnchorBanner();
+    bsRenderSkillsStrip();
+    bsDrawWave();
+  }
+
+  function bsMarkSkill1Now() {
+    const r = batchSyncState.routines[batchSyncState.selectedIndex];
+    if (!r || !r.videoFile) return;
+    bsApplySingleSkill1Anchor(bsVideo.currentTime || 0.2);
+    triggerFeedback('tap');
+  }
+
+  function bsUpdateAnchorBanner() {
+    const r = batchSyncState.routines[batchSyncState.selectedIndex];
+    if (!r || !bsAnchorBanner || !bsAnchorPrompt) return;
+    if (r.skills[0]?.timestampSec == null) {
+      bsAnchorBanner.className = 'bs-anchor-banner pending';
+      bsAnchorPrompt.innerHTML = `Press <strong>SPACEBAR</strong> on Skill 1 anytime — S1 snaps uniformly to its closest purple dot, S2–S10 snap to subsequent dots, Landing = +3.0s.`;
+    } else {
+      bsAnchorBanner.className = 'bs-anchor-banner done';
+      bsAnchorPrompt.innerHTML = `✓ Skill 1 anchored at <strong>${r.skills[0].timestampSec.toFixed(2)}s</strong> • Landing at <strong>${(r.landingTimestamp || 0).toFixed(2)}s</strong> (+3.0s) — Press SPACEBAR again to re-snap or drag markers below.`;
+    }
+  }
+
+  function bsRenderSkillsStrip() {
+    if (!bsSkillsStrip) return;
+    const r = batchSyncState.routines[batchSyncState.selectedIndex];
+    if (!r) { bsSkillsStrip.innerHTML = ''; return; }
+    bsSkillsStrip.innerHTML = '';
+    r.skills.forEach((s) => {
+      const chip = document.createElement('div');
+      const colCls = s.deduction <= 0.1 ? 'bs-c-green' : (s.deduction <= 0.3 ? 'bs-c-orange' : 'bs-c-red');
+      chip.className = `bs-skill-chip ${colCls}`;
+      chip.innerHTML = `
+        <div class="sc-top"><span>S${s.skillNumber} ${escapeHtml(s.dd || '')}</span><span>${s.timestampSec != null ? s.timestampSec.toFixed(1) + 's' : '--'}</span></div>
+        <div class="sc-ded">-${s.deduction.toFixed(1)}</div>
+        <div class="sc-fault">${escapeHtml(s.faults.join(', ') || 'Clean')}</div>
+      `;
+      chip.onclick = () => { if (s.timestampSec != null) bsVideo.currentTime = Math.max(0, s.timestampSec - 0.8); };
+      bsSkillsStrip.appendChild(chip);
+    });
+
+    if (r.skills.length === getMaxSkills(r.discipline)) {
+      const lChip = document.createElement('div');
+      const colCls = r.landingDeduction <= 0.1 ? 'bs-c-green' : (r.landingDeduction <= 0.3 ? 'bs-c-orange' : 'bs-c-red');
+      lChip.className = `bs-skill-chip ${colCls}`;
+      lChip.innerHTML = `
+        <div class="sc-top"><span>LAND</span><span>${r.landingTimestamp != null ? r.landingTimestamp.toFixed(1) + 's' : '--'}</span></div>
+        <div class="sc-ded">-${r.landingDeduction.toFixed(1)}</div>
+        <div class="sc-fault">${escapeHtml(r.landingFaults.join(', ') || 'Stuck')}</div>
+      `;
+      lChip.onclick = () => { if (r.landingTimestamp != null) bsVideo.currentTime = Math.max(0, r.landingTimestamp - 0.8); };
+      bsSkillsStrip.appendChild(lChip);
+    }
+  }
+
+  function bsDrawWave() {
+    if (!bsWaveCtx || !bsWaveCanvas) return;
+    //const W = bsWaveCanvas.width;
+    //const H = bsWaveCanvas.height;
+	const { width: W, height: H } = resizeHiDPICanvas(bsWaveCanvas);
+    const c = getThemeCanvasColors();
+
+    bsWaveCtx.clearRect(0, 0, W, H);
+    bsWaveCtx.fillStyle = '#050509';
+    bsWaveCtx.fillRect(0, 0, W, H);
+
+    const wave = batchSyncState.wave;
+    const r = batchSyncState.routines[batchSyncState.selectedIndex];
+    const duration = (bsVideo && bsVideo.duration) || (wave && wave.duration) || 1;
+
+    bsWaveCtx.strokeStyle = 'rgba(255,255,255,0.06)';
+    bsWaveCtx.lineWidth = 1;
+    for (let g = 1; g <= 3; g++) {
+      const gy = (H / 4) * g;
+      bsWaveCtx.beginPath(); bsWaveCtx.moveTo(0, gy); bsWaveCtx.lineTo(W, gy); bsWaveCtx.stroke();
+    }
+
+    if (wave && wave.samples && wave.samples.length > 1) {
+      bsWaveCtx.beginPath();
+      wave.samples.forEach((s, idx) => {
+        const x = (s.t / duration) * W;
+        const y = H - (Math.max(0.05, Math.min(0.95, s.y)) * (H - 22) + 11);
+        if (idx === 0) bsWaveCtx.moveTo(x, y);
+        else bsWaveCtx.lineTo(x, y);
+      });
+      bsWaveCtx.strokeStyle = c.blue;
+      bsWaveCtx.lineWidth = 2;
+      bsWaveCtx.stroke();
+
+      wave.troughs.forEach(tr => {
+        const x = (tr.t / duration) * W;
+        const y = H - (Math.max(0.05, Math.min(0.95, tr.y)) * (H - 22) + 11);
+        bsWaveCtx.fillStyle = c.purple;
+        bsWaveCtx.beginPath();
+        bsWaveCtx.arc(x, y, 4.5, 0, Math.PI * 2);
+        bsWaveCtx.fill();
+      });
+    }
+
+    if (r) {
+      r.skills.forEach((s, i) => {
+        if (s.timestampSec == null) return;
+        const x = (s.timestampSec / duration) * W;
+        bsWaveCtx.strokeStyle = i === 0 ? c.orange : c.green;
+        bsWaveCtx.lineWidth = i === 0 ? 2.5 : 1.75;
+        bsWaveCtx.beginPath(); bsWaveCtx.moveTo(x, 0); bsWaveCtx.lineTo(x, H); bsWaveCtx.stroke();
+
+        bsWaveCtx.fillStyle = i === 0 ? c.orange : c.green;
+        bsWaveCtx.fillRect(x - 12, 2, 24, 15);
+        bsWaveCtx.fillStyle = '#0a0a0f';
+        bsWaveCtx.font = 'bold 10px sans-serif';
+        bsWaveCtx.textAlign = 'center';
+        bsWaveCtx.fillText(`S${s.skillNumber}`, x, 13);
+      });
+
+      if (r.landingTimestamp != null) {
+        const lx = (r.landingTimestamp / duration) * W;
+        bsWaveCtx.strokeStyle = c.pink;
+        bsWaveCtx.lineWidth = 2.5;
+        bsWaveCtx.beginPath(); bsWaveCtx.moveTo(lx, 0); bsWaveCtx.lineTo(lx, H); bsWaveCtx.stroke();
+
+        bsWaveCtx.fillStyle = c.pink;
+        bsWaveCtx.fillRect(lx - 18, H - 18, 36, 16);
+        bsWaveCtx.fillStyle = '#fff';
+        bsWaveCtx.font = 'bold 10px sans-serif';
+        bsWaveCtx.textAlign = 'center';
+        bsWaveCtx.fillText('LAND', lx, H - 6);
+      }
+    }
+
+    if (bsVideo && bsVideo.duration) {
+      const px = (bsVideo.currentTime / bsVideo.duration) * W;
+      bsWaveCtx.strokeStyle = '#ffffff';
+      bsWaveCtx.lineWidth = 1.5;
+      bsWaveCtx.beginPath(); bsWaveCtx.moveTo(px, 0); bsWaveCtx.lineTo(px, H); bsWaveCtx.stroke();
+    }
+  }
+
+  if (bsWaveCanvas) {
+    bsWaveCanvas.addEventListener('pointerdown', (e) => {
+      const r = batchSyncState.routines[batchSyncState.selectedIndex];
+      const duration = (bsVideo && bsVideo.duration) || 1;
+      if (!r || !duration) return;
+      const rect = bsWaveCanvas.getBoundingClientRect();
+      const clickT = ((e.clientX - rect.left) / rect.width) * duration;
+
+      let closest = null, minDiff = 0.45;
+      r.skills.forEach((s, idx) => {
+        if (s.timestampSec != null && Math.abs(s.timestampSec - clickT) < minDiff) {
+          minDiff = Math.abs(s.timestampSec - clickT);
+          closest = { type: 'skill', index: idx };
+        }
+      });
+      if (r.landingTimestamp != null && Math.abs(r.landingTimestamp - clickT) < minDiff) {
+        closest = { type: 'landing' };
+      }
+
+      if (closest) {
+        batchSyncState.dragTarget = closest;
+        try { bsWaveCanvas.setPointerCapture(e.pointerId); } catch (err) {}
+      } else {
+        bsVideo.currentTime = Math.max(0, Math.min(duration, clickT));
+        bsDrawWave();
+      }
+    });
+
+    bsWaveCanvas.addEventListener('pointermove', (e) => {
+      if (!batchSyncState.dragTarget) return;
+      const r = batchSyncState.routines[batchSyncState.selectedIndex];
+      const duration = (bsVideo && bsVideo.duration) || 1;
+      const rect = bsWaveCanvas.getBoundingClientRect();
+      let newT = Math.max(0.1, Math.min(duration - 0.1, ((e.clientX - rect.left) / rect.width) * duration));
+      const snapped = bsFindNearestTrough(newT, 0.3);
+      if (snapped) newT = snapped.t;
+
+      if (batchSyncState.dragTarget.type === 'skill') {
+        r.skills[batchSyncState.dragTarget.index].timestampSec = newT;
+      } else {
+        r.landingTimestamp = newT;
+      }
+      bsVideo.currentTime = newT;
+      bsRenderSkillsStrip();
+      bsDrawWave();
+    });
+
+    bsWaveCanvas.addEventListener('pointerup', () => {
+      batchSyncState.dragTarget = null;
+    });
+  }
+
+  function bsUpdateLiveHud() {
+    const r = batchSyncState.routines[batchSyncState.selectedIndex];
+    const popup = document.getElementById('bsSkillPopup');
+    if (!popup) return;
+    if (!r || phase !== 'setup') {
+      popup.classList.remove('visible');
+      return;
+    }
+
+    const maxSk = getMaxSkills(r.discipline);
+    const snapshot = {
+      discipline: r.discipline,
+      skillsPerformed: r.skills.length,
+      skillDeductions: r.skills.map(s => s.deduction),
+      skillTimestamps: r.skills.map(s => s.timestampSec || 0),
+      skillDDs: r.skills.map(s => s.dd || ''),
+      skillFaults: r.skills.map(s => s.faults || []),
+      landingDeduction: r.landingDeduction,
+      landingTimestamp: r.skills.length === maxSk ? (r.landingTimestamp || 0) : 0,
+      landingFaults: r.landingFaults || []
+    };
+
+    const ev = getActiveOverlayEvent(bsVideo.currentTime || 0, snapshot);
+    if (ev) {
+      const colHex = getDeductionHexColor(ev.val);
+      document.getElementById('bsSpHead').textContent = ev.dd ? `${ev.label} • ${ev.dd}` : ev.label;
+      const dedEl = document.getElementById('bsSpDed');
+      dedEl.textContent = `-${ev.val.toFixed(1)}`;
+      dedEl.style.color = colHex;
+      document.getElementById('bsSpFaults').textContent = (ev.faults || []).join(' • ');
+      popup.style.borderColor = colHex;
+      popup.classList.add('visible');
+    } else {
+      popup.classList.remove('visible');
+    }
+  }
+
+  function bsSyncLoop() {
+    if (phase === 'setup' && batchSyncState.selectedIndex !== -1) {
+      bsDrawWave();
+      bsUpdateLiveHud();
+    }
+    requestAnimationFrame(bsSyncLoop);
+  }
+  requestAnimationFrame(bsSyncLoop);
+
+  if (bsBtnMarkSkill1) bsBtnMarkSkill1.onclick = bsMarkSkill1Now;
+
+  if (bsBtnSpeed) {
+    bsBtnSpeed.onclick = () => {
+      batchSyncState.speedIndex = (batchSyncState.speedIndex + 1) % batchSyncState.speeds.length;
+      const spd = batchSyncState.speeds[batchSyncState.speedIndex];
+      bsVideo.playbackRate = spd;
+      bsBtnSpeed.textContent = `Speed: ${spd}x`;
+    };
+  }
+
+  if (bsBtnQueueRoutine) {
+    bsBtnQueueRoutine.onclick = () => {
+      const r = batchSyncState.routines[batchSyncState.selectedIndex];
+      if (!r || !r.videoFile) return;
+
+      if (r.skills[0]?.timestampSec == null) {
+        bsMarkSkill1Now();
+      }
+
+      const maxSk = getMaxSkills(r.discipline);
+      const performed = Math.min(maxSk, r.skills.length);
+      const skillDeductArr = r.skills.slice(0, performed).map(s => s.deduction);
+      const skillTsArr = r.skills.slice(0, performed).map(s => s.timestampSec || 0);
+      const skillDdArr = r.skills.slice(0, performed).map(s => s.dd || '');
+      const skillFaultsArr = r.skills.slice(0, performed).map(s => [...(s.faults || [])]);
+      const landTs = (performed === maxSk) ? (r.landingTimestamp || 0) : 0;
+
+      const { totalDeduct, netScore } = computeRoutineScores(
+        r.discipline,
+        performed,
+        skillDeductArr,
+        r.landingDeduction
+      );
+
+      const useCsvTitle = Boolean((r.title || '').trim() || (r.subtitle || '').trim());
+
+      batchQueue.push({
+        id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        videoObjectUrl: r.videoObjectUrl,
+        rawVideoBaseName: r.rawVideoBaseName,
+        outputBaseName: r.outputBaseName,
+        discipline: r.discipline,
+        skillsPerformed: performed,
+        skillDeductions: skillDeductArr,
+        skillTimestamps: skillTsArr,
+        skillDDs: skillDdArr,
+        skillFaults: skillFaultsArr,
+        landingDeduction: r.landingDeduction,
+        landingTimestamp: landTs,
+        landingFaults: [...(r.landingFaults || [])],
+        totalDeduct,
+        netScore,
+        slateEnabled: useCsvTitle ? true : brandingState.slateEnabled,
+        slateTitle: r.title || brandingState.slateTitle,
+        slateSubtitle: r.subtitle || brandingState.slateSubtitle,
+        slateDurationSec: brandingState.slateDurationSec,
+        endSlateEnabled: brandingState.endSlateEnabled,
+        endSlateDurationSec: brandingState.endSlateDurationSec,
+        watermarkText: brandingState.watermarkText
+      });
+
+      r.status = 'queued';
+      renderBatchQueueCard();
+      bsRenderRoutineList();
+      triggerFeedback('complete');
+
+      const nextIdx = batchSyncState.routines.findIndex((item, i) => i > batchSyncState.selectedIndex && item.videoFile && item.status !== 'queued');
+      if (nextIdx !== -1) {
+        bsSelectRoutine(nextIdx);
+      } else {
+        bsVideo.pause();
+      }
+    };
+  }
+
+  // Capture-phase Spacebar listener: triggers Skill 1 anchor in Section 7 without pausing the video
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && phase === 'setup' && batchSyncState.selectedIndex !== -1) {
+      const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea') return;
+      const r = batchSyncState.routines[batchSyncState.selectedIndex];
+      if (!r || !r.videoFile) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      bsMarkSkill1Now();
+    }
+  }, true);
+
+  function bsWireDropzone(dropEl, inputEl, onFiles) {
+    if (!dropEl || !inputEl) return;
+    dropEl.addEventListener('dragover', (e) => { e.preventDefault(); dropEl.classList.add('dragover'); });
+    dropEl.addEventListener('dragleave', () => dropEl.classList.remove('dragover'));
+    dropEl.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropEl.classList.remove('dragover');
+      if (e.dataTransfer.files.length) onFiles(e.dataTransfer.files);
+    });
+    inputEl.addEventListener('change', (e) => {
+      if (e.target.files.length) onFiles(e.target.files);
+      e.target.value = '';
+    });
+  }
+
+  bsWireDropzone(document.getElementById('bsCsvDrop'), document.getElementById('bsCsvInput'), async (files) => {
+    const file = files[0];
+    const text = await file.text();
+    batchSyncState.routines = bsParseOneRowCsv(text);
+    batchSyncState.selectedIndex = -1;
+    document.getElementById('bsCsvStatus').textContent = `Loaded: ${file.name} (${batchSyncState.routines.length} routines)`;
+    bsMatchVideos();
+  });
+
+  bsWireDropzone(document.getElementById('bsVidDrop'), document.getElementById('bsVidInput'), (files) => {
+    for (const f of files) {
+      const existingIdx = batchSyncState.videoFiles.findIndex(v => v.name === f.name);
+      if (existingIdx !== -1) batchSyncState.videoFiles[existingIdx] = f;
+      else batchSyncState.videoFiles.push(f);
+    }
+    document.getElementById('bsVidStatus').textContent = `${batchSyncState.videoFiles.length} video file(s) loaded`;
+    bsMatchVideos();
+  });
 </script>
 </body>
 </html>
