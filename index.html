@@ -7,870 +7,487 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-FWWG0H2N09');
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-	<link rel="manifest" href="/site.webmanifest">
     <title>Judgle</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <style>
+        :root {
+            /* Dark Mode (Default) - Matches FIG / Judgle / Qira Palette */
+            --bg-primary: #0f1117;
+            --bg-card: #1e222d;
+            --bg-card-hover: #262b38;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2d3343;
+            --border-hover: #475569;
+            --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.45);
+
+            /* FIG / Brand Accent Colours */
+            --fig-green: #22c55e;
+            --fig-green-bg: rgba(34, 197, 94, 0.14);
+            --fig-blue: #3b82f6;
+            --fig-blue-bg: rgba(59, 130, 246, 0.14);
+            --fig-orange: #f97316;
+            --fig-orange-bg: rgba(249, 115, 22, 0.14);
+            --qira-purple: #a855f7;
+            --qira-purple-bg: rgba(168, 85, 247, 0.14);
+            --fig-teal: #14b8a6;
+            --fig-teal-bg: rgba(20, 184, 166, 0.14);
+        }
+
+        body.light-mode {
+            --bg-primary: #f4f6f9;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --shadow-card: 0 2px 10px rgba(15, 23, 42, 0.06);
+            --shadow-hover: 0 6px 18px rgba(15, 23, 42, 0.1);
+
+            --fig-green: #16a34a;
+            --fig-green-bg: rgba(22, 163, 74, 0.12);
+            --fig-blue: #2563eb;
+            --fig-blue-bg: rgba(37, 99, 235, 0.12);
+            --fig-orange: #ea580c;
+            --fig-orange-bg: rgba(234, 88, 12, 0.12);
+            --qira-purple: #9333ea;
+            --qira-purple-bg: rgba(147, 51, 234, 0.12);
+            --fig-teal: #0d9488;
+            --fig-teal-bg: rgba(13, 148, 136, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.25s ease, color 0.25s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Header Bar */
+        header {
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 1rem 1rem 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .brand-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--fig-green), var(--fig-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1rem;
+            box-shadow: 0 3px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .brand-text h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .brand-text span {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: block;
+        }
+
+        .icon-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+        }
+
+        /* Main Container */
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 0.5rem 1rem 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Condensed Horizontal Project Cards */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.65rem;
+        }
+
+        .project-card {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-color, var(--fig-blue));
+            border-radius: 12px;
+            padding: 0.8rem 0.95rem;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: var(--shadow-card);
+            transition: transform 0.18s ease,
+                        background-color 0.18s ease,
+                        border-color 0.18s ease,
+                        box-shadow 0.18s ease;
+            animation: cardFadeIn 0.3s ease backwards;
+        }
+
+        .project-card:hover {
+            transform: translateY(-2px);
+            background: var(--bg-card-hover);
+            border-color: var(--accent-color, var(--border-hover));
+            box-shadow: var(--shadow-hover);
+        }
+
+        .project-card:active {
+            transform: scale(0.985);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--accent-bg, var(--fig-blue-bg));
+            color: var(--accent-color, var(--fig-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .card-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.4rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .card-content h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-badge {
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 0.15rem 0.45rem;
+            border-radius: 999px;
+            background: var(--accent-bg, var(--fig-blue-bg));
+            color: var(--accent-color, var(--fig-blue));
+            flex-shrink: 0;
+        }
+
+        .card-content p {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-chevron {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            transition: transform 0.18s ease, color 0.18s ease;
+        }
+
+        .project-card:hover .card-chevron {
+            color: var(--accent-color, var(--text-primary));
+            transform: translateX(3px);
+        }
+
+        /* Footer */
+        footer {
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 0.65rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        @keyframes cardFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile Single-Screen Fit */
+        @media (max-width: 640px) {
+            header {
+                padding: 0.75rem 0.85rem 0.35rem;
+            }
+            main {
+                padding: 0.35rem 0.85rem 0.5rem;
+                justify-content: flex-start;
+            }
+            .project-grid {
+                grid-template-columns: 1fr;
+                gap: 0.55rem;
+            }
+            .project-card {
+                padding: 0.7rem 0.85rem;
+                gap: 0.75rem;
+            }
+            .card-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 1rem;
+            }
+            .card-content h2 {
+                font-size: 0.95rem;
+            }
+            .card-content p {
+                font-size: 0.76rem;
+                -webkit-line-clamp: 1;
+            }
+            footer {
+                padding: 0.5rem 0.85rem;
+            }
+        }
+    </style>
 </head>
 <body class="dark-mode">
-	<div class="top-icons">
-		 <h1 class="logo">Judgle</h1>
 
-		<i class="fas fa-home home-icon" title="Home - Reset & Return to Quiz" onclick="goHome()"></i>
-		<i class="fas fa-adjust mode-toggle" title="Toggle Light/Dark Mode" onclick="toggleMode()"></i>
-		<i class="fas fa-undo reset-icon" title="Reset Quiz" onclick="restartQuiz()"></i>
-		<i class="fas fa-history history-icon" title="View History" id="historyButton" onclick="toggleVideoHistory()"></i>
-		<i class="fas fa-book resource-icon" title="Resource Library" onclick="toggleResourceLibrary()"></i>
-		<i class="fas fa-question-circle help-icon" title="Help" onclick="toggleHelpMenu()"></i>
-	
-	</div>
-	
-	<div id="helpMenu">
-		<p><i class="fas fa-home"></i> Home (Reset & Return)</p>
-		<p><i class="fas fa-adjust"></i> Light/Dark Mode</p>
-		<p><i class="fas fa-undo"></i> Reset Answers</p>
-		<p><i class="fas fa-history"></i> View Video History</p>
-		<p><i class="fas fa-book"></i> Resource Library</p>
-	</div>
+    <header>
+        <div class="brand">
+            <div class="brand-mark" aria-hidden="true">
+                <i class="fas fa-layer-group"></i>
+            </div>
+            <div class="brand-text">
+                <h1>Judgle</h1>
+                <span>Trampoline &amp; Gymnastics Judging Suite</span>
+            </div>
+        </div>
+        <button class="icon-btn" id="themeToggle" title="Toggle Light/Dark Mode" aria-label="Toggle Light/Dark Mode">
+            <i class="fas fa-sun" id="themeIcon"></i>
+        </button>
+    </header>
 
-	<!-- Resource Library Section -->
-	<div id="resourceLibrary" class="resource-library hidden">
-		<div class="resource-header">
-			<h2>Resource Library</h2>
-			<i class="fas fa-times resource-close-icon" title="Close Resource Library" onclick="toggleResourceLibrary()"></i>
-			<!--<button class="share-link-btn" onclick="copyResourceLink()" title="Copy shareable link to resource library">
-				<i class="fas fa-share-alt"></i> Share Resource Link
-			</button>-->
-			<div class="tag-filter-container">
-				<span class="filter-label">Filter by tag:</span>
-				<div id="tagFilters" class="tag-filters"></div>
-				<button class="clear-filters-btn" onclick="clearTagFilters()">Clear Filters</button>
-			</div>
-		</div>
-		<div id="resourceGrid" class="resource-grid"></div>
-	</div>
+    <main>
+        <section class="project-grid" id="projectGrid" aria-label="Judging Projects"></section>
+    </main>
 
-	<!-- Main Content -->
-	<div id="mainContent">
-		<div class="container">
-			<!-- Video Library -->
-			<div class="container">
-				<div class="video-list">
-					<div id="latestVideoContainer">
-						
-					</div> <!-- Placeholder for the latest video -->
+    <footer>
+        <span>Vibe Coded/Created by <strong>Jed &#127462;&#127482;</strong></span>
+    </footer>
 
-					<!-- Hidden videos (will be shown when clicking "View History") -->
-					<div id="hiddenVideos" style="display: none;">
-						<div class="video-item" onclick="loadVideo('vid2')">
-							<p>TRA 2</p>
-						</div>
-						<div class="video-item" onclick="loadVideo('vid3')">
-							<p>DMT</p>
-						</div>
-					</div>
-				</div>			
-			</div>
-		</div>
-		<div id="warningMessage" class="hidden">Please fill in all deductions before submitting.</div>
-		<!-- Video Embed -->
-		<div class="video-container" id="videoPlayer">
-			<!-- Will load selected video here -->
-		</div>
-		
-		<div class="container">
-			<!-- Number Input Section -->
-			<div>
-				<h3>Enter Your Deductions:</h3>
-				<form id="quizForm">
-					<div id="inputContainer">
-						<!-- Input fields will be dynamically generated here -->
-					</div>
-					<br>
-					<button type="button" id="submitButton" class="button" onclick="checkAnswers()">Submit</button>
-				</form>
-
-				<!-- Result Section -->
-				<div class="result" id="result"></div>
-			</div>
-
-			<!-- Answer Table -->
-			<table class="answer-table" id="answerTable" style="display:none;">
-				<thead>
-					<tr>
-						<th>Element</th>
-						<th>Your Deduction</th>
-						<th>Correct Deduction</th>
-						<th>Explanation</th>
-					</tr>
-				</thead>
-				<tbody id="answerTableBody">
-					<!-- Answer details will be added dynamically here -->
-				</tbody>
-			</table>
-		</div>
-		<div class="container">
-			<h5>Development in Progress.  All scores are test scores and not relevant to the video shown. Created by Jed</h5>
-		</div>
-	</div>
     <script>
-        
-
-		// Predefined video data with correct answers and explanations for each video
-        const videoData = {
-            vid1: {
-                src: "https://www.youtube.com/embed/qkfBtD3IbNw",
-                correctAnswers: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 10],
-                explanations: [
-                    "Explanation for answer 1...",
-                    "Explanation for answer 2...",
-                    "Explanation for answer 3...",
-                    "Explanation for answer 4...",
-                    "Explanation for answer 5...",
-                    "Explanation for answer 6...",
-                    "Explanation for answer 7...",
-                    "Explanation for answer 8...",
-                    "Explanation for answer 9...",
-                    "Explanation for answer 10...",
-                    "Explanation for the final answer"
-                ],
-                ranges: [
-                    { min: 0, max: 1 },
-                    { min: 1, max: 2 },
-                    { min: 2, max: 3 },
-                    { min: 3, max: 4 },
-                    { min: 4, max: 5 },
-                    { min: 1, max: 1 },
-                    { min: 2, max: 2 },
-                    { min: 3, max: 3 },
-                    { min: 4, max: 4 },
-                    { min: 5, max: 5 },
-                    { min: 10, max: 10 }
-                ],
-				title: "2025-03-01 (TRA)",
-				releaseDate: "2025-03-01"
+        /**
+         * =====================================================================
+         * PROJECT CONFIGURATION
+         * Add new projects by appending an object to this array.
+         * Set `visible: false` to hide any link without deleting its config.
+         *
+         * Available colour themes: 'green', 'blue', 'orange', 'purple', 'teal'
+         * =====================================================================
+         */
+        const PROJECTS = [
+            {
+                id: "rtinput",
+                title: "Electronic Judging Interface",
+                description: "Real-time execution input",
+                url: "rtinput.html",
+                icon: "fas fa-tablet-screen-button",
+                badge: "Live",
+                theme: "green",
+                visible: true
             },
-            vid2: {
-                src: "https://www.youtube.com/embed/KAgB7tq25GI",
-                correctAnswers: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1],
-                explanations: [
-                    "Explanation for answer 1...",
-                    "Explanation for answer 2...",
-                    "Explanation for answer 3...",
-                    "Explanation for answer 4...",
-                    "Explanation for answer 5...",
-                    "Explanation for answer 6...",
-                    "Explanation for answer 7...",
-                    "Explanation for answer 8...",
-                    "Explanation for answer 9...",
-                    "Explanation for answer 10...",
-                    "Explanation for the final answer"
-                ],
-                ranges: [
-                    { min: 0, max: 1 },
-                    { min: 1, max: 2 },
-                    { min: 2, max: 3 },
-                    { min: 3, max: 4 },
-                    { min: 4, max: 5 },
-                    { min: 1, max: 1 },
-                    { min: 2, max: 2 },
-                    { min: 3, max: 3 },
-                    { min: 4, max: 4 },
-                    { min: 5, max: 5 },
-                    { min: 5, max: 10 }
-                ],
-				title: "2025-03-08 (TRA)",
-				releaseDate: "2025-03-08"
+            {
+                id: "jed",
+                title: "Judge Education Designer",
+                description: "Execution Overlay and Video Export",
+                url: "jed.html",
+                icon: "fas fa-graduation-cap",
+                badge: "Education",
+                theme: "blue",
+                visible: true
             },
-			vid3: {
-                src: "https://www.youtube.com/embed/K-0Cl0o_qx4",
-                correctAnswers: [3, 4, 0],
-                explanations: [
-                    "Explanation for answer 1...",
-                    "Explanation for answer 2...",
-                    "Explanation for answer 3..."
-                ],
-                ranges: [
-                    { min: 3, max: 4 },
-                    { min: 3, max: 4 },
-                    { min: 0, max: 0 }
-                ],
-				title: "2025-03-12 (DMT)",
-				releaseDate: "2025-03-17"
+            {
+                id: "qira",
+                title: "Qira HD Simulator",
+                description: "Qira HD Software Simulator",
+                url: "qira.html",
+                icon: "fas fa-bullseye",
+                badge: "Simulator",
+                theme: "purple",
+                visible: true
             },
-			vid4: {
-                src: "https://www.youtube.com/embed/_lRiCGFKKrY",
-                correctAnswers: [1,3,2,3,2,3,3,5,2],
-                explanations: [
-                    "Explanation for answer 1...",
-                    "Explanation for answer 2...",
-					"Explanation for answer 3...",
-					"Explanation for answer 4...",
-					"Explanation for answer 5...",
-					"Explanation for answer 6...",
-					"Explanation for answer 7...",
-					"Explanation for answer 8...",
-                    "Explanation for answer 9..."
-                ],
-                ranges: [
-                    { min: 1, max: 1 },
-					{ min: 3, max: 3 },
-					{ min: 2, max: 3 },
-					{ min: 3, max: 3 },
-					{ min: 2, max: 3 },
-                    { min: 3, max: 3 },
-					{ min: 3, max: 3 },
-					{ min: 5, max: 5 },
-                    { min: 0, max: 2 }
-                ],
-				title: "2025-03-17 (TUM)",
-				releaseDate: "2025-03-17"
+            {
+                id: "judgle",
+                title: "Judgle",
+                description: "Video execution judging practice across TRP, DMT & TUM",
+                url: "judgle.html",
+                icon: "fas fa-play-circle",
+                badge: "Practice",
+                theme: "orange",
+                visible: false
+            },
+            {
+                id: "resources",
+                title: "Resources",
+                description: "CJP/DD rules, reference sheets & deduction video library",
+                url: "https://judge.com/judgle.html?view=resources",
+                icon: "fas fa-book-open",
+                badge: "Library",
+                theme: "teal",
+                visible: true
             }
+        ];
+
+        const THEME_MAP = {
+            green:  { color: "var(--fig-green)",   bg: "var(--fig-green-bg)" },
+            blue:   { color: "var(--fig-blue)",    bg: "var(--fig-blue-bg)" },
+            orange: { color: "var(--fig-orange)",  bg: "var(--fig-orange-bg)" },
+            purple: { color: "var(--qira-purple)", bg: "var(--qira-purple-bg)" },
+            teal:   { color: "var(--fig-teal)",    bg: "var(--fig-teal-bg)" }
         };
 
-		// Resource Library Data
-		const resourceData = [
-			{
-				id: 'res3',
-				type: 'video',
-				title: 'TRP Instability Deductions - No Deduction',
-				description: 'A compilation of routine finishes with no outbounce or stability deductions',
-				videoId: '6NX9BeV8r2o', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res4',
-				type: 'video',
-				title: 'TRP Instability Deductions - 0.1 Deduction',
-				description: 'A compilation of routine finishes with 0.1 for outbounce or stability deductions',
-				videoId: '1RbzrN0n8dE', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res5',
-				type: 'video',
-				title: 'TRP Instability Deductions - 0.2 Deduction',
-				description: 'A compilation of routine finishes with 0.1 for outbounce or stability deductions',
-				videoId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res1',
-				type: 'pdf',
-				title: 'Competition Information Sheets',
-				description: 'Essential information sheets for CJP/DD Rules, and ToF Machine functionality',
-				url: 'https://drive.google.com/file/d/1c97Evq53z6jOxgvf_FqmSsjBGzmwubA_/view?usp=sharing',
-				tags: ['CJP', 'DD']
-			},
-			{
-				id: 'res2',
-				type: 'pdf',
-				title: 'Execution Reference Guide',
-				description: 'Quick reference guide for execution judging for each discipline',
-				url: 'https://drive.google.com/file/d/1gWkP7un3DrwY4vEtg-dvHfzlKpZ1oK4P/view?usp=sharing',
-				tags: ['Execution']
-			},
-			{
-				id: 'res6',
-				type: 'video',
-				title: 'DMT Instability Deductions - No Deduction',
-				description: 'A compilation of routine finishes with no deductions for instability',
-				videoId: 'Nxg5WjYFfvM', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res7',
-				type: 'video',
-				title: 'DMT Instability Deductions - 0.1 Deduction',
-				description: 'A compilation of routine finishes with 0.1 deduction for instability',
-				videoId: 'ljnwU-s5pi8', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res8',
-				type: 'video',
-				title: 'DMT Instability Deductions - 0.2 Deduction',
-				description: 'A compilation of routine finishes with 0.2 deduction for instability',
-				videoId: 'HJF5reAIkU4', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res9',
-				type: 'video',
-				title: 'DMT Instability Deductions - 0.3 Deduction',
-				description: 'A compilation of routine finishes with 0.3 deduction for instability',
-				videoId: '4P8YqcmX1xk', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			},
-			{
-				id: 'res10',
-				type: 'video',
-				title: 'DMT Instability Deductions - 1.0 Deduction',
-				description: 'A compilation of routine finishes with 1.0 deduction for instability',
-				videoId: '9QfVUR-8ZpY', // Replace with actual YouTube video ID
-				tags: ['Execution']
-			}
-		];
-		
-        // Valid entries for each box
-        const validEntries = {
-            first10: [0, 1, 2, 3, 4, 5],
-            lastBox: [0, 1, 2, 3, 5, 10]
-        };
-		
-		const videoKeys = Object.keys(videoData);
-		currentVideoId = videoKeys[videoKeys.length - 1]; // Last video
-		let activeTagFilters = [];
+        function renderProjects() {
+            const grid = document.getElementById("projectGrid");
+            grid.innerHTML = "";
 
-		
-		window.onload = () => {
-			if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-				document.body.classList.add('dark-mode');
-			}
-			const availableVideos = getAvailableVideos();
+            const visibleProjects = PROJECTS.filter(project => project.visible !== false);
 
-			currentVideoId = availableVideos[availableVideos.length-1];
-			loadVideo(currentVideoId);
-			populateHistoryList();
-			initializeResourceLibrary();
+            visibleProjects.forEach((project, index) => {
+                const palette = THEME_MAP[project.theme] || THEME_MAP.blue;
 
-			// Check URL parameter for direct resource library access
-			const urlParams = new URLSearchParams(window.location.search);
-			if (urlParams.get('view') === 'resources') {
-				// Open resource library directly
-				const resourceLibrary = document.getElementById('resourceLibrary');
-				const mainContent = document.getElementById('mainContent');
-				mainContent.style.display = 'none';
-				resourceLibrary.classList.remove('hidden');
-				resourceLibrary.classList.add('fade-in');
-			}
-		};
-		
-		function toggleHelpMenu() {
-			const helpMenu = document.getElementById("helpMenu");
+                const card = document.createElement("a");
+                card.className = "project-card";
+                card.href = project.url;
+                card.style.setProperty("--accent-color", palette.color);
+                card.style.setProperty("--accent-bg", palette.bg);
+                card.style.animationDelay = `${index * 35}ms`;
 
-			if (helpMenu.classList.contains("show")) {
-				helpMenu.classList.remove("show");
-				setTimeout(() => {
-					helpMenu.style.display = "none";
-				}, 100); // Wait for fade-out before hiding
-			} else {
-				helpMenu.style.display = "block";
-				setTimeout(() => {
-					helpMenu.classList.add("show");
-				}, 10); // Small delay to trigger fade-in
-			}
-		}
+                card.innerHTML = `
+                    <div class="card-icon">
+                        <i class="${project.icon}" aria-hidden="true"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title-row">
+                            <h2>${project.title}</h2>
+                            ${project.badge ? `<span class="card-badge">${project.badge}</span>` : ""}
+                        </div>
+                        <p>${project.description}</p>
+                    </div>
+                    <i class="fas fa-chevron-right card-chevron" aria-hidden="true"></i>
+                `;
 
-		// Resource Library Functions
-		function toggleResourceLibrary() {
-			const resourceLibrary = document.getElementById('resourceLibrary');
-			const mainContent = document.getElementById('mainContent');
-			
-			if (resourceLibrary.classList.contains('hidden')) {
-				// Show resource library
-				mainContent.classList.add('fade-out');
-				setTimeout(() => {
-					mainContent.style.display = 'none';
-					resourceLibrary.classList.remove('hidden');
-					resourceLibrary.classList.add('fade-in');
-					// Update URL without reloading page
-					history.pushState({view: 'resources'}, '', '?view=resources');
-				}, 300);
-			} else {
-				// Show main content
-				resourceLibrary.classList.remove('fade-in');
-				resourceLibrary.classList.add('fade-out');
-				setTimeout(() => {
-					resourceLibrary.classList.add('hidden');
-					resourceLibrary.classList.remove('fade-out');
-					mainContent.style.display = 'block';
-					mainContent.classList.remove('fade-out');
-					mainContent.classList.add('fade-in');
-					// Update URL to remove parameter
-					history.pushState({view: 'quiz'}, '', window.location.pathname);
-				}, 300);
-			}
-		}
-
-		// Handle browser back/forward buttons
-		window.addEventListener('popstate', function(event) {
-			const resourceLibrary = document.getElementById('resourceLibrary');
-			const mainContent = document.getElementById('mainContent');
-			const urlParams = new URLSearchParams(window.location.search);
-			
-			if (urlParams.get('view') === 'resources') {
-				// Show resources
-				if (resourceLibrary.classList.contains('hidden')) {
-					mainContent.style.display = 'none';
-					resourceLibrary.classList.remove('hidden');
-					resourceLibrary.classList.add('fade-in');
-				}
-			} else {
-				// Show main content
-				if (!resourceLibrary.classList.contains('hidden')) {
-					resourceLibrary.classList.add('hidden');
-					mainContent.style.display = 'block';
-					mainContent.classList.add('fade-in');
-				}
-			}
-		});
-
-		function initializeResourceLibrary() {
-			generateTagFilters();
-			renderResources();
-		}
-
-		function generateTagFilters() {
-			const allTags = new Set();
-			resourceData.forEach(resource => {
-				resource.tags.forEach(tag => allTags.add(tag));
-			});
-
-			const tagFiltersContainer = document.getElementById('tagFilters');
-			tagFiltersContainer.innerHTML = '';
-
-			allTags.forEach(tag => {
-				const tagButton = document.createElement('button');
-				tagButton.className = 'tag-filter-btn';
-				tagButton.textContent = tag;
-				tagButton.onclick = () => toggleTagFilter(tag, tagButton);
-				tagFiltersContainer.appendChild(tagButton);
-			});
-		}
-
-		function toggleTagFilter(tag, button) {
-			if (activeTagFilters.includes(tag)) {
-				activeTagFilters = activeTagFilters.filter(t => t !== tag);
-				button.classList.remove('active');
-			} else {
-				activeTagFilters.push(tag);
-				button.classList.add('active');
-			}
-			renderResources();
-		}
-
-		function clearTagFilters() {
-			activeTagFilters = [];
-			document.querySelectorAll('.tag-filter-btn').forEach(btn => {
-				btn.classList.remove('active');
-			});
-			renderResources();
-		}
-
-		function renderResources() {
-			const resourceGrid = document.getElementById('resourceGrid');
-			resourceGrid.innerHTML = '';
-
-			// Filter resources
-			let filteredResources = resourceData;
-			if (activeTagFilters.length > 0) {
-				filteredResources = resourceData.filter(resource => 
-					activeTagFilters.some(tag => resource.tags.includes(tag))
-				);
-			}
-
-			// Sort: unwatched first, then watched
-			const watchedStatus = JSON.parse(localStorage.getItem('watchedResources')) || {};
-			filteredResources.sort((a, b) => {
-				const aWatched = watchedStatus[a.id] || false;
-				const bWatched = watchedStatus[b.id] || false;
-				return aWatched - bWatched;
-			});
-
-			// Render resources
-			filteredResources.forEach(resource => {
-				const resourceCard = createResourceCard(resource, watchedStatus[resource.id] || false);
-				resourceGrid.appendChild(resourceCard);
-			});
-
-			if (filteredResources.length === 0) {
-				resourceGrid.innerHTML = '<p class="no-resources">No resources match the selected filters.</p>';
-			}
-		}
-
-		function createResourceCard(resource, isWatched) {
-			const card = document.createElement('div');
-			card.className = 'resource-card';
-			if (isWatched) card.classList.add('watched');
-
-			const watchIcon = document.createElement('div');
-			watchIcon.className = 'watch-status';
-			watchIcon.innerHTML = isWatched ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>';
-			watchIcon.onclick = () => toggleWatchStatus(resource.id);
-
-			const title = document.createElement('h3');
-			title.textContent = resource.title;
-
-			const description = document.createElement('p');
-			description.className = 'resource-description';
-			description.textContent = resource.description;
-
-			const tagsContainer = document.createElement('div');
-			tagsContainer.className = 'resource-tags';
-			resource.tags.forEach(tag => {
-				const tagSpan = document.createElement('span');
-				tagSpan.className = 'resource-tag';
-				tagSpan.textContent = tag;
-				tagsContainer.appendChild(tagSpan);
-			});
-
-			let contentElement;
-			if (resource.type === 'video') {
-				contentElement = document.createElement('div');
-				contentElement.className = 'resource-video';
-				contentElement.innerHTML = `
-					<iframe 
-						src="https://www.youtube.com/embed/${resource.videoId}" 
-						frameborder="0" 
-						allowfullscreen
-						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-					></iframe>
-				`;
-			} else if (resource.type === 'pdf') {
-				contentElement = document.createElement('a');
-				contentElement.className = 'resource-link';
-				contentElement.href = resource.url;
-				contentElement.target = '_blank';
-				contentElement.innerHTML = '<i class="fas fa-file-pdf"></i> Open PDF';
-			} else if (resource.type === 'link') {
-				contentElement = document.createElement('a');
-				contentElement.className = 'resource-link';
-				contentElement.href = resource.url;
-				contentElement.target = '_blank';
-				contentElement.innerHTML = '<i class="fas fa-external-link-alt"></i> Open Link';
-			}
-
-			card.appendChild(watchIcon);
-			card.appendChild(title);
-			card.appendChild(description);
-			card.appendChild(tagsContainer);
-			card.appendChild(contentElement);
-
-			return card;
-		}
-
-		function toggleWatchStatus(resourceId) {
-			const watchedStatus = JSON.parse(localStorage.getItem('watchedResources')) || {};
-			watchedStatus[resourceId] = !watchedStatus[resourceId];
-			localStorage.setItem('watchedResources', JSON.stringify(watchedStatus));
-			renderResources();
-		}
-
-		function copyResourceLink() {
-			const url = window.location.origin + window.location.pathname + '?view=resources';
-			navigator.clipboard.writeText(url).then(() => {
-				// Show a temporary success message
-				const btn = document.querySelector('.share-link-btn');
-				const originalHTML = btn.innerHTML;
-				btn.innerHTML = '<i class="fas fa-check"></i> Link Copied!';
-				btn.style.background = '#28a745';
-				setTimeout(() => {
-					btn.innerHTML = originalHTML;
-					btn.style.background = '';
-				}, 2000);
-			}).catch(err => {
-				// Fallback for older browsers
-				alert('Copy this link: ' + url);
-			});
-		}
-						
-		// Get available videos (released ones)
-		function getAvailableVideos() {
-			const today = new Date().toLocaleDateString('en-CA'); // Get today's date in YYYY-MM-DD format
-			return Object.keys(videoData).filter(videoId => videoData[videoId].releaseDate <= today);
-		}
-		
-		function toggleMode() {
-            const body = document.body;
-            body.classList.toggle('light-mode');
-            body.classList.toggle('dark-mode');
-            const toggleButton = document.querySelector('.toggle-btn');
-            //toggleButton.innerText = body.classList.contains('light-mode') ? 'Dark Mode' : 'Light Mode';
-        }
-		
-		// Load the selected video and corresponding range data
-        function loadVideo(videoId) {
-            const video = videoData[videoId];
-            const videoPlayer = document.getElementById('videoPlayer');
-            videoPlayer.innerHTML = `<iframe src="${video.src}"
-					frameborder="0"
-					allowfullscreen
-					>
-					</iframe>`;
-			
-			currentVideoId = videoId
-			
-			// Remove 'active' class from all videos
-			document.querySelectorAll('.video-item').forEach(item => {
-				item.classList.remove('active');
-			});
-
-			// Add 'active' class to selected video
-			document.querySelectorAll('.video-item').forEach(item => {
-			if (item.textContent.trim() === formatVideoTitle(videoId)) {
-				item.classList.add('active');
-			}
-			});
-			
-			
-			document.getElementById('videoPlayer').classList.add('fade-in');
-            videoPlayer.classList.add('fade-in');
-            inputContainer.innerHTML = ''; // Clear previous inputs
-            for (let i = 0; i < video.correctAnswers.length; i++) {
-                //const wrapper = document.createElement('div');
-				//wrapper.classList.add('flip-wrapper');
-
-				const input = document.createElement('input');
-                input.type = 'number';
-                input.className = 'input-box';
-                input.id = `input${i+1}`;
-                input.min = video.ranges[i].min;
-                input.max = video.ranges[i].max;
-                input.addEventListener('input', autoTab);
-                input.addEventListener('input', validateInput);
-				if (i === video.correctAnswers.length-1) {
-                    input.addEventListener('keypress', function(event) {
-                        if (event.key === 'Enter') {
-                            event.preventDefault();
-                            document.getElementById('submitButton').click();
-                        }
-                    });
-                }
-                //wrapper.appendChild(input)
-				inputContainer.appendChild(input);
-            }
-			
-			hideResults();
-			// Set focus to the first input field
-				setTimeout(() => {
-					const firstInput = document.getElementById('input1');
-					if (firstInput) firstInput.focus();
-				}, 300); // Small delay ensures elements are fully loaded before focusing
-
-        }
-
-        // Auto Tab functionality - Move to next input box on enter (if valid)
-        function autoTab(event) {
-            const currentInput = event.target;
-            if (!validateInput(event) || currentInput.value === "") {
-                return; // Don't tab if invalid or empty
-            }
-
-            const nextInput = currentInput.nextElementSibling;
-            if (nextInput && nextInput.classList.contains('input-box')) {
-                nextInput.focus();
-            }
-        }
-
-        // Validate input to ensure it is in the allowed range
-        function validateInput(event) {
-            const currentInput = event.target;
-            let validValues;
-
-            if (currentInput.id === 'input11') {
-                validValues = validEntries.lastBox;
-            } else {
-                validValues = validEntries.first10;
-            }
-
-            const isValid = validValues.includes(parseInt(currentInput.value));
-            if (isValid) {
-                currentInput.setCustomValidity("");
-            } else {
-                currentInput.setCustomValidity("Invalid value");
-            }
-
-            return isValid;
-        }
-
-        function hideResults() {
-			document.getElementById('answerTable').style.display = 'none';
-			document.getElementById('result').innerText = '';
-			// Reset the table and result display
-			document.getElementById('answerTableBody').innerHTML = '';
-		}
-		
-		function toggleVideoHistory() {
-			const hiddenVideos = document.getElementById('hiddenVideos');
-			const historyButton = document.getElementById('historyButton');
-
-			if (hiddenVideos.style.display === "none") {
-				hiddenVideos.style.display = "block";
-				setTimeout(() => hiddenVideos.classList.add('show'), 10);
-				//historyButton.innerText = "Hide All";
-			} else {
-				hiddenVideos.classList.remove('show');
-				setTimeout(() => hiddenVideos.style.display = "none", 500);
-				//historyButton.innerText = "View All";
-			}
-		}
-		
-		
-		// Check answers and show results
-        function checkAnswers() {
-            const video = videoData[currentVideoId]; // Get the currently selected video
-			if (!video) return; // Safety check
-           
-			
-			let allFilled = video.correctAnswers.length>0;
-			
-			// Check if all input fields are filled
-			for (let i = 0; i < video.correctAnswers.length; i++) {
-				const input = document.getElementById(`input${i+1}`);
-				if (!input || input.value.trim() === "") {
-					allFilled = false;
-					break;
-				}
-			}
-
-			if (!allFilled) {
-				const warning = document.getElementById("warningMessage");
-				warning.classList.add("show"); // Make it visible
-
-				// Remove after 5 seconds
-				setTimeout(() => {
-					warning.classList.remove("show");
-				}, 5000);
-
-				return;
-			}
-			
-			
-			
-			const userAnswers = [];
-            let correctCount = 0;
-
-            // Clear previous answer tables and explanations
-            document.getElementById('answerTableBody').innerHTML = '';
-            const answerTable = document.getElementById('answerTable');
-            answerTable.style.display = 'table'; // Show the answer table
-
-            // Loop over all inputs and evaluate answers
-            video.correctAnswers.forEach((correctAnswer, index) => {
-                const userAnswer = parseInt(document.getElementById(`input${index + 1}`).value);
-                const input = document.getElementById(`input${index + 1}`);
-                const answerText = document.getElementById(`answer${index + 1}`);
-				let tableText = 'Element'
-                let rowClass = 'incorrect-row';
-				let inputClass = 'default';
-                let explanation = video.explanations[index];
-
-                if (userAnswer === correctAnswer) {
-                    rowClass = 'correct-row';
-                    correctCount++;
-					inputClass = 'correct';
-                } else if (userAnswer >= video.ranges[index].min && userAnswer <= video.ranges[index].max) {
-                    rowClass = 'close-row';
-					inputClass = 'close';
-                }
-				
-				 // Apply flip animation dynamically
-				//input.classList.add('flip');
-				//input.style.animationDelay = `${(index+1) * 100}ms`;
-				
-				
-				if (index === 10) { tableText='Landing';} else { tableText = 'Element '+(index+1);}
-				
-				// Update the input field's class
-				input.className = `input-box ${inputClass}`;
-				
-                // Add to the answer table
-                const row = document.createElement('tr');
-                row.className = rowClass;
-                row.innerHTML = `<td>${tableText}</td>
-                                 <td>${userAnswer}</td>
-                                 <td>${correctAnswer}</td>
-                                 <td>${explanation}</td>`;
-                document.getElementById('answerTableBody').appendChild(row);
+                grid.appendChild(card);
             });
-
-            // Show the result summary
-            // document.getElementById('result').innerText = `You got ${correctCount} out of 11 correct.`;
         }
-		function restartQuiz() {
-			document.querySelectorAll('.input-box').forEach(input => {
-			input.value = '';
-			input.className = 'input-box';
-			});
-		document.getElementById('result').innerText = '';
-		document.getElementById('answerTable').style.display = 'none';
-		}
 
-		function populateHistoryList() {
-			const hiddenVideosContainer = document.getElementById('hiddenVideos');
-			const latestVideoContainer = document.getElementById('latestVideoContainer');
-			hiddenVideosContainer.innerHTML = ""; // Clear existing history list
-			latestVideoContainer.innerHTML = ""; // Clear latest video (prevents duplication)
+        // Theme Management
+        const themeToggleBtn = document.getElementById("themeToggle");
+        const themeIcon = document.getElementById("themeIcon");
 
-			const videoKeysToLoad = getAvailableVideos().reverse(); // Reverse order
-			const latestVideoId = videoKeysToLoad[0]; // Get the latest video
+        function applyTheme(mode) {
+            if (mode === "light") {
+                document.body.classList.remove("dark-mode");
+                document.body.classList.add("light-mode");
+                themeIcon.className = "fas fa-moon";
+            } else {
+                document.body.classList.remove("light-mode");
+                document.body.classList.add("dark-mode");
+                themeIcon.className = "fas fa-sun";
+            }
+        }
 
-			// Create the latest video item dynamically
-			const latestVideoItem = document.createElement('div');
-			latestVideoItem.className = 'video-item active'; // Mark as active
-			latestVideoItem.onclick = () => loadVideo(latestVideoId);
-			latestVideoItem.innerHTML = `<p>${formatVideoTitle(latestVideoId)}</p>`; // Dynamic title
+        const savedTheme = localStorage.getItem("judgle_theme");
+        if (savedTheme) {
+            applyTheme(savedTheme);
+        } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+            applyTheme("light");
+        }
 
-			latestVideoContainer.appendChild(latestVideoItem); // Insert into list
+        themeToggleBtn.addEventListener("click", () => {
+            const isLight = document.body.classList.contains("light-mode");
+            const nextTheme = isLight ? "dark" : "light";
+            applyTheme(nextTheme);
+            localStorage.setItem("judgle_theme", nextTheme);
+        });
 
-			// Populate history list, excluding the latest video
-			videoKeysToLoad.slice(1).forEach(videoId => {
-				const videoItem = document.createElement('div');
-				videoItem.className = 'video-item';
-				videoItem.onclick = () => loadVideo(videoId);
-				videoItem.innerHTML = `<p>${formatVideoTitle(videoId)}</p>`;
-				hiddenVideosContainer.appendChild(videoItem);
-			});
-			
-
-		}	
-
-		function formatVideoTitle(videoId) {
-			return videoData[videoId].title;
-		}
-		
-		function goHome() {
-			// Hide resource library if it's open
-			const resourceLibrary = document.getElementById('resourceLibrary');
-			const mainContent = document.getElementById('mainContent');
-			
-			if (!resourceLibrary.classList.contains('hidden')) {
-				resourceLibrary.classList.add('hidden');
-				mainContent.style.display = 'block';
-			}
-			
-			// Close video history if it's open
-			const hiddenVideos = document.getElementById('hiddenVideos');
-			if (hiddenVideos.style.display !== 'none') {
-				hiddenVideos.classList.remove('show');
-				hiddenVideos.style.display = 'none';
-			}
-			
-			// Reset quiz answers
-			restartQuiz();
-			
-			// Load the latest video
-			const availableVideos = getAvailableVideos();
-			const latestVideoId = availableVideos[availableVideos.length - 1];
-			loadVideo(latestVideoId);
-			
-			// Update URL to remove any parameters
-			history.pushState({view: 'quiz'}, '', window.location.pathname);
-			
-			// Scroll to top
-			window.scrollTo({ top: 0, behavior: 'smooth' });
-		}
-		
-
+        renderProjects();
     </script>
 </body>
 </html>
