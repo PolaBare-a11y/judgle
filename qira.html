@@ -1563,6 +1563,165 @@
       font-size: 0.7rem;
       color: #64748b;
     }
+   /* =======================================================================
+       COLLAPSIBLE VIDEO RESOURCES SECTION (Collapsed by Default)
+       ======================================================================= */
+    .video-resources-drawer {
+      max-width: 1060px;
+      width: 100%;
+      margin: 0 auto;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+    }
+    .video-resources-summary {
+      list-style: none;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      transition: background 0.15s ease;
+    }
+    .video-resources-summary::-webkit-details-marker {
+      display: none;
+    }
+    .video-resources-summary:hover {
+      background: rgba(30, 41, 59, 0.85);
+    }
+    .vr-summary-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .vr-badge {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #334155;
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .vr-chevron {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      transition: transform 0.2s ease;
+    }
+    .video-resources-drawer[open] .vr-chevron {
+      transform: rotate(180deg);
+      color: #38bdf8;
+    }
+    .video-resources-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      padding: 14px 16px 16px;
+      border-top: 1px solid #1e293b;
+      background: rgba(11, 17, 30, 0.75);
+    }
+    @media (max-width: 720px) {
+      .video-resources-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 10px 12px 12px;
+      }
+    }
+    .video-card {
+      background: #101622;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .video-card-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .video-card-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .video-card-link {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #38bdf8;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .video-card-link:hover {
+      text-decoration: underline;
+    }
+    .video-embed-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 7px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #2c3545;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-embed-frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .yt-placeholder-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 14px;
+      gap: 6px;
+      color: #94a3b8;
+      text-decoration: none;
+      width: 100%;
+      height: 100%;
+    }
+    .yt-placeholder-box:hover .yt-play-pill {
+      transform: scale(1.06);
+      background: #ef4444;
+    }
+    .yt-play-pill {
+      width: 48px;
+      height: 34px;
+      border-radius: 9px;
+      background: #dc2626;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .yt-placeholder-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .yt-placeholder-sub {
+      font-size: 0.68rem;
+      color: #64748b;
+    }
+
 
     /* =======================================================================
        MOBILE CONDENSED LAYOUT (<= 780px)
@@ -2201,7 +2360,7 @@
           <button class="keycap" id="keyRight" type="button">→</button>
         </div>
       </div>
-      <div class="footnote">created by Jed, in development — Qira v2.6.0 HDTS simulator for judgle</div>
+      
     </div>
 
     <div class="usb-button-box">
@@ -2211,8 +2370,59 @@
       <div class="usb-caption">USB BUTTON<br>(Spacebar Substitute)</div>
     </div>
   </div>
+<!-- Expandable Video Resources Section (Collapsed by Default) -->
+  <details class="video-resources-drawer" id="videoResourcesDrawer">
+    <summary class="video-resources-summary">
+      <div class="vr-summary-left">
+        <span class="vr-badge">GUIDES</span>
+        <span>Video Resources — Software Demonstration &amp; Using a Backup</span>
+      </div>
+      <span class="vr-chevron" aria-hidden="true">▼</span>
+    </summary>
+    <div class="video-resources-grid">
+      <!-- Video 1: Software Demonstration -->
+      <div class="video-card">
+        <div class="video-card-hdr">
+          <span class="video-card-title">1. Using the Qira Software</span>
+          <a class="video-card-link" href="https://www.youtube.com/watch?v=PLACEHOLDER_DEMO" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a>
+        </div>
+        <div class="video-embed-frame" data-youtube-id="PLACEHOLDER_DEMO">
+          <a class="yt-placeholder-box" href="https://www.youtube.com/watch?v=PLACEHOLDER_DEMO" target="_blank" rel="noopener noreferrer">
+            <div class="yt-play-pill">▶</div>
+            <div class="yt-placeholder-label">Software Demonstration (YouTube Placeholder)</div>
+            <div class="yt-placeholder-sub">Replace PLACEHOLDER_DEMO with your YouTube Video ID</div>
+          </a>
+        </div>
+      </div>
+      <!-- Video 2: Using a Backup -->
+      <div class="video-card">
+        <div class="video-card-hdr">
+          <span class="video-card-title">2. Using a Backup (Data Recovery)</span>
+          <a class="video-card-link" href="https://www.youtube.com/watch?v=PLACEHOLDER_BACKUP" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a>
+        </div>
+        <div class="video-embed-frame" data-youtube-id="PLACEHOLDER_BACKUP">
+          <a class="yt-placeholder-box" href="https://www.youtube.com/watch?v=PLACEHOLDER_BACKUP" target="_blank" rel="noopener noreferrer">
+            <div class="yt-play-pill">▶</div>
+            <div class="yt-placeholder-label">Using a Backup (YouTube Placeholder)</div>
+            <div class="yt-placeholder-sub">Replace PLACEHOLDER_BACKUP with your YouTube Video ID</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </details>
+	<div class="footnote">Vibe Coded/Created by <strong>Jed &#127462;&#127482;</strong> • In Development<br> — Qira v2.6.0 HDTS simulator for judgle</div>
 
   <script>
+    (() => {
+    (() => {
+      // Automatically upgrade placeholder cards into live YouTube embeds once real IDs are supplied
+      document.querySelectorAll(".video-embed-frame[data-youtube-id]").forEach((frame) => {
+        const vid = (frame.dataset.youtubeId || "").trim();
+        if (vid && !vid.startsWith("PLACEHOLDER")) {
+          frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(vid)}" title="YouTube video resource" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+        }
+      });
+
     (() => {
       // =========================================================================
       // BOUNCE TEMPO SETTINGS (Adjust these two values in milliseconds)
