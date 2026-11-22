@@ -54,7 +54,6 @@
     .animate-rec {
       animation: pulseSubtle 1.4s infinite ease-in-out;
     }
-    /* Custom subtle dark scrollbar for package drawer */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -94,7 +93,7 @@
         </div>
       </div>
 
-      <!-- Controls Cluster: Discipline + Mode + Package Builder + Live Streak -->
+      <!-- Controls Cluster: Discipline + Mode + Package Builder + Clean Accuracy Pill -->
       <div class="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
         <div id="disc-switcher" class="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800" role="group" aria-label="Discipline">
           <button id="disc-DMT" type="button" onclick="setDiscipline('DMT')" class="px-2.5 py-1 rounded-md text-xs font-bold transition bg-[#0072ce] text-white shadow-sm">
@@ -126,9 +125,10 @@
           <span id="pkg-count-pill" class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">0</span>
         </button>
 
+        <!-- Clean Accuracy Pill (No Streak Icon) -->
         <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg text-xs">
-          <span class="text-slate-400 font-medium hidden sm:inline">Acc:</span>
-          <span id="stat-acc" class="font-mono font-bold text-emerald-400">—</span>
+          <span class="text-slate-400 font-medium">Acc:</span>
+          <span id="stat-acc" class="font-mono font-bold text-emerald-400">--% (0/0)</span>
         </div>
       </div>
     </div>
@@ -180,6 +180,7 @@
         </div>
       </div>
 
+      <!-- Clean Playback & Capture Toolbar (Replay 1x, Slow-Mo 0.5x, + Package, Share) -->
       <div class="p-2.5 sm:p-3 bg-[#0f172a] border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           <button type="button" onclick="replayAnimation(1.0)" title="Shortcut: R" class="btn-tactile inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-100 text-xs font-bold shadow-xs">
@@ -190,14 +191,6 @@
           <button type="button" onclick="replayAnimation(0.5)" title="Shortcut: S" class="btn-tactile inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-100 text-xs font-bold shadow-xs">
             <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 2"/></svg>
             <span>Slow-Mo (0.5x)</span>
-          </button>
-
-          <button id="new-pass-btn" type="button" onclick="nextScenario()" class="btn-tactile inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#0072ce] hover:bg-sky-600 border border-sky-400/30 text-white text-xs font-bold shadow-xs">
-            <span id="new-pass-label">New Pass</span>
-          </button>
-
-          <button id="toolbar-random-btn" type="button" onclick="exitSpecialSession()" class="hidden btn-tactile inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#009a44] hover:bg-emerald-600 border border-emerald-400/30 text-white text-xs font-bold shadow-xs">
-            <span>Random Practice</span>
           </button>
         </div>
 
@@ -336,22 +329,29 @@
           </p>
         </div>
 
-        <!-- Share / Query Callout + Add to Package Action Row -->
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-1.5">
-          <button type="button" onclick="shareCurrentScenario(true)" class="sm:col-span-8 btn-tactile py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-sky-700/60 text-sky-200 text-[11px] font-bold flex items-center justify-center gap-1.5 text-center">
-            <svg class="w-3.5 h-3.5 text-sky-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-            <span>Think something is wrong or need it explained? Share it here!</span>
+        <!-- Primary Navigation Row: Next Pass (or Replay Pass alongside Return to Random Practice in Shared Mode) -->
+        <div id="result-bottom-actions" class="grid grid-cols-1 gap-2">
+          <button id="next-landing-btn" type="button" onclick="nextScenario()" title="Shortcut: Enter or Space" class="btn-tactile w-full py-2.5 sm:py-3 px-4 rounded-xl bg-[#009a44] hover:bg-emerald-600 border border-emerald-400/30 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2">
+            <span id="next-landing-label">Next Pass</span>
+            <span id="next-landing-arrow">&rarr;</span>
           </button>
 
-          <button type="button" onclick="addCurrentScenarioToPackage()" class="sm:col-span-4 btn-tactile py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-600/50 text-amber-300 text-[11px] font-bold flex items-center justify-center gap-1">
-            <span>+ Add to Package</span>
+          <button id="bottom-random-btn" type="button" onclick="exitSpecialSession()" class="hidden btn-tactile w-full py-2.5 sm:py-3 px-4 rounded-xl bg-[#0072ce] hover:bg-sky-600 border border-sky-400/30 text-white font-bold text-sm shadow-md items-center justify-center gap-1.5">
+            <span>Return to Random Practice</span>
           </button>
         </div>
 
-        <button id="next-landing-btn" type="button" onclick="nextScenario()" title="Shortcut: Enter or Space" class="btn-tactile w-full py-2.5 sm:py-3 px-4 rounded-xl bg-[#009a44] hover:bg-emerald-600 border border-emerald-400/30 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2">
-          <span id="next-landing-label">Next Landing</span>
-          <span>&rarr;</span>
-        </button>
+        <!-- Secondary Bottom Row: Side-by-Side Share Scenario + Add to Package -->
+        <div class="grid grid-cols-2 gap-2">
+          <button id="result-share-btn" type="button" onclick="shareCurrentScenario(true)" class="btn-tactile py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-sky-700/60 text-sky-200 text-xs font-bold flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-sky-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+            <span>Share Scenario</span>
+          </button>
+
+          <button id="result-add-pkg-btn" type="button" onclick="addCurrentScenarioToPackage()" class="btn-tactile py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-600/50 text-amber-300 text-xs font-bold flex items-center justify-center gap-1.5">
+            <span>+ Add to Package</span>
+          </button>
+        </div>
       </div>
 
       <!-- PACKAGE COMPLETION SUMMARY SCORECARD -->
@@ -374,7 +374,7 @@
             Restart Package
           </button>
           <button type="button" onclick="exitSpecialSession()" class="btn-tactile py-2.5 px-3 rounded-xl bg-[#0072ce] hover:bg-sky-600 border border-sky-400/30 text-white text-xs font-bold">
-            Random Practice
+            Return to Random Practice
           </button>
         </div>
       </div>
@@ -519,7 +519,6 @@
       passNumber: 1,
       totalAttempts: 0,
       exactMatches: 0,
-      streak: 0,
       selectedZoneCode: null,     // DMT: 'A' | 'B' | 'C' ; TUM: 'TRACK' | 'LZ' | 'LA'
       selectedWorseZone: false,   // Independent +0.2 toggle (inline on 4-col zone row)
       selectedOutbounce: null,    // TRP: 0.0 | 0.1
@@ -798,9 +797,14 @@
       document.getElementById('session-badge').textContent = 'SHARED SCENARIO';
       document.getElementById('session-title').textContent = `Reviewing Shared ${bp.d} Pass`;
       document.getElementById('session-coach-note').textContent = 'Score this exact pass or replay in 0.5x slow-motion.';
-      document.getElementById('new-pass-label').textContent = 'Replay Pass';
-      document.getElementById('next-landing-label').textContent = 'Replay Pass Again';
-      document.getElementById('toolbar-random-btn').classList.remove('hidden');
+
+      // Configure bottom action buttons: Replay Pass alongside Return to Random Practice
+      document.getElementById('result-bottom-actions').className = 'grid grid-cols-1 sm:grid-cols-2 gap-2';
+      document.getElementById('next-landing-label').textContent = 'Replay Pass';
+      document.getElementById('next-landing-arrow').classList.add('hidden');
+      const bottomRandom = document.getElementById('bottom-random-btn');
+      bottomRandom.classList.remove('hidden');
+      bottomRandom.classList.add('flex');
 
       updateDisciplineUI();
       state.scenario = buildScenarioFromBlueprint(bp);
@@ -819,9 +823,14 @@
       document.getElementById('guided-prompt-bar').classList.add('hidden');
       document.getElementById('package-summary-panel').classList.add('hidden');
       document.getElementById('package-summary-panel').classList.remove('flex');
-      document.getElementById('toolbar-random-btn').classList.add('hidden');
-      document.getElementById('new-pass-label').textContent = 'New Pass';
-      document.getElementById('next-landing-label').textContent = 'Next Landing';
+
+      // Restore standard single-button primary bottom layout
+      document.getElementById('result-bottom-actions').className = 'grid grid-cols-1 gap-2';
+      document.getElementById('next-landing-label').textContent = 'Next Pass';
+      document.getElementById('next-landing-arrow').classList.remove('hidden');
+      const bottomRandom = document.getElementById('bottom-random-btn');
+      bottomRandom.classList.add('hidden');
+      bottomRandom.classList.remove('flex');
 
       try {
         window.history.replaceState({}, '', window.location.pathname);
@@ -1089,7 +1098,12 @@
         guidedBar.classList.add('hidden');
       }
 
-      document.getElementById('new-pass-label').textContent = 'Skip Pass';
+      document.getElementById('result-bottom-actions').className = 'grid grid-cols-1 gap-2';
+      document.getElementById('next-landing-arrow').classList.remove('hidden');
+      const bottomRandom = document.getElementById('bottom-random-btn');
+      bottomRandom.classList.add('hidden');
+      bottomRandom.classList.remove('flex');
+
       document.getElementById('next-landing-label').textContent = (idx + 1 < pkg.items.length)
         ? `Next Package Pass (${idx + 2}/${pkg.items.length})`
         : 'View Package Scorecard';
@@ -2373,9 +2387,6 @@
       state.totalAttempts++;
       if (isExact) {
         state.exactMatches++;
-        state.streak++;
-      } else {
-        state.streak = 0;
       }
 
       if (state.sessionMode === 'PACKAGE' && state.activePackage) {
@@ -2389,7 +2400,7 @@
       }
 
       const accPct = Math.round((state.exactMatches / state.totalAttempts) * 100);
-      document.getElementById('stat-acc').textContent = `${accPct}%`;
+      document.getElementById('stat-acc').textContent = `${accPct}% (${state.exactMatches}/${state.totalAttempts})`;
 
       const banner = document.getElementById('result-banner');
       const icon = document.getElementById('result-icon');
@@ -2629,7 +2640,7 @@
         drawPreRollOverlay(W, sideMatTopY);
       }
 
-      // --- 3. LOWER VIEWPORT: TOP-DOWN BIRD'S-EYE PLAN VIEW ---
+      // --- 3. LOWER VIEWPORT: TOP-DOWN BIRD'S-EYE PLAN VIEW (ALWAYS SHOW ZONE LINES) ---
       ctx.fillStyle = '#0b1120';
       ctx.fillRect(0, splitY, W, H - splitY);
 
@@ -2858,6 +2869,7 @@
           shoulderAngle = -85 + 25 * stepCurve;
           backArmAngle = shoulderAngle;
         } else if (stype === 'STEP_BODY_RETURN') {
+          // Staged pause between corrective step out and upper-body sway/arm counterbalance
           let stepFactor = 1.0;
           if (u < 0.28) {
             const su = u / 0.28;
@@ -2876,11 +2888,13 @@
           rightFootY = sc.touchY + rightLatOffset + sc.stepDeltaY * stepFactor;
 
           if (u < 0.44) {
+            // Stage 1 & 2: Step out and hold steady pause before upper-body sway
             trunkLean = 8 * stepFactor;
             kneeBend = 20 * stepFactor;
             shoulderAngle = -90;
             backArmAngle = -90;
           } else if (u < 0.76) {
+            // Stage 3: Distinct upper-body sway & arm counterbalance wave while planted wide
             const bu = (u - 0.44) / 0.32;
             const swayWave = Math.sin(bu * Math.PI * 1.15);
             trunkLean = 8 + 34 * swayWave;
@@ -2888,6 +2902,7 @@
             shoulderAngle = -85 + 75 * swayWave;
             backArmAngle = -85 - 55 * swayWave;
           } else {
+            // Stage 4: Return stepped foot cleanly together
             const ru = (u - 0.76) / 0.24;
             trunkLean = 8 * (1 - ru);
             kneeBend = 18 * (1 - ru);
@@ -3265,7 +3280,7 @@
         drawPreRollOverlay(W, bedRestY);
       }
 
-      // Lower Viewport: Top-Down Olympic Trampoline Bed & End Decks
+      // Lower Viewport: Top-Down Olympic Trampoline Bed & End Decks (Always Show Zone Lines)
       ctx.fillStyle = '#0b1120';
       ctx.fillRect(0, splitY, W, H - splitY);
       ctx.fillStyle = '#334155';
@@ -3563,6 +3578,7 @@
       ctx.arc(loupeX, loupeY, radius, 0, Math.PI * 2);
       ctx.stroke();
 
+      // Only the 3.5x magnification pill (no VAR REVIEW title)
       ctx.fillStyle = '#0f172a';
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 1;
@@ -3828,6 +3844,7 @@
       ctx.arc(loupeX, loupeY, radius, 0, Math.PI * 2);
       ctx.stroke();
 
+      // Only the 3.5x magnification pill (no VAR REVIEW title)
       ctx.fillStyle = '#0f172a';
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 1;
