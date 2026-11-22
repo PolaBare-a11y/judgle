@@ -126,11 +126,9 @@
           <span id="pkg-count-pill" class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">0</span>
         </button>
 
-        <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg text-xs">
+        <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg text-xs">
           <span class="text-slate-400 font-medium hidden sm:inline">Acc:</span>
           <span id="stat-acc" class="font-mono font-bold text-emerald-400">—</span>
-          <span class="text-slate-700">|</span>
-          <span id="stat-streak" class="font-mono font-bold text-amber-400">🔥 0</span>
         </div>
       </div>
     </div>
@@ -196,6 +194,10 @@
 
           <button id="new-pass-btn" type="button" onclick="nextScenario()" class="btn-tactile inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#0072ce] hover:bg-sky-600 border border-sky-400/30 text-white text-xs font-bold shadow-xs">
             <span id="new-pass-label">New Pass</span>
+          </button>
+
+          <button id="toolbar-random-btn" type="button" onclick="exitSpecialSession()" class="hidden btn-tactile inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#009a44] hover:bg-emerald-600 border border-emerald-400/30 text-white text-xs font-bold shadow-xs">
+            <span>Random Practice</span>
           </button>
         </div>
 
@@ -798,6 +800,7 @@
       document.getElementById('session-coach-note').textContent = 'Score this exact pass or replay in 0.5x slow-motion.';
       document.getElementById('new-pass-label').textContent = 'Replay Pass';
       document.getElementById('next-landing-label').textContent = 'Replay Pass Again';
+      document.getElementById('toolbar-random-btn').classList.remove('hidden');
 
       updateDisciplineUI();
       state.scenario = buildScenarioFromBlueprint(bp);
@@ -816,6 +819,7 @@
       document.getElementById('guided-prompt-bar').classList.add('hidden');
       document.getElementById('package-summary-panel').classList.add('hidden');
       document.getElementById('package-summary-panel').classList.remove('flex');
+      document.getElementById('toolbar-random-btn').classList.add('hidden');
       document.getElementById('new-pass-label').textContent = 'New Pass';
       document.getElementById('next-landing-label').textContent = 'Next Landing';
 
@@ -2386,7 +2390,6 @@
 
       const accPct = Math.round((state.exactMatches / state.totalAttempts) * 100);
       document.getElementById('stat-acc').textContent = `${accPct}%`;
-      document.getElementById('stat-streak').textContent = `🔥 ${state.streak}`;
 
       const banner = document.getElementById('result-banner');
       const icon = document.getElementById('result-icon');
