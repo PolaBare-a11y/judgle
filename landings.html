@@ -54,9 +54,27 @@
     .animate-rec {
       animation: pulseSubtle 1.4s infinite ease-in-out;
     }
+    /* Custom subtle dark scrollbar for package drawer */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased select-none bg-[#090d16] text-slate-100">
+
+  <!-- TOAST NOTIFICATION BANNER -->
+  <div id="toast-banner" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 hidden items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900/95 text-white border border-sky-500/60 shadow-2xl text-xs font-bold backdrop-blur-md">
+    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+    <span id="toast-text">Copied share link to clipboard!</span>
+  </div>
 
   <!-- TOP FIG SUITE HEADER -->
   <header class="bg-[#0f172a]/95 backdrop-blur-md text-white border-b border-slate-800 shadow-lg sticky top-0 z-30">
@@ -76,9 +94,9 @@
         </div>
       </div>
 
-      <!-- Controls Cluster: Discipline + Mode + Live Streak -->
-      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-        <div class="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800" role="group" aria-label="Discipline">
+      <!-- Controls Cluster: Discipline + Mode + Package Builder + Live Streak -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
+        <div id="disc-switcher" class="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800" role="group" aria-label="Discipline">
           <button id="disc-DMT" type="button" onclick="setDiscipline('DMT')" class="px-2.5 py-1 rounded-md text-xs font-bold transition bg-[#0072ce] text-white shadow-sm">
             DMT
           </button>
@@ -90,17 +108,23 @@
           </button>
         </div>
 
-        <div class="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800" role="group" aria-label="Training Mode">
+        <div id="mode-switcher" class="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800" role="group" aria-label="Training Mode">
           <button id="mode-COMBINED" type="button" onclick="setMode('COMBINED')" class="px-2 py-1 rounded-md text-[11px] sm:text-xs font-semibold transition bg-slate-800 text-white border border-slate-700/80">
             Combined
           </button>
           <button id="mode-PRIMARY" type="button" onclick="setMode('PRIMARY')" class="px-2 py-1 rounded-md text-[11px] sm:text-xs font-semibold transition text-slate-400 hover:text-white">
-            Zone / Outbounce
+            Zone
           </button>
           <button id="mode-STABILITY" type="button" onclick="setMode('STABILITY')" class="px-2 py-1 rounded-md text-[11px] sm:text-xs font-semibold transition text-slate-400 hover:text-white">
             Stability
           </button>
         </div>
+
+        <!-- Package Builder Drawer Button -->
+        <button id="open-pkg-btn" type="button" onclick="togglePackageModal(true)" class="btn-tactile inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-amber-300 shadow-xs">
+          <span>📦 Package</span>
+          <span id="pkg-count-pill" class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">0</span>
+        </button>
 
         <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg text-xs">
           <span class="text-slate-400 font-medium hidden sm:inline">Acc:</span>
@@ -112,19 +136,43 @@
     </div>
   </header>
 
+  <!-- SESSION MODE SUB-BANNER (Active when viewing ?s= Shared Scenario OR ?pkg= Training Package) -->
+  <div id="session-banner" class="hidden bg-sky-950/80 border-b border-sky-800/80 text-sky-100">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span id="session-badge" class="font-mono text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#0072ce] text-white">
+          SHARED SCENARIO
+        </span>
+        <span id="session-title" class="font-bold text-white">Reviewing Shared Pass</span>
+        <span id="session-coach-note" class="text-sky-200/90 italic hidden sm:inline"></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="exitSpecialSession()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[11px] font-bold text-slate-200">
+          Return to Random Practice
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MAIN WORKSPACE -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-2.5 sm:py-3 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-start">
 
     <!-- LEFT COLUMN: DUAL SYNCHRONIZED CANVAS & PLAYBACK TOOLBAR -->
     <section class="lg:col-span-7 bg-[#111827] rounded-2xl shadow-xl border border-slate-800 overflow-hidden flex flex-col">
-      <div class="px-3.5 py-2 bg-[#0f172a] border-b border-slate-800 flex items-center justify-between text-xs">
-        <div class="flex items-center gap-2">
-          <span id="live-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-rec"></span>
-          <span id="scenario-label" class="font-bold text-slate-100">Pass #1 • DMT Dismount</span>
+      <div class="px-3.5 py-2 bg-[#0f172a] border-b border-slate-800 flex items-center justify-between text-xs gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <span id="live-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-rec shrink-0"></span>
+          <span id="scenario-label" class="font-bold text-slate-100 truncate">Pass #1 • DMT Dismount</span>
         </div>
-        <div class="flex items-center gap-2 text-[11px] font-medium text-slate-400">
+        <div class="flex items-center gap-2 text-[11px] font-medium text-slate-400 shrink-0">
           <span id="playback-status-pill" class="px-2 py-0.5 rounded bg-sky-950/90 text-sky-300 border border-sky-800/70 font-mono font-bold">1.0s</span>
         </div>
+      </div>
+
+      <!-- Optional Guided Coach Prompt Banner (Shown inside Package Guided Workshop Mode) -->
+      <div id="guided-prompt-bar" class="hidden px-3.5 py-2 bg-amber-950/50 border-b border-amber-800/60 text-xs text-amber-200 flex items-start gap-2">
+        <span class="font-extrabold uppercase text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0 mt-0.5">Coach Focus</span>
+        <span id="guided-prompt-text" class="leading-snug">Watch the landing foot contact and recovery.</span>
       </div>
 
       <div id="canvas-wrapper" class="relative w-full canvas-shell aspect-[16/10] sm:aspect-[16/9] max-h-[415px]">
@@ -135,29 +183,35 @@
       </div>
 
       <div class="p-2.5 sm:p-3 bg-[#0f172a] border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-2 flex-wrap">
-          <button type="button" onclick="replayAnimation(1.0)" title="Shortcut: R" class="btn-tactile inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-100 text-xs font-bold shadow-xs">
+        <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <button type="button" onclick="replayAnimation(1.0)" title="Shortcut: R" class="btn-tactile inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-100 text-xs font-bold shadow-xs">
             <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            Replay (1x)
+            <span>Replay (1x)</span>
           </button>
 
-          <button type="button" onclick="replayAnimation(0.5)" title="Shortcut: S" class="btn-tactile inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-100 text-xs font-bold shadow-xs">
+          <button type="button" onclick="replayAnimation(0.5)" title="Shortcut: S" class="btn-tactile inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 text-slate-100 text-xs font-bold shadow-xs">
             <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 2"/></svg>
-            Slow-Mo (0.5x)
+            <span>Slow-Mo (0.5x)</span>
           </button>
 
-          <button type="button" onclick="nextScenario()" class="btn-tactile inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0072ce] hover:bg-sky-600 border border-sky-400/30 text-white text-xs font-bold shadow-xs">
-            <span>New Pass</span>
+          <button id="new-pass-btn" type="button" onclick="nextScenario()" class="btn-tactile inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#0072ce] hover:bg-sky-600 border border-sky-400/30 text-white text-xs font-bold shadow-xs">
+            <span id="new-pass-label">New Pass</span>
           </button>
         </div>
 
-        <span class="text-[11px] font-medium text-slate-400 hidden sm:inline">
-          Shortcuts: <kbd class="font-mono text-slate-200 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">R</kbd> Replay &bull; <kbd class="font-mono text-slate-200 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">S</kbd> Slow-Mo
-        </span>
+        <div class="flex items-center gap-1.5">
+          <button type="button" onclick="addCurrentScenarioToPackage()" title="Save this exact pass into your Training Package" class="btn-tactile inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-[11px] font-bold">
+            <span>+ Package</span>
+          </button>
+          <button type="button" onclick="shareCurrentScenario(false)" title="Copy link to share or query this exact pass" class="btn-tactile inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sky-300 text-[11px] font-bold">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+            <span>Share</span>
+          </button>
+        </div>
       </div>
     </section>
 
-    <!-- RIGHT COLUMN: COMPACT JUDGING PANEL & HAWK-EYE REVEAL -->
+    <!-- RIGHT COLUMN: COMPACT JUDGING PANEL, HAWK-EYE REVEAL & PACKAGE SCORECARD -->
     <section class="lg:col-span-5 bg-[#111827] rounded-2xl shadow-xl border border-slate-800 p-3 sm:p-4 flex flex-col gap-2.5">
 
       <!-- JUDGING INPUT FORM -->
@@ -280,14 +334,126 @@
           </p>
         </div>
 
-        <button type="button" onclick="nextScenario()" title="Shortcut: Enter or Space" class="btn-tactile w-full py-2.5 sm:py-3 px-4 rounded-xl bg-[#009a44] hover:bg-emerald-600 border border-emerald-400/30 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2">
-          <span>Next Landing</span>
+        <!-- Share / Query Callout + Add to Package Action Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-1.5">
+          <button type="button" onclick="shareCurrentScenario(true)" class="sm:col-span-8 btn-tactile py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-sky-700/60 text-sky-200 text-[11px] font-bold flex items-center justify-center gap-1.5 text-center">
+            <svg class="w-3.5 h-3.5 text-sky-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+            <span>Think something is wrong or need it explained? Share it here!</span>
+          </button>
+
+          <button type="button" onclick="addCurrentScenarioToPackage()" class="sm:col-span-4 btn-tactile py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-600/50 text-amber-300 text-[11px] font-bold flex items-center justify-center gap-1">
+            <span>+ Add to Package</span>
+          </button>
+        </div>
+
+        <button id="next-landing-btn" type="button" onclick="nextScenario()" title="Shortcut: Enter or Space" class="btn-tactile w-full py-2.5 sm:py-3 px-4 rounded-xl bg-[#009a44] hover:bg-emerald-600 border border-emerald-400/30 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2">
+          <span id="next-landing-label">Next Landing</span>
           <span>&rarr;</span>
         </button>
       </div>
 
+      <!-- PACKAGE COMPLETION SUMMARY SCORECARD -->
+      <div id="package-summary-panel" class="hidden flex-col gap-3">
+        <div class="rounded-xl p-3.5 bg-emerald-950/50 border border-emerald-700/70 flex items-center justify-between">
+          <div>
+            <div class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400">Training Package Complete</div>
+            <div id="pkg-sum-title" class="text-sm sm:text-base font-extrabold text-white mt-0.5">Workshop Drill</div>
+          </div>
+          <div class="text-right font-mono">
+            <div class="text-[10px] uppercase text-slate-400">Exact Score</div>
+            <div id="pkg-sum-score" class="text-xl font-extrabold text-emerald-400">0 / 0</div>
+          </div>
+        </div>
+
+        <div id="pkg-sum-list" class="max-h-[260px] overflow-y-auto space-y-1.5 pr-1 text-xs"></div>
+
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button type="button" onclick="restartActivePackage()" class="btn-tactile py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-xs font-bold">
+            Restart Package
+          </button>
+          <button type="button" onclick="exitSpecialSession()" class="btn-tactile py-2.5 px-3 rounded-xl bg-[#0072ce] hover:bg-sky-600 border border-sky-400/30 text-white text-xs font-bold">
+            Random Practice
+          </button>
+        </div>
+      </div>
+
     </section>
   </main>
+
+  <!-- DELIBERATE TRAINING PACKAGE BUILDER MODAL -->
+  <div id="package-modal" class="fixed inset-0 z-40 hidden items-center justify-center bg-black/75 backdrop-blur-xs p-3 sm:p-6">
+    <div class="bg-[#111827] border border-slate-700 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-4 py-3 bg-[#0f172a] border-b border-slate-800 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="text-base">📦</span>
+          <div>
+            <h2 class="text-sm sm:text-base font-extrabold text-white leading-tight">Deliberate Training Package Builder</h2>
+            <p class="text-[11px] text-slate-400">Curate specific DMT, TUM &amp; TRP passes, annotate coaching notes, and share a playlist link</p>
+          </div>
+        </div>
+        <button type="button" onclick="togglePackageModal(false)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm flex items-center justify-center">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-4 overflow-y-auto space-y-4 text-xs">
+        <!-- Package Metadata & Mode Toggle -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 bg-[#0f172a] p-3 rounded-xl border border-slate-800">
+          <div class="sm:col-span-7">
+            <label class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Package Title</label>
+            <input id="pkg-title-input" type="text" value="FIG Judging Calibration Drill" oninput="updatePackageMeta()" class="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:border-sky-500" placeholder="e.g. Advanced DMT Edge Cases" />
+          </div>
+          <div class="sm:col-span-5">
+            <label class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Delivery Mode</label>
+            <div class="grid grid-cols-2 gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+              <button id="pkg-delivery-guided" type="button" onclick="setPackageDelivery('GUIDED')" class="py-1 px-2 rounded-md text-[11px] font-bold bg-[#0072ce] text-white">
+                Guided (Notes)
+              </button>
+              <button id="pkg-delivery-exam" type="button" onclick="setPackageDelivery('EXAM')" class="py-1 px-2 rounded-md text-[11px] font-bold text-slate-400 hover:text-white">
+                Assessment
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick-Add Curated Deliberate Presets -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-sky-400">Add Deliberate Teaching Archetype</span>
+            <button type="button" onclick="addCurrentScenarioToPackage(true)" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 text-[11px] font-bold">
+              + Capture Active Canvas Pass
+            </button>
+          </div>
+          <div id="preset-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5"></div>
+        </div>
+
+        <!-- Curated Playlist Items -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-300">Package Playlist (<span id="pkg-modal-count">0</span> Passes)</span>
+            <button type="button" onclick="clearPackageItems()" class="text-[11px] font-semibold text-rose-400 hover:text-rose-300">
+              Clear All
+            </button>
+          </div>
+          <div id="pkg-items-list" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- Modal Footer Actions -->
+      <div class="px-4 py-3 bg-[#0f172a] border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <button type="button" onclick="copyPackageShareLink()" class="btn-tactile inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-sky-600/60 text-sky-300 text-xs font-bold">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          <span>Copy Shareable Package Link (?pkg=...)</span>
+        </button>
+
+        <button type="button" onclick="launchPackageSession()" class="btn-tactile inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#009a44] hover:bg-emerald-600 border border-emerald-400/30 text-white text-xs font-bold shadow-md">
+          <span>▶ Run Package Now</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- COMPACT SUITE FOOTER -->
   <footer class="max-w-7xl w-full mx-auto px-3 sm:px-6 py-2 text-center text-[11px] text-slate-500 border-t border-slate-800/80 mt-auto">
@@ -317,7 +483,7 @@
       completelyOutStepProb: 0.14,     // 14% chance on DMT/TUM of landing inside the mat and stepping COMPLETELY off (1.0 stability)
 
       // --- Clean Stick Override Probability ---
-      perfectStickProb: 0.26,          // 26% chance of a clean 0.0 stick randomized across any zone
+      perfectStickProb: 0.25,          // 25% chance of a clean 0.0 stick randomized across any zone
 
       // --- Additive 0.1 Stability Movement Weights (for remaining non-stick landings) ---
       stabilityWeights: {
@@ -347,6 +513,7 @@
     const state = {
       discipline: 'DMT',          // 'DMT' | 'TUM' | 'TRP'
       mode: 'COMBINED',           // 'COMBINED' | 'PRIMARY' | 'STABILITY'
+      sessionMode: 'RANDOM',      // 'RANDOM' | 'SHARED' | 'PACKAGE'
       passNumber: 1,
       totalAttempts: 0,
       exactMatches: 0,
@@ -357,10 +524,17 @@
       selectedStability: null,    // 0.0 | 0.1 | 0.2 | 0.3 | 0.5 | 1.0
       submitted: false,
       scenario: null,
+      // Deliberate Training Package Builder & Runner State
+      pkgBuilder: {
+        title: 'FIG Judging Calibration Drill',
+        delivery: 'GUIDED',       // 'GUIDED' | 'EXAM'
+        items: []                 // Array of deterministic blueprint objects { id, label, note, bp }
+      },
+      activePackage: null,        // { title, delivery, items, index, results: [] }
       // Playback timing (1.0s pre-roll countdown + 60fps animation)
       preRollDuration: 1000,
       preRollRemaining: 0,
-      animDuration: 1520,
+      animDuration: 1300,
       trpAnimDuration: 2500,
       playbackSpeed: 1.0,
       animStartTime: 0,
@@ -418,14 +592,90 @@
 
     const STABILITY_OPTIONS = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
 
+    // Curated Deliberate Teaching Presets for the Package Builder
+    const DELIBERATE_PRESETS = [
+      {
+        label: 'DMT: Zone A → Zone B Same-Leg Return (0.0 +0.2 + 0.1 = 0.3)',
+        note: 'Athlete lands inside Zone A, steps back into Zone B (+0.2 worse zone), and returns the same foot together (0.1 stability).',
+        bp: { d: 'DMT', f: -1, tx: 2.90, ty: 0.0, sx: 0.62, sy: 0.0, st: 'ONE_STEP_RETURN' }
+      },
+      {
+        label: 'DMT: Zone C → Completely Off Mat (1.0 +0.0 + 1.0 = 2.0)',
+        note: 'Stepping completely outside the 3.0m × 6.0m mat is a 1.0 Stability deduction and does NOT count as a worse zone (+0.0).',
+        bp: { d: 'DMT', f: -1, tx: 3.50, ty: 1.24, sx: 0.0, sy: 0.48, st: 'COMPLETELY_OUT_STABILITY' }
+      },
+      {
+        label: 'DMT: Step + Pause + Body Sway + Return (0.2 Stability)',
+        note: 'Notice the pause after stepping out before the upper-body counterbalance wave occurs (0.1 step + 0.1 body = 0.2).',
+        bp: { d: 'DMT', f: -1, tx: 1.85, ty: 0.0, sx: -0.34, sy: 0.0, st: 'STEP_BODY_RETURN' }
+      },
+      {
+        label: 'TUM: Track → Landing Zone Step (0.4 +0.0 + 0.1 = 0.5)',
+        note: 'Lands on the Track (0.4) and steps forward into the better Landing Zone (+0.0 worse-zone change) with a closed finish (0.1).',
+        bp: { d: 'TUM', f: -1, tx: -0.36, ty: 0.0, sx: 0.74, sy: 0.0, st: 'ONE_STEP_RETURN' }
+      },
+      {
+        label: 'TUM: 2 Steps Left Unclosed Apart (0.0 +0.0 + 0.3 = 0.3)',
+        note: 'Unclosed finish (feet apart at end) evaluates to 0.3 on TUM/DMT regardless of whether 1 or 2 steps were taken.',
+        bp: { d: 'TUM', f: -1, tx: 1.75, ty: 0.0, sx: -0.68, sy: 0.0, st: 'UNCLOSED_FINISH', sub: 'TWO_STEPS_APART' }
+      },
+      {
+        label: 'TRP: Rebound Hop + Step Return (0.0 + 0.2 = 0.2)',
+        note: '0.26m vertical rebound bounce/hop (0.1) followed immediately by a corrective step and return together (0.1) = 0.2 stability.',
+        bp: { d: 'TRP', f: 1, ob: true, obt: 'CLEAN_STRAIGHT', tx: 2.10, ty: 0.0, sx: 0.32, sy: 0.0, st: 'TRP_HOP_STEP_RETURN' }
+      },
+      {
+        label: 'TRP: 3-Movement 0.2 Stability Cap Test (0.0 + 0.2 = 0.2)',
+        note: '2 corrective steps + arm circles = 3 movements, capped at 0.2 max stability on Trampoline (0.3 is a distractor).',
+        bp: { d: 'TRP', f: -1, ob: true, obt: 'CLEAN_STRAIGHT', tx: 2.30, ty: 0.0, sx: -0.54, sy: 0.0, st: 'TWO_STEPS_ARM_CIRCLES' }
+      },
+      {
+        label: 'TRP: Outbounce Shape Break + End-Deck Step (0.1 + 1.0 → 1.0 Max)',
+        note: 'Outbounce pike break (0.1) + stepping onto the end deck (1.0) is strictly capped at 1.0 maximum total deduction on TRP.',
+        bp: { d: 'TRP', f: 1, ob: true, obt: 'BODY_SHAPE_BREAK', tx: 3.92, ty: 0.0, sx: 0.56, sy: 0.0, st: 'ONE_STEP_RETURN' }
+      }
+    ];
+
     const canvas = document.getElementById('simCanvas');
     const ctx = canvas.getContext('2d');
 
-    // --- INITIALIZATION & EVENT LISTENERS ---
+    // --- INITIALIZATION & URL DEEP-LINK PARSER ---
     window.addEventListener('DOMContentLoaded', () => {
+      loadSavedPackageFromStorage();
+      renderPresetGrid();
+      renderPackageModalList();
+      resizeCanvas();
+
+      const params = new URLSearchParams(window.location.search);
+      const sharedParam = params.get('s');
+      const pkgParam = params.get('pkg');
+
+      if (sharedParam) {
+        const bp = decodePayload(sharedParam);
+        if (bp && bp.d) {
+          startSharedScenarioSession(bp);
+          return;
+        }
+      }
+
+      if (pkgParam) {
+        const pkgData = decodePayload(pkgParam);
+        if (pkgData && Array.isArray(pkgData.items) && pkgData.items.length > 0) {
+          state.pkgBuilder = {
+            title: pkgData.title || 'Shared Training Package',
+            delivery: pkgData.delivery === 'EXAM' ? 'EXAM' : 'GUIDED',
+            items: pkgData.items
+          };
+          document.getElementById('pkg-title-input').value = state.pkgBuilder.title;
+          setPackageDelivery(state.pkgBuilder.delivery);
+          renderPackageModalList();
+          launchPackageSession();
+          return;
+        }
+      }
+
       updateDisciplineUI();
       renderInputButtons();
-      resizeCanvas();
       generateScenario();
     });
 
@@ -435,17 +685,460 @@
     });
 
     window.addEventListener('keydown', (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
       if (e.key === 'r' || e.key === 'R') {
         replayAnimation(1.0);
       } else if (e.key === 's' || e.key === 'S') {
         replayAnimation(0.5);
       } else if (e.key === 'Enter' || e.key === ' ') {
-        if (state.submitted) {
+        if (state.submitted && state.sessionMode !== 'SHARED') {
           e.preventDefault();
           nextScenario();
         }
       }
     });
+
+    // --- BASE64 URL ENCODING / DECODING HELPERS ---
+    function encodePayload(obj) {
+      try {
+        const json = JSON.stringify(obj);
+        const bytes = new TextEncoder().encode(json);
+        let bin = '';
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      } catch (err) {
+        return '';
+      }
+    }
+
+    function decodePayload(str) {
+      try {
+        let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4) b64 += '=';
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const json = new TextDecoder().decode(bytes);
+        return JSON.parse(json);
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast-banner');
+      document.getElementById('toast-text').textContent = msg;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 3200);
+    }
+
+    function copyTextToClipboard(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+      } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    // --- SHARE CURRENT SCENARIO (?s=...) ---
+    function shareCurrentScenario(includeRulingSummary = false) {
+      if (!state.scenario || !state.scenario.blueprint) return;
+      const encoded = encodePayload(state.scenario.blueprint);
+      const url = new URL(window.location.href.split('?')[0].split('#')[0]);
+      url.searchParams.set('s', encoded);
+      const shareUrl = url.toString();
+
+      const sc = state.scenario;
+      let summaryText = '';
+      if (includeRulingSummary && state.submitted) {
+        if (sc.discipline === 'TRP') {
+          summaryText = `FIG Judge Query (${sc.discipline}) • Outbounce ${sc.officialOutbounce.toFixed(1)} + Stability ${sc.officialStability.toFixed(1)} = ${sc.officialTotal.toFixed(1)} — Review link: ${shareUrl}`;
+        } else {
+          summaryText = `FIG Judge Query (${sc.discipline}) • ${sc.zoneEval.initZone.shortLabel} (${sc.officialInitialZone.toFixed(1)}) +${sc.officialZoneChange.toFixed(1)} + Stab ${sc.officialStability.toFixed(1)} = ${sc.officialTotal.toFixed(1)} — Review link: ${shareUrl}`;
+        }
+      } else {
+        summaryText = `FIG Judging Challenge (${sc.discipline} Pass) — Try scoring this landing: ${shareUrl}`;
+      }
+
+      copyTextToClipboard(summaryText);
+      showToast('Share link & ruling summary copied to clipboard!');
+
+      if (navigator.share) {
+        navigator.share({
+          title: `FIG Landing Trainer • ${sc.discipline} Pass`,
+          text: summaryText,
+          url: shareUrl
+        }).catch(() => {});
+      }
+    }
+
+    function startSharedScenarioSession(bp) {
+      state.sessionMode = 'SHARED';
+      state.mode = 'COMBINED';
+      state.discipline = bp.d;
+      state.submitted = false;
+      state.selectedZoneCode = null;
+      state.selectedWorseZone = false;
+      state.selectedOutbounce = null;
+      state.selectedStability = null;
+
+      document.getElementById('session-banner').classList.remove('hidden');
+      document.getElementById('session-badge').textContent = 'SHARED SCENARIO';
+      document.getElementById('session-title').textContent = `Reviewing Shared ${bp.d} Pass`;
+      document.getElementById('session-coach-note').textContent = 'Score this exact pass or replay in 0.5x slow-motion.';
+      document.getElementById('new-pass-label').textContent = 'Replay Pass';
+      document.getElementById('next-landing-label').textContent = 'Replay Pass Again';
+
+      updateDisciplineUI();
+      state.scenario = buildScenarioFromBlueprint(bp);
+      if (state.discipline === 'TRP') {
+        state.selectedOutbounce = state.scenario.hasOutbounce ? null : 0.0;
+      }
+      renderInputButtons();
+      document.getElementById('scenario-label').textContent = `Shared ${bp.d} Pass • Deterministic Replay`;
+      replayAnimation(1.0);
+    }
+
+    function exitSpecialSession() {
+      state.sessionMode = 'RANDOM';
+      state.activePackage = null;
+      document.getElementById('session-banner').classList.add('hidden');
+      document.getElementById('guided-prompt-bar').classList.add('hidden');
+      document.getElementById('package-summary-panel').classList.add('hidden');
+      document.getElementById('package-summary-panel').classList.remove('flex');
+      document.getElementById('new-pass-label').textContent = 'New Pass';
+      document.getElementById('next-landing-label').textContent = 'Next Landing';
+
+      try {
+        window.history.replaceState({}, '', window.location.pathname);
+      } catch (e) {}
+
+      nextScenario();
+    }
+
+    // --- DELIBERATE TRAINING PACKAGE BUILDER & PLAYLIST RUNNER (?pkg=...) ---
+    function loadSavedPackageFromStorage() {
+      try {
+        const raw = localStorage.getItem('fig_landing_pkg_v1');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.items)) {
+            state.pkgBuilder = {
+              title: parsed.title || 'FIG Judging Calibration Drill',
+              delivery: parsed.delivery === 'EXAM' ? 'EXAM' : 'GUIDED',
+              items: parsed.items
+            };
+          }
+        }
+      } catch (e) {}
+      updatePackageCountBadge();
+    }
+
+    function savePackageToStorage() {
+      try {
+        localStorage.setItem('fig_landing_pkg_v1', JSON.stringify(state.pkgBuilder));
+      } catch (e) {}
+      updatePackageCountBadge();
+    }
+
+    function updatePackageCountBadge() {
+      const count = state.pkgBuilder.items.length;
+      document.getElementById('pkg-count-pill').textContent = count;
+      const modalCount = document.getElementById('pkg-modal-count');
+      if (modalCount) modalCount.textContent = count;
+    }
+
+    function togglePackageModal(open) {
+      const modal = document.getElementById('package-modal');
+      if (open) {
+        document.getElementById('pkg-title-input').value = state.pkgBuilder.title;
+        setPackageDelivery(state.pkgBuilder.delivery);
+        renderPackageModalList();
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      } else {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function updatePackageMeta() {
+      state.pkgBuilder.title = document.getElementById('pkg-title-input').value.trim() || 'FIG Judging Calibration Drill';
+      savePackageToStorage();
+    }
+
+    function setPackageDelivery(mode) {
+      state.pkgBuilder.delivery = mode;
+      document.getElementById('pkg-delivery-guided').className = mode === 'GUIDED'
+        ? 'py-1 px-2 rounded-md text-[11px] font-bold bg-[#0072ce] text-white'
+        : 'py-1 px-2 rounded-md text-[11px] font-bold text-slate-400 hover:text-white';
+      document.getElementById('pkg-delivery-exam').className = mode === 'EXAM'
+        ? 'py-1 px-2 rounded-md text-[11px] font-bold bg-[#0072ce] text-white'
+        : 'py-1 px-2 rounded-md text-[11px] font-bold text-slate-400 hover:text-white';
+      savePackageToStorage();
+    }
+
+    function renderPresetGrid() {
+      const grid = document.getElementById('preset-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      DELIBERATE_PRESETS.forEach((p, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-tactile text-left p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/90 flex items-center justify-between gap-2';
+        btn.innerHTML = `
+          <span class="text-[11px] font-semibold text-slate-200 leading-snug">${p.label}</span>
+          <span class="font-mono text-[10px] font-extrabold px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800/70 shrink-0">+ Add</span>
+        `;
+        btn.onclick = () => addPresetToPackage(idx);
+        grid.appendChild(btn);
+      });
+    }
+
+    function addPresetToPackage(idx) {
+      const p = DELIBERATE_PRESETS[idx];
+      if (!p) return;
+      state.pkgBuilder.items.push({
+        id: 'item_' + Date.now() + '_' + Math.floor(Math.random() * 999),
+        label: p.label,
+        note: p.note,
+        bp: { ...p.bp }
+      });
+      savePackageToStorage();
+      renderPackageModalList();
+      showToast('Added preset pass to Training Package!');
+    }
+
+    function addCurrentScenarioToPackage(insideModal = false) {
+      if (!state.scenario || !state.scenario.blueprint) return;
+      const sc = state.scenario;
+      const label = sc.discipline === 'TRP'
+        ? `TRP: ${sc.outbounceInfo.label} + ${sc.stability.label} (Official ${sc.officialTotal.toFixed(1)})`
+        : `${sc.discipline}: ${sc.zoneEval.initZone.shortLabel}${sc.zoneEval.movedToWorseZone ? ' (+0.2)' : ''} + ${sc.stability.label} (Official ${sc.officialTotal.toFixed(1)})`;
+
+      state.pkgBuilder.items.push({
+        id: 'item_' + Date.now() + '_' + Math.floor(Math.random() * 999),
+        label,
+        note: sc.telemetryStr,
+        bp: { ...sc.blueprint }
+      });
+      savePackageToStorage();
+      if (insideModal) renderPackageModalList();
+      showToast(`Captured pass into "${state.pkgBuilder.title}" (${state.pkgBuilder.items.length} total)`);
+    }
+
+    function updatePackageItemNote(index, val) {
+      if (state.pkgBuilder.items[index]) {
+        state.pkgBuilder.items[index].note = val;
+        savePackageToStorage();
+      }
+    }
+
+    function movePackageItem(index, dir) {
+      const target = index + dir;
+      if (target < 0 || target >= state.pkgBuilder.items.length) return;
+      const arr = state.pkgBuilder.items;
+      const tmp = arr[index];
+      arr[index] = arr[target];
+      arr[target] = tmp;
+      savePackageToStorage();
+      renderPackageModalList();
+    }
+
+    function removePackageItem(index) {
+      state.pkgBuilder.items.splice(index, 1);
+      savePackageToStorage();
+      renderPackageModalList();
+    }
+
+    function clearPackageItems() {
+      state.pkgBuilder.items = [];
+      savePackageToStorage();
+      renderPackageModalList();
+    }
+
+    function renderPackageModalList() {
+      updatePackageCountBadge();
+      const list = document.getElementById('pkg-items-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      if (state.pkgBuilder.items.length === 0) {
+        list.innerHTML = `
+          <div class="p-4 rounded-xl bg-slate-950 border border-dashed border-slate-800 text-center text-slate-400 text-xs">
+            No passes in your Training Package yet. Click any deliberate preset above or hit <strong class="text-amber-300">+ Package</strong> while practicing!
+          </div>
+        `;
+        return;
+      }
+
+      state.pkgBuilder.items.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex flex-col gap-1.5';
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-[#0072ce] text-white shrink-0">#${idx + 1}</span>
+              <span class="font-bold text-slate-100 truncate">${item.label}</span>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" onclick="movePackageItem(${idx}, -1)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px]" title="Move Up">↑</button>
+              <button type="button" onclick="movePackageItem(${idx}, 1)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px]" title="Move Down">↓</button>
+              <button type="button" onclick="removePackageItem(${idx})" class="px-1.5 py-0.5 rounded bg-rose-950/70 hover:bg-rose-900 text-rose-300 font-mono text-[10px]" title="Remove">✕</button>
+            </div>
+          </div>
+          <input type="text" value="${(item.note || '').replace(/"/g, '&quot;')}" oninput="updatePackageItemNote(${idx}, this.value)" placeholder="Optional coach prompt / debrief note..." class="w-full px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-300 focus:outline-none focus:border-sky-500" />
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function copyPackageShareLink() {
+      if (state.pkgBuilder.items.length === 0) {
+        showToast('Add at least 1 pass to your package first!');
+        return;
+      }
+      const payload = {
+        title: state.pkgBuilder.title,
+        delivery: state.pkgBuilder.delivery,
+        items: state.pkgBuilder.items
+      };
+      const encoded = encodePayload(payload);
+      const url = new URL(window.location.href.split('?')[0].split('#')[0]);
+      url.searchParams.set('pkg', encoded);
+      const shareUrl = url.toString();
+
+      copyTextToClipboard(shareUrl);
+      showToast(`Copied "${state.pkgBuilder.title}" link (${state.pkgBuilder.items.length} passes)!`);
+    }
+
+    function launchPackageSession() {
+      if (state.pkgBuilder.items.length === 0) {
+        showToast('Add at least 1 pass to your package first!');
+        return;
+      }
+      togglePackageModal(false);
+      state.sessionMode = 'PACKAGE';
+      state.mode = 'COMBINED';
+      state.activePackage = {
+        title: state.pkgBuilder.title,
+        delivery: state.pkgBuilder.delivery,
+        items: state.pkgBuilder.items.map(x => ({ ...x, bp: { ...x.bp } })),
+        index: 0,
+        results: []
+      };
+      loadPackageStep(0);
+    }
+
+    function restartActivePackage() {
+      if (!state.activePackage) return;
+      state.activePackage.index = 0;
+      state.activePackage.results = [];
+      loadPackageStep(0);
+    }
+
+    function loadPackageStep(idx) {
+      const pkg = state.activePackage;
+      if (!pkg) return;
+
+      if (idx >= pkg.items.length) {
+        showPackageSummaryScreen();
+        return;
+      }
+
+      pkg.index = idx;
+      const item = pkg.items[idx];
+      state.discipline = item.bp.d;
+      state.submitted = false;
+      state.selectedZoneCode = null;
+      state.selectedWorseZone = false;
+      state.selectedOutbounce = null;
+      state.selectedStability = null;
+
+      document.getElementById('package-summary-panel').classList.add('hidden');
+      document.getElementById('package-summary-panel').classList.remove('flex');
+      document.getElementById('result-panel').classList.add('hidden');
+      document.getElementById('result-panel').classList.remove('flex');
+      document.getElementById('judging-form').classList.remove('hidden');
+      document.getElementById('validation-msg').classList.add('hidden');
+
+      document.getElementById('session-banner').classList.remove('hidden');
+      document.getElementById('session-badge').textContent = `PACKAGE • PASS ${idx + 1} OF ${pkg.items.length}`;
+      document.getElementById('session-title').textContent = pkg.title;
+      document.getElementById('session-coach-note').textContent = pkg.delivery === 'EXAM' ? 'Assessment Mode' : 'Guided Workshop Mode';
+
+      const guidedBar = document.getElementById('guided-prompt-bar');
+      if (pkg.delivery === 'GUIDED' && item.note) {
+        document.getElementById('guided-prompt-text').textContent = item.note;
+        guidedBar.classList.remove('hidden');
+      } else {
+        guidedBar.classList.add('hidden');
+      }
+
+      document.getElementById('new-pass-label').textContent = 'Skip Pass';
+      document.getElementById('next-landing-label').textContent = (idx + 1 < pkg.items.length)
+        ? `Next Package Pass (${idx + 2}/${pkg.items.length})`
+        : 'View Package Scorecard';
+
+      updateDisciplineUI();
+      state.scenario = buildScenarioFromBlueprint(item.bp, item.note);
+      if (state.discipline === 'TRP') {
+        state.selectedOutbounce = state.scenario.hasOutbounce ? null : 0.0;
+      }
+      renderInputButtons();
+      document.getElementById('scenario-label').textContent =
+        `Package ${idx + 1}/${pkg.items.length} • ${item.bp.d}`;
+      replayAnimation(1.0);
+    }
+
+    function showPackageSummaryScreen() {
+      const pkg = state.activePackage;
+      if (!pkg) return;
+
+      document.getElementById('judging-form').classList.add('hidden');
+      document.getElementById('result-panel').classList.add('hidden');
+      document.getElementById('result-panel').classList.remove('flex');
+      document.getElementById('guided-prompt-bar').classList.add('hidden');
+
+      const panel = document.getElementById('package-summary-panel');
+      panel.classList.remove('hidden');
+      panel.classList.add('flex');
+
+      const exactCount = pkg.results.filter(r => r.isExact).length;
+      document.getElementById('pkg-sum-title').textContent = pkg.title;
+      document.getElementById('pkg-sum-score').textContent = `${exactCount} / ${pkg.items.length}`;
+
+      const list = document.getElementById('pkg-sum-list');
+      list.innerHTML = '';
+      pkg.results.forEach((r, i) => {
+        const row = document.createElement('div');
+        row.className = `p-2.5 rounded-xl border flex items-center justify-between gap-2 ${
+          r.isExact
+            ? 'bg-emerald-950/40 border-emerald-800/70 text-emerald-100'
+            : 'bg-rose-950/40 border-rose-800/70 text-rose-100'
+        }`;
+        row.innerHTML = `
+          <div class="min-w-0">
+            <div class="font-bold truncate">#${i + 1} • ${r.label}</div>
+            <div class="text-[11px] opacity-80">You: <span class="font-mono font-bold">${r.userTot.toFixed(1)}</span> &bull; Official: <span class="font-mono font-bold">${r.offTot.toFixed(1)}</span></div>
+          </div>
+          <span class="font-mono text-xs font-extrabold px-2 py-0.5 rounded ${r.isExact ? 'bg-[#009a44] text-white' : 'bg-[#e11d48] text-white'}">
+            ${r.isExact ? '✓ EXACT' : '✕ DIFF'}
+          </span>
+        `;
+        list.appendChild(row);
+      });
+    }
 
     // --- UI STATE SETTERS ---
     function updateDisciplineUI() {
@@ -481,6 +1174,9 @@
     }
 
     function setDiscipline(disc) {
+      if (state.sessionMode !== 'RANDOM') {
+        exitSpecialSession();
+      }
       state.discipline = disc;
       updateDisciplineUI();
       renderInputButtons();
@@ -488,6 +1184,9 @@
     }
 
     function setMode(mode) {
+      if (state.sessionMode !== 'RANDOM') {
+        exitSpecialSession();
+      }
       state.mode = mode;
       ['COMBINED', 'PRIMARY', 'STABILITY'].forEach(m => {
         const btn = document.getElementById(`mode-${m}`);
@@ -570,7 +1269,6 @@
       } else {
         document.getElementById('zone-rule-hint').textContent = cfg.zoneHint;
 
-        // Inline 4-column row: 3 Initial Zone buttons + "+0.2 Worse Zone" toggle button
         const zoneContainer = document.getElementById('zone-buttons');
         zoneContainer.className = 'grid grid-cols-4 gap-1.5';
         zoneContainer.innerHTML = '';
@@ -712,13 +1410,14 @@
     // ============================================================================
     // STABILITY ARCHETYPES & WEIGHTED PICKER
     // ============================================================================
-    function getStabilityArchetypes(discipline = state.discipline) {
+    function getStabilityArchetypes(discipline = state.discipline, forcedSubType = null) {
       const isTRP = discipline === 'TRP';
       const unclosedDed = isTRP ? 0.2 : 0.3;
       const threeMoveDed = isTRP ? 0.2 : 0.3;
 
       return {
         CLEAN_STICK: {
+          key: 'CLEAN_STICK',
           ded: 0.0,
           type: 'STICK',
           label: 'Clean Stick (0.0)',
@@ -726,6 +1425,7 @@
           desc: 'Clean stick finishing with 2 feet together and motionless upon touchdown (0.0 stability).'
         },
         ONE_STEP_RETURN: {
+          key: 'ONE_STEP_RETURN',
           ded: 0.1,
           type: 'STEP_RETURN',
           label: '1 Step + Same-Leg Return (0.1)',
@@ -733,6 +1433,7 @@
           desc: 'Takes 1 step out (0.1) and brings the same foot back to finish with 2 feet together (0.0 extra) = 0.1 stability.'
         },
         BODY_SWAY: {
+          key: 'BODY_SWAY',
           ded: 0.1,
           type: 'BODY_SWAY',
           label: 'Body Sway (0.1)',
@@ -740,6 +1441,7 @@
           desc: 'Feet remain planted together while the torso/arms make a distinct balance recovery sway (0.1 stability).'
         },
         STEP_BODY_RETURN: {
+          key: 'STEP_BODY_RETURN',
           ded: 0.2,
           type: 'STEP_BODY_RETURN',
           label: 'Step + Body + Return (0.2)',
@@ -747,6 +1449,7 @@
           desc: 'Steps out (0.1), pauses briefly and makes a distinct upper-body/arm sway (0.1), then returns the same foot to finish with 2 feet together (0.0) = 0.2 stability.'
         },
         TWO_STEPS_RETURN: {
+          key: 'TWO_STEPS_RETURN',
           ded: 0.2,
           type: 'TWO_STEPS_RETURN',
           label: '2 Steps + Return Closed (0.2)',
@@ -754,8 +1457,9 @@
           desc: 'Takes 2 corrective steps (0.2) and closes feet together at the finish (0.0 extra) = 0.2 stability.'
         },
         UNCLOSED_FINISH: {
+          key: 'UNCLOSED_FINISH',
           ded: unclosedDed,
-          type: Math.random() < 0.5 ? 'ONE_STEP_APART' : 'TWO_STEPS_APART',
+          type: forcedSubType || (Math.random() < 0.5 ? 'ONE_STEP_APART' : 'TWO_STEPS_APART'),
           label: `Unclosed Finish (${unclosedDed.toFixed(1)})`,
           formula: isTRP
             ? 'Stability: 0.2 = Unclosed Finish (Feet Left Apart on TRP = 0.2 Max)'
@@ -765,6 +1469,7 @@
             : 'Unclosed finish (feet left apart at end regardless of step count): 0.3 on DMT/TUM (0.2 on TRP).'
         },
         TWO_STEPS_ARM_CIRCLES: {
+          key: 'TWO_STEPS_ARM_CIRCLES',
           ded: threeMoveDed,
           type: 'TWO_STEPS_ARM_CIRCLES',
           label: isTRP ? '2 Steps + Arm Circles (0.2 Max)' : '2 Steps + Arm Circles (0.3)',
@@ -776,6 +1481,7 @@
             : 'Two corrective steps (0.2) combined with arm circles (0.1, counted once) = 0.3 maximum stability deduction.'
         },
         TRP_SOLO_HOP: {
+          key: 'TRP_SOLO_HOP',
           ded: 0.1,
           type: 'HOP',
           label: 'Rebound Hop (0.1)',
@@ -783,6 +1489,7 @@
           desc: 'Vertical rebound bounce/hop after touchdown before settling with 2 feet together (0.1 stability).'
         },
         TRP_HOP_STEP_RETURN: {
+          key: 'TRP_HOP_STEP_RETURN',
           ded: 0.2,
           type: 'HOP_STEP_RETURN',
           label: 'Rebound Hop + Step Return (0.2)',
@@ -790,20 +1497,23 @@
           desc: 'Vertical rebound hop upon landing (0.1) followed immediately by a corrective step and return together (0.1) = 0.2 stability.'
         },
         STEPS_TO_HAND_TOUCH: {
+          key: 'STEPS_TO_HAND_TOUCH',
           ded: 0.5,
-          type: Math.random() < 0.65 ? 'STEPS_INTO_HAND_TOUCH' : 'HAND_TOUCH',
+          type: forcedSubType || (Math.random() < 0.65 ? 'STEPS_INTO_HAND_TOUCH' : 'HAND_TOUCH'),
           label: 'Hand Touch (0.5)',
           formula: 'Stability: 0.5 = Steps → Hand Touch (0.5; greater deduction counts)',
           desc: 'Greater-deduction rule: steps preceding a hand touch count as 0.5 only (never steps + touch).'
         },
         STEPS_TO_FALL: {
+          key: 'STEPS_TO_FALL',
           ded: 1.0,
-          type: Math.random() < 0.65 ? 'STEPS_INTO_FALL' : 'FALL_TO_BACK',
+          type: forcedSubType || (Math.random() < 0.65 ? 'STEPS_INTO_FALL' : 'FALL_TO_BACK'),
           label: 'Fall to Back / Seat (1.0)',
           formula: 'Stability: 1.0 = Steps → Fall to Back (1.0; greater deduction counts)',
           desc: 'Greater-deduction rule: steps preceding a fall to back/seat count as 1.0 only (never steps + fall).'
         },
         COMPLETELY_OUT_STABILITY: {
+          key: 'COMPLETELY_OUT_STABILITY',
           ded: 1.0,
           type: 'ONE_STEP_APART',
           label: 'Stepped Completely Out (1.0)',
@@ -830,7 +1540,243 @@
     }
 
     // ============================================================================
-    // TRAMPOLINE (TRP) SCENARIO GENERATOR
+    // DETERMINISTIC BLUEPRINT COMPILER (USED FOR ?s=... & ?pkg=... REPLAYS)
+    // ============================================================================
+    function buildScenarioFromBlueprint(bp, customNote = '') {
+      const disc = bp.d;
+      const facing = bp.f;
+      const archetypes = getStabilityArchetypes(disc, bp.sub || null);
+      let stab = { ...(archetypes[bp.st] || archetypes.CLEAN_STICK) };
+
+      if (disc === 'TRP') {
+        const cfg = DISCIPLINE_CONFIG.TRP;
+        const hasOutbounce = !!bp.ob;
+        const obMap = {
+          NONE: { hasOutbounce: false, type: 'NONE', ded: 0.0, label: 'No Outbounce (0.0)', desc: 'Direct landing from final skill without an outbounce (0.0 outbounce deduction).' },
+          CLEAN_STRAIGHT: { hasOutbounce: true, type: 'CLEAN_STRAIGHT', ded: 0.0, label: 'Clean Outbounce (0.0)', desc: 'Clean straight-body outbounce with controlled arm swing (0.0 outbounce deduction).' },
+          SINGLE_ARM_CIRCLE: { hasOutbounce: true, type: 'SINGLE_ARM_CIRCLE', ded: 0.0, label: 'Outbounce + 1 Arm Circle (0.0)', desc: 'Straight outbounce with a single (1) arm circle — allowed without deduction (0.0 outbounce).' },
+          BODY_SHAPE_BREAK: { hasOutbounce: true, type: 'BODY_SHAPE_BREAK', ded: 0.1, label: 'Outbounce Shape Break (0.1)', desc: 'Noticeable hip pike / knee break during the outbounce jump (0.1 outbounce deduction).' },
+          MULTI_ARM_CIRCLES: { hasOutbounce: true, type: 'MULTI_ARM_CIRCLES', ded: 0.1, label: 'Outbounce + 2+ Arm Circles (0.1)', desc: 'Multiple (2+) arm circles during the outbounce jump (0.1 outbounce deduction).' }
+        };
+        const outbounceInfo = obMap[hasOutbounce ? (bp.obt || 'CLEAN_STRAIGHT') : 'NONE'];
+
+        const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+        const touchX = Number(clamp(bp.tx, -0.75, cfg.bedLengthM + 0.75).toFixed(2));
+        const touchY = Number(clamp(bp.ty, -1.25, 1.25).toFixed(2));
+        const stepDeltaX = Number((bp.sx || 0).toFixed(2));
+        const stepDeltaY = Number((bp.sy || 0).toFixed(2));
+
+        let trailStepRatio = 0.0;
+        if (stab.type === 'TWO_STEPS_RETURN') trailStepRatio = 1.0;
+        else if (stab.type === 'TWO_STEPS_APART') trailStepRatio = 0.52;
+        else if (stab.type === 'TWO_STEPS_ARM_CIRCLES') trailStepRatio = 0.90;
+        else if (stab.type === 'STEPS_INTO_HAND_TOUCH' || stab.type === 'STEPS_INTO_FALL') trailStepRatio = 0.65;
+
+        const peakLeadX = Number(clamp(touchX + stepDeltaX, -0.85, cfg.bedLengthM + 0.85).toFixed(2));
+        const peakLeadY = Number(clamp(touchY + stepDeltaY, -1.25, 1.25).toFixed(2));
+        const peakTrailX = Number((touchX + stepDeltaX * trailStepRatio).toFixed(2));
+        const peakTrailY = Number((touchY + stepDeltaY * trailStepRatio).toFixed(2));
+
+        const isHandTouch = (stab.type === 'HAND_TOUCH' || stab.type === 'STEPS_INTO_HAND_TOUCH');
+        const isBackFall = (stab.type === 'FALL_TO_BACK' || stab.type === 'STEPS_INTO_FALL');
+        const handX = isHandTouch ? Number(clamp(peakLeadX + 0.40 * facing, -0.85, cfg.bedLengthM + 0.85).toFixed(2)) : null;
+        const handY = isHandTouch ? peakLeadY : null;
+        const backX = isBackFall ? Number(clamp(peakLeadX - 0.50 * facing, -0.85, cfg.bedLengthM + 0.85).toFixed(2)) : null;
+        const backY = isBackFall ? peakLeadY : null;
+
+        const isOffBed = (x, y) => {
+          const halfFootL = 0.13;
+          const halfFootW = 0.05;
+          return (x - halfFootL < 0.0) || (x + halfFootL > cfg.bedLengthM) || (Math.abs(y) + halfFootW > cfg.bedWidthM / 2);
+        };
+        const leftLatOffset = -0.11 * facing;
+        const rightLatOffset = 0.11 * facing;
+
+        const landedOnEndDeck = isOffBed(touchX, touchY + leftLatOffset) || isOffBed(touchX, touchY + rightLatOffset);
+        const steppedToEndDeck = !landedOnEndDeck && (
+          isOffBed(peakLeadX, peakLeadY + rightLatOffset) ||
+          isOffBed(peakTrailX, peakTrailY + leftLatOffset) ||
+          (handX !== null && isOffBed(handX, handY)) ||
+          (backX !== null && isOffBed(backX, backY))
+        );
+
+        let officialStability = stab.ded;
+        let trpEndDeckNote = '';
+        if (landedOnEndDeck) {
+          officialStability = 1.0;
+          trpEndDeckNote = 'Landed directly on the End Deck / frame pads → automatic 1.0 landing deduction.';
+        } else if (steppedToEndDeck) {
+          officialStability = 1.0;
+          trpEndDeckNote = 'Landed on the bed then stepped onto the End Deck / frame pads → 1.0 landing deduction.';
+        }
+        if (state.mode === 'PRIMARY') officialStability = 0.0;
+
+        const officialOutbounce = state.mode === 'STABILITY' ? 0.0 : outbounceInfo.ded;
+        const rawTrpTotal = Number((officialOutbounce + officialStability).toFixed(1));
+        const wasCappedAtOne = rawTrpTotal > 1.0;
+        const officialTotal = Number(Math.min(1.0, rawTrpTotal).toFixed(1));
+        const skillTouchX = Number(clamp(touchX - 0.14 * facing, 0.25, cfg.bedLengthM - 0.25).toFixed(2));
+        const skillTouchY = touchY;
+
+        const telemetryStr = `${outbounceInfo.label} • Bed Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) → Final: (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m)`;
+        const obPart = state.mode === 'STABILITY'
+          ? 'Stability-Only Drill: Outbounce deductions excluded.'
+          : `<strong class="text-white">Outbounce: ${outbounceInfo.ded.toFixed(1)}</strong> (${outbounceInfo.desc})`;
+        const stPart = state.mode === 'PRIMARY'
+          ? 'Outbounce-Only Drill: Bed stability deductions excluded.'
+          : (trpEndDeckNote
+              ? `<strong class="text-rose-400">${trpEndDeckNote}</strong>`
+              : `<strong class="text-white">${stab.formula}.</strong> ${stab.desc}`);
+        const capPart = wasCappedAtOne
+          ? ` <strong class="text-amber-300">TRP Rule: Maximum combined deduction on TRP is strictly capped at 1.0 (${officialOutbounce.toFixed(1)} + ${officialStability.toFixed(1)} → 1.0 max).</strong>`
+          : '';
+        const coachPrefix = customNote ? `<span class="block text-amber-300 font-semibold mb-1">Coach Note: ${customNote}</span>` : '';
+
+        return {
+          discipline: 'TRP',
+          blueprint: { ...bp },
+          facing,
+          hasOutbounce,
+          outbounceInfo,
+          skillTouchX,
+          skillTouchY,
+          touchX,
+          touchY,
+          stepDeltaX,
+          stepDeltaY,
+          trailStepRatio,
+          peakLeadX,
+          peakLeadY,
+          peakTrailX,
+          peakTrailY,
+          handX,
+          handY,
+          backX,
+          backY,
+          landedOnEndDeck,
+          steppedToEndDeck,
+          stability: stab,
+          zoneEval: null,
+          officialOutbounce,
+          officialStability,
+          officialTotal,
+          telemetryStr,
+          explanation: `${coachPrefix}${obPart} ${stPart}${capPart}`,
+          entryLeanDeg: isHandTouch ? 18 : (isBackFall ? -14 : (stab.ded >= 0.2 ? 13 : 6))
+        };
+      }
+
+      // DMT or TUM Blueprint Compilation
+      const cfg = DISCIPLINE_CONFIG[disc];
+      const touchX = Number(bp.tx.toFixed(2));
+      const touchY = Number(bp.ty.toFixed(2));
+      const stepDeltaX = Number((bp.sx || 0).toFixed(2));
+      const stepDeltaY = Number((bp.sy || 0).toFixed(2));
+
+      let trailStepRatio = 0.0;
+      if (stab.type === 'TWO_STEPS_RETURN') trailStepRatio = 1.0;
+      else if (stab.type === 'TWO_STEPS_APART') trailStepRatio = 0.52;
+      else if (stab.type === 'TWO_STEPS_ARM_CIRCLES') trailStepRatio = 0.90;
+      else if (stab.type === 'STEPS_INTO_HAND_TOUCH' || stab.type === 'STEPS_INTO_FALL') trailStepRatio = 0.65;
+
+      const peakLeadX = Number((touchX + stepDeltaX).toFixed(2));
+      const peakLeadY = Number((touchY + stepDeltaY).toFixed(2));
+      const peakTrailX = Number((touchX + stepDeltaX * trailStepRatio).toFixed(2));
+      const peakTrailY = Number((touchY + stepDeltaY * trailStepRatio).toFixed(2));
+
+      const isHandTouch = (stab.type === 'HAND_TOUCH' || stab.type === 'STEPS_INTO_HAND_TOUCH');
+      const isBackFall = (stab.type === 'FALL_TO_BACK' || stab.type === 'STEPS_INTO_FALL');
+      const handX = isHandTouch ? Number((peakLeadX + 0.42 * facing).toFixed(2)) : null;
+      const handY = isHandTouch ? peakLeadY : null;
+      const backX = isBackFall ? Number((peakLeadX - 0.52 * facing).toFixed(2)) : null;
+      const backY = isBackFall ? peakLeadY : null;
+
+      const zoneEval = computeOfficialZonePenalty(
+        touchX, touchY, peakLeadX, peakLeadY, peakTrailX, peakTrailY, handX, handY, backX, backY, cfg, facing
+      );
+
+      if (zoneEval.steppedCompletelyOut) {
+        stab = { ...archetypes.COMPLETELY_OUT_STABILITY };
+      }
+
+      const officialInitialZone = state.mode === 'STABILITY' ? 0.0 : zoneEval.initZone.ded;
+      const officialZoneChange = state.mode === 'STABILITY' ? 0.0 : zoneEval.zoneChangeDed;
+      const officialTotalZone = state.mode === 'STABILITY' ? 0.0 : zoneEval.totalZoneDed;
+      const officialStability = state.mode === 'PRIMARY' ? 0.0 : stab.ded;
+      const officialTotal = Number((officialTotalZone + officialStability).toFixed(1));
+
+      const facingNote = disc === 'TUM'
+        ? 'Facing Tumbling Track'
+        : (facing === -1 ? 'Facing DMT Bed' : 'Facing Away');
+
+      let telemetryStr = '';
+      if (stab.type === 'STEP_RETURN' || stab.type === 'STEP_BODY_RETURN' || stab.type === 'HOP_STEP_RETURN') {
+        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Peak: (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}] → Closed Together`;
+      } else if (stab.type === 'ONE_STEP_APART' || stab.type === 'TWO_STEPS_APART') {
+        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Final Split: Lead (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) / Trail (${peakTrailX.toFixed(2)}m) [${zoneEval.steppedCompletelyOut ? 'Completely Out' : 'Unclosed'}]`;
+      } else if (isBackFall) {
+        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Back Contact: (${backX.toFixed(2)}m, ${backY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}]`;
+      } else if (isHandTouch) {
+        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Hand Contact: (${handX.toFixed(2)}m, ${handY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}]`;
+      } else if (Math.hypot(stepDeltaX, stepDeltaY) > 0.03) {
+        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Final: (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}]`;
+      } else {
+        telemetryStr = `${facingNote} • Planted 2 Feet Together at x=${touchX.toFixed(2)}m, y=${touchY.toFixed(2)}m (${zoneEval.initZone.name})`;
+      }
+
+      let zoneRuleNote = '';
+      if (state.mode === 'STABILITY') {
+        zoneRuleNote = 'Stability-Only Drill: Zone deductions excluded.';
+      } else {
+        const clipPrefix = zoneEval.initZone.boundaryNote ? `${zoneEval.initZone.boundaryNote} ` : '';
+        if (zoneEval.steppedCompletelyOut) {
+          zoneRuleNote = `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}). Stepping completely outside the landing area does NOT count as a zone (+0.0 zone change); it is penalized as 1.0 in Stability.`;
+        } else if (zoneEval.movedToWorseZone) {
+          zoneRuleNote = `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}), then stepped/moved into worse ${zoneEval.worstSubsequent.name} (+0.2 Moved to Worse Zone).`;
+        } else if (zoneEval.movedToBetterZone) {
+          zoneRuleNote = `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}), stepped into better ${zoneEval.worstSubsequent.name} (+0.0 worse-zone change).`;
+        } else {
+          zoneRuleNote = `${clipPrefix}Landed and remained in ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}, +0.0 zone change).`;
+        }
+      }
+
+      const coachPrefix = customNote ? `<span class="block text-amber-300 font-semibold mb-1">Coach Note: ${customNote}</span>` : '';
+      const fullExplanation = state.mode === 'PRIMARY'
+        ? `${coachPrefix}${zoneRuleNote}`
+        : `${coachPrefix}${zoneRuleNote} <strong class="text-white">${stab.formula}.</strong> ${stab.desc}`;
+
+      return {
+        discipline: disc,
+        blueprint: { ...bp },
+        facing,
+        touchX,
+        touchY,
+        stepDeltaX,
+        stepDeltaY,
+        trailStepRatio,
+        peakLeadX,
+        peakLeadY,
+        peakTrailX,
+        peakTrailY,
+        handX,
+        handY,
+        backX,
+        backY,
+        stability: stab,
+        zoneEval,
+        officialInitialZone,
+        officialZoneChange,
+        officialTotalZone,
+        officialStability,
+        officialTotal,
+        telemetryStr,
+        explanation: fullExplanation,
+        entryLeanDeg: isHandTouch ? 20 : (isBackFall ? -14 : (stab.ded >= 0.2 ? 15 : 8))
+      };
+    }
+
+    // ============================================================================
+    // TRAMPOLINE (TRP) RANDOM SCENARIO GENERATOR
     // ============================================================================
     function generateTrampolineScenario() {
       const cfg = DISCIPLINE_CONFIG.TRP;
@@ -838,52 +1784,13 @@
       const jitter = (amt) => (Math.random() - 0.5) * 2 * amt;
 
       const hasOutbounce = Math.random() < SCENARIO_ODDS.trpOutbounceProb;
-      let outbounceInfo = {
-        hasOutbounce: false,
-        type: 'NONE',
-        ded: 0.0,
-        label: 'No Outbounce (0.0)',
-        desc: 'Direct landing from final skill without an outbounce (0.0 outbounce deduction).'
-      };
-
+      let obt = 'NONE';
       if (hasOutbounce) {
         const hasObFault = Math.random() < SCENARIO_ODDS.trpOutbounceFaultProb;
         if (!hasObFault) {
-          if (Math.random() < 0.65) {
-            outbounceInfo = {
-              hasOutbounce: true,
-              type: 'CLEAN_STRAIGHT',
-              ded: 0.0,
-              label: 'Clean Outbounce (0.0)',
-              desc: 'Clean straight-body outbounce with controlled arm swing (0.0 outbounce deduction).'
-            };
-          } else {
-            outbounceInfo = {
-              hasOutbounce: true,
-              type: 'SINGLE_ARM_CIRCLE',
-              ded: 0.0,
-              label: 'Outbounce + 1 Arm Circle (0.0)',
-              desc: 'Straight outbounce with a single (1) arm circle — allowed without deduction (0.0 outbounce).'
-            };
-          }
+          obt = Math.random() < 0.65 ? 'CLEAN_STRAIGHT' : 'SINGLE_ARM_CIRCLE';
         } else {
-          if (Math.random() < 0.55) {
-            outbounceInfo = {
-              hasOutbounce: true,
-              type: 'BODY_SHAPE_BREAK',
-              ded: 0.1,
-              label: 'Outbounce Shape Break (0.1)',
-              desc: 'Noticeable hip pike / knee break during the outbounce jump (0.1 outbounce deduction).'
-            };
-          } else {
-            outbounceInfo = {
-              hasOutbounce: true,
-              type: 'MULTI_ARM_CIRCLES',
-              ded: 0.1,
-              label: 'Outbounce + 2+ Arm Circles (0.1)',
-              desc: 'Multiple (2+) arm circles during the outbounce jump (0.1 outbounce deduction).'
-            };
-          }
+          obt = Math.random() < 0.55 ? 'BODY_SHAPE_BREAK' : 'MULTI_ARM_CIRCLES';
         }
       }
 
@@ -929,9 +1836,8 @@
 
       let signedStepX = stepMagX * stepDir;
       let signedStepY = stepY;
-      let trailStepRatio = 0.0;
 
-      if (stab.type === 'STICK' || stab.type === 'BODY_SWAY') {
+      if (stab.type === 'STICK' || stab.type === 'BODY_SWAY' || stab.type === 'HAND_TOUCH' || stab.type === 'FALL_TO_BACK') {
         signedStepX = 0;
         signedStepY = 0;
       } else if (stab.type === 'HOP') {
@@ -941,136 +1847,40 @@
         signedStepX = Math.max(0.28, Math.abs(signedStepX)) * stepDir;
       } else if (stab.type === 'ONE_STEP_APART') {
         signedStepX = Math.max(0.34, Math.abs(signedStepX)) * stepDir;
-        trailStepRatio = 0.0;
       } else if (stab.type === 'TWO_STEPS_RETURN') {
         signedStepX = Math.max(0.46, Math.abs(signedStepX)) * stepDir;
-        trailStepRatio = 1.0;
       } else if (stab.type === 'TWO_STEPS_APART') {
         signedStepX = Math.max(0.62, Math.abs(signedStepX)) * stepDir;
-        trailStepRatio = 0.52;
       } else if (stab.type === 'TWO_STEPS_ARM_CIRCLES') {
         signedStepX = Math.max(0.52, Math.abs(signedStepX)) * stepDir;
-        trailStepRatio = 0.90;
-      } else if (stab.type === 'HAND_TOUCH') {
-        signedStepX = 0;
-        signedStepY = 0;
       } else if (stab.type === 'STEPS_INTO_HAND_TOUCH') {
         signedStepX = 0.42 * facing;
-        trailStepRatio = 0.65;
-      } else if (stab.type === 'FALL_TO_BACK') {
-        signedStepX = 0;
-        signedStepY = 0;
       } else if (stab.type === 'STEPS_INTO_FALL') {
         signedStepX = -0.42 * facing;
-        trailStepRatio = 0.65;
       }
 
       const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
       touchX = Number(clamp(touchX, -0.75, cfg.bedLengthM + 0.75).toFixed(2));
       touchY = Number(clamp(touchY, -1.25, 1.25).toFixed(2));
-
       const peakLeadX = Number(clamp(touchX + signedStepX, -0.85, cfg.bedLengthM + 0.85).toFixed(2));
       const peakLeadY = Number(clamp(touchY + signedStepY, -1.25, 1.25).toFixed(2));
       const stepDeltaX = Number((peakLeadX - touchX).toFixed(2));
       const stepDeltaY = Number((peakLeadY - touchY).toFixed(2));
 
-      const peakTrailX = Number((touchX + stepDeltaX * trailStepRatio).toFixed(2));
-      const peakTrailY = Number((touchY + stepDeltaY * trailStepRatio).toFixed(2));
-
-      const isHandTouch = (stab.type === 'HAND_TOUCH' || stab.type === 'STEPS_INTO_HAND_TOUCH');
-      const isBackFall = (stab.type === 'FALL_TO_BACK' || stab.type === 'STEPS_INTO_FALL');
-
-      const handX = isHandTouch ? Number(clamp(peakLeadX + 0.40 * facing, -0.85, cfg.bedLengthM + 0.85).toFixed(2)) : null;
-      const handY = isHandTouch ? peakLeadY : null;
-      const backX = isBackFall ? Number(clamp(peakLeadX - 0.50 * facing, -0.85, cfg.bedLengthM + 0.85).toFixed(2)) : null;
-      const backY = isBackFall ? peakLeadY : null;
-
-      const isOffBed = (x, y) => {
-        const halfFootL = 0.13;
-        const halfFootW = 0.05;
-        return (x - halfFootL < 0.0) || (x + halfFootL > cfg.bedLengthM) || (Math.abs(y) + halfFootW > cfg.bedWidthM / 2);
+      const bp = {
+        d: 'TRP',
+        f: facing,
+        ob: hasOutbounce,
+        obt,
+        tx: touchX,
+        ty: touchY,
+        sx: stepDeltaX,
+        sy: stepDeltaY,
+        st: stab.key,
+        sub: stab.type
       };
 
-      const leftLatOffset = -0.11 * facing;
-      const rightLatOffset = 0.11 * facing;
-
-      const landedOnEndDeck = isOffBed(touchX, touchY + leftLatOffset) || isOffBed(touchX, touchY + rightLatOffset);
-      const steppedToEndDeck = !landedOnEndDeck && (
-        isOffBed(peakLeadX, peakLeadY + rightLatOffset) ||
-        isOffBed(peakTrailX, peakTrailY + leftLatOffset) ||
-        (handX !== null && isOffBed(handX, handY)) ||
-        (backX !== null && isOffBed(backX, backY))
-      );
-
-      let officialStability = stab.ded;
-      let trpEndDeckNote = '';
-      if (landedOnEndDeck) {
-        officialStability = 1.0;
-        trpEndDeckNote = 'Landed directly on the End Deck / frame pads → automatic 1.0 landing deduction.';
-      } else if (steppedToEndDeck) {
-        officialStability = 1.0;
-        trpEndDeckNote = 'Landed on the bed then stepped onto the End Deck / frame pads → 1.0 landing deduction.';
-      }
-
-      if (state.mode === 'PRIMARY') {
-        officialStability = 0.0;
-      }
-
-      const officialOutbounce = state.mode === 'STABILITY' ? 0.0 : outbounceInfo.ded;
-      const rawTrpTotal = Number((officialOutbounce + officialStability).toFixed(1));
-      const wasCappedAtOne = rawTrpTotal > 1.0;
-      const officialTotal = Number(Math.min(1.0, rawTrpTotal).toFixed(1));
-
-      const skillTouchX = Number(clamp(touchX - 0.14 * facing, 0.25, cfg.bedLengthM - 0.25).toFixed(2));
-      const skillTouchY = touchY;
-
-      const telemetryStr = `${outbounceInfo.label} • Bed Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) → Final: (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m)`;
-
-      const obPart = state.mode === 'STABILITY'
-        ? 'Stability-Only Drill: Outbounce deductions excluded.'
-        : `<strong class="text-white">Outbounce: ${outbounceInfo.ded.toFixed(1)}</strong> (${outbounceInfo.desc})`;
-
-      const stPart = state.mode === 'PRIMARY'
-        ? 'Outbounce-Only Drill: Bed stability deductions excluded.'
-        : (trpEndDeckNote
-            ? `<strong class="text-rose-400">${trpEndDeckNote}</strong>`
-            : `<strong class="text-white">${stab.formula}.</strong> ${stab.desc}`);
-
-      const capPart = wasCappedAtOne
-        ? ` <strong class="text-amber-300">TRP Rule: Maximum combined deduction on TRP is strictly capped at 1.0 (${officialOutbounce.toFixed(1)} + ${officialStability.toFixed(1)} → 1.0 max).</strong>`
-        : '';
-
-      return {
-        discipline: 'TRP',
-        facing,
-        hasOutbounce,
-        outbounceInfo,
-        skillTouchX,
-        skillTouchY,
-        touchX,
-        touchY,
-        stepDeltaX,
-        stepDeltaY,
-        trailStepRatio,
-        peakLeadX,
-        peakLeadY,
-        peakTrailX,
-        peakTrailY,
-        handX,
-        handY,
-        backX,
-        backY,
-        landedOnEndDeck,
-        steppedToEndDeck,
-        stability: stab,
-        zoneEval: null,
-        officialOutbounce,
-        officialStability,
-        officialTotal,
-        telemetryStr,
-        explanation: `${obPart} ${stPart}${capPart}`,
-        entryLeanDeg: isHandTouch ? 18 : (isBackFall ? -14 : (stab.ded >= 0.2 ? 13 : 6))
-      };
+      return buildScenarioFromBlueprint(bp);
     }
 
     // ============================================================================
@@ -1277,7 +2087,6 @@
         return;
       }
 
-      const cfg = DISCIPLINE_CONFIG[state.discipline];
       const facing = state.discipline === 'TUM'
         ? -1
         : (Math.random() < SCENARIO_ODDS.dmtFacingBedProb ? -1 : 1);
@@ -1363,37 +2172,24 @@
 
       let signedStepX = chosenZonePattern.stepMagX * (chosenZonePattern.stepDir * facing);
       let signedStepY = chosenZonePattern.stepY;
-      let trailStepRatio = 0.0;
 
-      if (stab.type === 'STICK' || stab.type === 'BODY_SWAY') {
+      if (stab.type === 'STICK' || stab.type === 'BODY_SWAY' || stab.type === 'HAND_TOUCH' || stab.type === 'FALL_TO_BACK') {
         signedStepX = 0;
         signedStepY = 0;
       } else if (stab.type === 'ONE_STEP_APART') {
         signedStepX = chosenZonePattern.allowOutMat
           ? signedStepX
           : Math.max(0.34, Math.abs(signedStepX)) * (chosenZonePattern.stepDir * facing);
-        trailStepRatio = 0.0;
       } else if (stab.type === 'TWO_STEPS_RETURN') {
         signedStepX = Math.max(0.46, Math.abs(signedStepX)) * (chosenZonePattern.stepDir * facing);
-        trailStepRatio = 1.0;
       } else if (stab.type === 'TWO_STEPS_APART') {
         signedStepX = Math.max(0.68, Math.abs(signedStepX)) * (chosenZonePattern.stepDir * facing);
-        trailStepRatio = 0.52;
       } else if (stab.type === 'TWO_STEPS_ARM_CIRCLES') {
         signedStepX = Math.max(0.56, Math.abs(signedStepX)) * (chosenZonePattern.stepDir * facing);
-        trailStepRatio = 0.90;
-      } else if (stab.type === 'HAND_TOUCH') {
-        signedStepX = 0;
-        signedStepY = 0;
       } else if (stab.type === 'STEPS_INTO_HAND_TOUCH') {
         signedStepX = Math.max(0.45, Math.abs(signedStepX)) * facing;
-        trailStepRatio = 0.65;
-      } else if (stab.type === 'FALL_TO_BACK') {
-        signedStepX = 0;
-        signedStepY = 0;
       } else if (stab.type === 'STEPS_INTO_FALL') {
         signedStepX = -0.45 * facing;
-        trailStepRatio = 0.65;
       }
 
       if (state.mode === 'PRIMARY') {
@@ -1401,7 +2197,6 @@
           stab = { ...archetypes.CLEAN_STICK };
           signedStepX = 0;
           signedStepY = 0;
-          trailStepRatio = 0;
         }
       } else if (state.mode === 'STABILITY') {
         if (!chosenZonePattern.allowOutMat) {
@@ -1423,99 +2218,18 @@
       const stepDeltaX = Number((peakLeadX - touchX).toFixed(2));
       const stepDeltaY = Number((peakLeadY - touchY).toFixed(2));
 
-      const peakTrailX = Number((touchX + stepDeltaX * trailStepRatio).toFixed(2));
-      const peakTrailY = Number((touchY + stepDeltaY * trailStepRatio).toFixed(2));
-
-      const isHandTouch = (stab.type === 'HAND_TOUCH' || stab.type === 'STEPS_INTO_HAND_TOUCH');
-      const isBackFall = (stab.type === 'FALL_TO_BACK' || stab.type === 'STEPS_INTO_FALL');
-
-      const handX = isHandTouch ? Number(clamp(peakLeadX + 0.42 * facing, minXAllowed, maxXAllowed).toFixed(2)) : null;
-      const handY = isHandTouch ? peakLeadY : null;
-
-      const backX = isBackFall ? Number(clamp(peakLeadX - 0.52 * facing, minXAllowed, maxXAllowed).toFixed(2)) : null;
-      const backY = isBackFall ? peakLeadY : null;
-
-      const zoneEval = computeOfficialZonePenalty(
-        touchX, touchY, peakLeadX, peakLeadY, peakTrailX, peakTrailY, handX, handY, backX, backY, cfg, facing
-      );
-
-      if (zoneEval.steppedCompletelyOut) {
-        stab = { ...archetypes.COMPLETELY_OUT_STABILITY };
-      }
-
-      const officialInitialZone = state.mode === 'STABILITY' ? 0.0 : zoneEval.initZone.ded;
-      const officialZoneChange = state.mode === 'STABILITY' ? 0.0 : zoneEval.zoneChangeDed;
-      const officialTotalZone = state.mode === 'STABILITY' ? 0.0 : zoneEval.totalZoneDed;
-      const officialStability = state.mode === 'PRIMARY' ? 0.0 : stab.ded;
-      const officialTotal = Number((officialTotalZone + officialStability).toFixed(1));
-
-      const facingNote = state.discipline === 'TUM'
-        ? 'Facing Tumbling Track'
-        : (facing === -1 ? 'Facing DMT Bed' : 'Facing Away');
-
-      let telemetryStr = '';
-      if (stab.type === 'STEP_RETURN' || stab.type === 'STEP_BODY_RETURN' || stab.type === 'HOP_STEP_RETURN') {
-        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Peak: (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}] → Closed Together`;
-      } else if (stab.type === 'ONE_STEP_APART' || stab.type === 'TWO_STEPS_APART') {
-        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Final Split: Lead (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) / Trail (${peakTrailX.toFixed(2)}m) [${zoneEval.steppedCompletelyOut ? 'Completely Out' : 'Unclosed'}]`;
-      } else if (isBackFall) {
-        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Back Contact: (${backX.toFixed(2)}m, ${backY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}]`;
-      } else if (isHandTouch) {
-        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Hand Contact: (${handX.toFixed(2)}m, ${handY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}]`;
-      } else if (Math.hypot(stepDeltaX, stepDeltaY) > 0.03) {
-        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Final: (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}]`;
-      } else {
-        telemetryStr = `${facingNote} • Planted 2 Feet Together at x=${touchX.toFixed(2)}m, y=${touchY.toFixed(2)}m (${zoneEval.initZone.name})`;
-      }
-
-      let zoneRuleNote = '';
-      if (state.mode === 'STABILITY') {
-        zoneRuleNote = 'Stability-Only Drill: Zone deductions excluded.';
-      } else {
-        const clipPrefix = zoneEval.initZone.boundaryNote ? `${zoneEval.initZone.boundaryNote} ` : '';
-        if (zoneEval.steppedCompletelyOut) {
-          zoneRuleNote = `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}). Stepping completely outside the landing area does NOT count as a zone (+0.0 zone change); it is penalized as 1.0 in Stability.`;
-        } else if (zoneEval.movedToWorseZone) {
-          zoneRuleNote = `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}), then stepped/moved into worse ${zoneEval.worstSubsequent.name} (+0.2 Moved to Worse Zone).`;
-        } else if (zoneEval.movedToBetterZone) {
-          zoneRuleNote = `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}), stepped into better ${zoneEval.worstSubsequent.name} (+0.0 worse-zone change).`;
-        } else {
-          zoneRuleNote = `${clipPrefix}Landed and remained in ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}, +0.0 zone change).`;
-        }
-      }
-
-      const fullExplanation = state.mode === 'PRIMARY'
-        ? zoneRuleNote
-        : `${zoneRuleNote} <strong class="text-white">${stab.formula}.</strong> ${stab.desc}`;
-
-      state.scenario = {
-        discipline: state.discipline,
-        facing,
-        touchX,
-        touchY,
-        stepDeltaX,
-        stepDeltaY,
-        trailStepRatio,
-        peakLeadX,
-        peakLeadY,
-        peakTrailX,
-        peakTrailY,
-        handX,
-        handY,
-        backX,
-        backY,
-        stability: stab,
-        zoneEval,
-        officialInitialZone,
-        officialZoneChange,
-        officialTotalZone,
-        officialStability,
-        officialTotal,
-        telemetryStr,
-        explanation: fullExplanation,
-        entryLeanDeg: isHandTouch ? 20 : (isBackFall ? -14 : (stab.ded >= 0.2 ? 15 : 8))
+      const bp = {
+        d: state.discipline,
+        f: facing,
+        tx: touchX,
+        ty: touchY,
+        sx: stepDeltaX,
+        sy: stepDeltaY,
+        st: stab.key,
+        sub: stab.type
       };
 
+      state.scenario = buildScenarioFromBlueprint(bp);
       document.getElementById('scenario-label').textContent =
         `Pass #${state.passNumber} • ${state.discipline} ${state.discipline === 'DMT' ? 'Dismount' : 'Pass End'}`;
 
@@ -1660,6 +2374,16 @@
         state.streak = 0;
       }
 
+      if (state.sessionMode === 'PACKAGE' && state.activePackage) {
+        const curItem = state.activePackage.items[state.activePackage.index];
+        state.activePackage.results[state.activePackage.index] = {
+          label: curItem ? curItem.label : `Pass ${state.activePackage.index + 1}`,
+          userTot: uTot,
+          offTot: oTot,
+          isExact
+        };
+      }
+
       const accPct = Math.round((state.exactMatches / state.totalAttempts) * 100);
       document.getElementById('stat-acc').textContent = `${accPct}%`;
       document.getElementById('stat-streak').textContent = `🔥 ${state.streak}`;
@@ -1702,6 +2426,17 @@
     }
 
     function nextScenario() {
+      if (state.sessionMode === 'SHARED') {
+        replayAnimation(1.0);
+        return;
+      }
+
+      if (state.sessionMode === 'PACKAGE' && state.activePackage) {
+        const nextIdx = state.activePackage.index + 1;
+        loadPackageStep(nextIdx);
+        return;
+      }
+
       state.passNumber++;
       state.submitted = false;
       state.selectedZoneCode = null;
@@ -2067,7 +2802,6 @@
           shoulderAngle = -85 + 70 * swayWave;
           backArmAngle = -85 - 50 * swayWave;
         } else if (stype === 'HOP') {
-          // Obvious 0.26m vertical rebound bounce/hop (0.00 -> 0.58) before settling with feet together
           if (u < 0.58) {
             const hu = u / 0.58;
             const hopArc = Math.sin(hu * Math.PI);
@@ -2090,8 +2824,6 @@
             backArmAngle = shoulderAngle;
           }
         } else if (stype === 'HOP_STEP_RETURN') {
-          // Stage 1 (0.00 -> 0.42): Obvious 0.26m rebound bounce/hop upon landing
-          // Stage 2 (0.42 -> 1.00): Corrective step out and same-foot return together
           if (u < 0.42) {
             const hu = u / 0.42;
             const hopArc = Math.sin(hu * Math.PI);
@@ -2123,10 +2855,6 @@
           shoulderAngle = -85 + 25 * stepCurve;
           backArmAngle = shoulderAngle;
         } else if (stype === 'STEP_BODY_RETURN') {
-          // Stage 1 (0.00 -> 0.28): Distinct corrective step out while upper body stays steady
-          // Stage 2 (0.28 -> 0.44): Pause on wide stance so step and body movement don't blur together
-          // Stage 3 (0.44 -> 0.76): Pronounced torso lean/recovery wave & counterbalance arm sweep
-          // Stage 4 (0.76 -> 1.00): Return stepped foot back to base foot
           let stepFactor = 1.0;
           if (u < 0.28) {
             const su = u / 0.28;
@@ -2631,7 +3359,6 @@
         return basePose;
       }
 
-      // Phase 1 (0.00 -> 0.18): Final skill descent onto the trampoline bed
       if (t < 0.18) {
         const u = t / 0.18;
         const inv = 1 - u;
@@ -2657,7 +3384,6 @@
         };
       }
 
-      // Phase 2 (0.18 -> 0.27): Bed depression & elastic recoil pushoff
       if (t < 0.27) {
         const u = (t - 0.18) / 0.09;
         const bell = Math.sin(u * Math.PI);
@@ -2684,7 +3410,6 @@
         };
       }
 
-      // Phase 3 (0.27 -> 0.68): Extended outbounce hangtime
       if (t < 0.68) {
         const u = (t - 0.27) / 0.41;
         const arc = Math.sin(u * Math.PI);
@@ -2743,7 +3468,6 @@
         };
       }
 
-      // Phase 4 (0.68 -> 1.00): Final bed touchdown & stability resolution
       const mappedT = 0.28 + ((t - 0.68) / 0.32) * 0.72;
       const finalPose = computeGymnastPose(mappedT, sc);
       finalPose.t = t;
