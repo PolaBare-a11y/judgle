@@ -317,8 +317,9 @@
 
       // --- Trampoline (TRP) Specific Probabilities ---
       trpOutbounceProb: 0.90,          // 90% of TRP passes perform an outbounce after the final skill; 10% land directly
-      trpOutbounceFaultProb: 0.35,     // When outbouncing on TRP, 35% chance of 0.1 deduction (shape break or 2+ arm circles)
+      trpOutbounceFaultProb: 0.45,     // When outbouncing on TRP, 45% chance of 0.1 deduction (shape break or 2+ arm circles)
       trpEndDeckProb: 0.14,            // 14% chance on TRP of landing on or stepping onto the end deck / frame pads (1.0)
+      trpHopProb: 0.28,                // 28% chance on TRP (when not sticking/falling/deck) of an obvious 0.26m rebound hop (solo 0.1 or hop + step/return 0.2)
 
       // --- Step Completely Out of Landing Area Probability (DMT & TUM) ---
       // Note: Stepping completely out of the landing area is a 1.0 STABILITY deduction
@@ -326,9 +327,9 @@
       completelyOutStepProb: 0.14,     // 14% chance on DMT/TUM of landing inside the mat and stepping COMPLETELY off (1.0 stability)
 
       // --- Clean Stick Override Probability ---
-      perfectStickProb: 0.25,          // 25% chance of a clean 0.0 stick randomized across any zone
+      perfectStickProb: 0.26,          // 26% chance of a clean 0.0 stick randomized across any zone
 
-      // --- Additive 0.1 Stability Movement Weights (for remaining 75% non-stick landings) ---
+      // --- Additive 0.1 Stability Movement Weights (for remaining non-stick landings) ---
       stabilityWeights: {
         SAME_LEG_RETURN_1_STEP: 0.22,  // 0.1: 1 step + bringing the same foot back together (0.1)
         STEP_BODY_RETURN: 0.22,        // 0.2: 1 step (0.1) + distinct pause + body sway (0.1) + return together (0.0)
@@ -339,12 +340,11 @@
         STEPS_TO_FALL: 0.06            // 1.0: Steps into fall to back/seat or direct fall (greater deduction counts)
       },
 
-      // --- DMT & TUM Zone Placement & Boundary-Crossing Weights (within landing area) ---
+      // --- DMT & TUM Zone Placement & Boundary-Crossing Weights (clear >= 0.18m margins) ---
       zoneArchetypeWeights: {
-        CENTER_INTERIOR: 0.40,         // Cleanly inside a zone
-        BORDERLINE_CLIP: 0.24,         // Toe/heel clips a zone line by 2-8cm (worst zone counts!)
-        LATERAL_STEP_CROSS: 0.18,      // Lands in good zone, steps SIDEWAYS into worse zone (+0.2)
-        LONGITUDINAL_STEP_CROSS: 0.18  // Lands in good zone, steps FORWARD/BACK into worse zone (+0.2)
+        CENTER_INTERIOR: 0.58,         // Clearly inside a single zone with unambiguous >= 0.18m clearance
+        LATERAL_STEP_CROSS: 0.21,      // Lands clearly in good zone, steps SIDEWAYS cleanly into worse zone (+0.2)
+        LONGITUDINAL_STEP_CROSS: 0.21  // Lands clearly in good zone, steps FORWARD/BACK cleanly into worse zone (+0.2)
       }
     };
 
@@ -765,6 +765,20 @@
             ? '3 instability movements occurred, capped at 0.2 max stability on Trampoline (0.3 is a distractor).'
             : 'Two corrective steps (0.2) combined with arm circles (0.1, counted once) = 0.3 maximum stability deduction.'
         },
+        TRP_SOLO_HOP: {
+          ded: 0.1,
+          type: 'HOP',
+          label: 'Rebound Hop (0.1)',
+          formula: 'Stability: 0.1 = Small Rebound Hop on Bed (0.1)',
+          desc: 'Vertical rebound bounce/hop after touchdown before settling with 2 feet together (0.1 stability).'
+        },
+        TRP_HOP_STEP_RETURN: {
+          ded: 0.2,
+          type: 'HOP_STEP_RETURN',
+          label: 'Rebound Hop + Step Return (0.2)',
+          formula: 'Stability: 0.2 = Rebound Hop (0.1) + Corrective Step & Return (0.1)',
+          desc: 'Vertical rebound hop upon landing (0.1) followed immediately by a corrective step and return together (0.1) = 0.2 stability.'
+        },
         STEPS_TO_HAND_TOUCH: {
           ded: 0.5,
           type: Math.random() < 0.65 ? 'STEPS_INTO_HAND_TOUCH' : 'HAND_TOUCH',
@@ -793,6 +807,11 @@
       const map = getStabilityArchetypes(discipline);
       if (Math.random() < SCENARIO_ODDS.perfectStickProb) {
         return { ...map.CLEAN_STICK };
+      }
+      if (discipline === 'TRP' && Math.random() < SCENARIO_ODDS.trpHopProb) {
+        return Math.random() < 0.5
+          ? { ...map.TRP_SOLO_HOP }
+          : { ...map.TRP_HOP_STEP_RETURN };
       }
       const keys = Object.keys(SCENARIO_ODDS.stabilityWeights);
       const weights = keys.map(k => SCENARIO_ODDS.stabilityWeights[k] ?? 0.1);
@@ -905,6 +924,11 @@
       if (stab.type === 'STICK') {
         signedStepX = 0;
         signedStepY = 0;
+      } else if (stab.type === 'HOP') {
+        signedStepX = 0.06 * stepDir;
+        signedStepY = 0;
+      } else if (stab.type === 'HOP_STEP_RETURN') {
+        signedStepX = Math.max(0.28, Math.abs(signedStepX)) * stepDir;
       } else if (stab.type === 'ONE_STEP_APART') {
         signedStepX = Math.max(0.34, Math.abs(signedStepX)) * stepDir;
         trailStepRatio = 0.0;
@@ -1256,59 +1280,54 @@
       let stab = rollStabilityArchetype(state.discipline);
 
       const jitter = (amt) => (Math.random() - 0.5) * 2 * amt;
-      const clipOffset = () => (0.02 + Math.random() * 0.06);
-      const sign = () => (Math.random() < 0.5 ? 1 : -1);
 
+      // Every coordinate keeps >= 0.18m clear margin away from every boundary line
       const zoneGroups = state.discipline === 'DMT'
         ? {
             CENTER_INTERIOR: [
-              { tag: 'A_INTERIOR', touchX: 1.95 + jitter(0.75), touchY: jitter(0.24), stepMagX: 0.25, stepDir: 1, stepY: 0 },
-              { tag: 'B_INTERIOR_LONG', touchX: 3.55 + jitter(0.18), touchY: jitter(0.35), stepMagX: 0.22, stepDir: 1, stepY: 0 },
-              { tag: 'B_INTERIOR_SIDE', touchX: 2.15 + jitter(0.65), touchY: sign() * (0.72 + jitter(0.08)), stepMagX: 0.20, stepDir: 1, stepY: 0 },
-              { tag: 'C_INTERIOR_DEEP', touchX: 4.75 + jitter(0.55), touchY: jitter(0.65), stepMagX: 0.24, stepDir: 1, stepY: 0 },
-              { tag: 'C_INTERIOR_SIDE', touchX: 2.40 + jitter(0.75), touchY: sign() * (1.22 + jitter(0.08)), stepMagX: 0.20, stepDir: 1, stepY: 0 }
-            ],
-            BORDERLINE_CLIP: [
-              { tag: 'CLIP_A_TO_B_SHORT', touchX: 0.70 + 0.13 - clipOffset(), touchY: jitter(0.20), stepMagX: 0.20, stepDir: 1, stepY: 0 },
-              { tag: 'CLIP_A_TO_B_LONG', touchX: 3.20 - 0.13 + clipOffset(), touchY: jitter(0.20), stepMagX: 0.20, stepDir: 1, stepY: 0 },
-              { tag: 'CLIP_A_TO_B_SIDE', touchX: 2.00 + jitter(0.55), touchY: sign() * (0.50 - 0.16 + clipOffset()), stepMagX: 0.18, stepDir: 1, stepY: 0 },
-              { tag: 'CLIP_B_TO_C_SIDE', touchX: 2.30 + jitter(0.65), touchY: sign() * (1.00 - 0.16 + clipOffset()), stepMagX: 0.18, stepDir: 1, stepY: 0 }
+              { tag: 'A_INTERIOR', touchX: 1.95 + jitter(0.75), touchY: jitter(0.20), stepMagX: 0.22, stepDir: 1, stepY: 0 },
+              { tag: 'B_INTERIOR_LONG', touchX: 3.60 + jitter(0.08), touchY: jitter(0.60), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'B_INTERIOR_SIDE_POS', touchX: 2.05 + jitter(0.65), touchY: 0.75 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'B_INTERIOR_SIDE_NEG', touchX: 2.05 + jitter(0.65), touchY: -0.75 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'C_INTERIOR_DEEP', touchX: 5.00 + jitter(0.45), touchY: jitter(1.10), stepMagX: 0.22, stepDir: 1, stepY: 0 },
+              { tag: 'C_INTERIOR_SIDE_POS', touchX: 2.25 + jitter(0.85), touchY: 1.25 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'C_INTERIOR_SIDE_NEG', touchX: 2.25 + jitter(0.85), touchY: -1.25 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 }
             ],
             LATERAL_STEP_CROSS: [
-              { tag: 'STEP_A_TO_B_SIDE', touchX: 2.05 + jitter(0.50), touchY: 0.32, stepMagX: 0.05, stepDir: 1, stepY: 0.28, requireStep: true },
-              { tag: 'STEP_B_TO_C_SIDE', touchX: 2.45 + jitter(0.50), touchY: -0.80, stepMagX: 0.05, stepDir: 1, stepY: -0.30, requireStep: true }
+              { tag: 'STEP_A_TO_B_SIDE_POS', touchX: 2.00 + jitter(0.55), touchY: 0.26, stepMagX: 0.04, stepDir: 1, stepY: 0.48, requireStep: true },
+              { tag: 'STEP_A_TO_B_SIDE_NEG', touchX: 2.00 + jitter(0.55), touchY: -0.26, stepMagX: 0.04, stepDir: 1, stepY: -0.48, requireStep: true },
+              { tag: 'STEP_B_TO_C_SIDE_POS', touchX: 2.25 + jitter(0.65), touchY: 0.74, stepMagX: 0.04, stepDir: 1, stepY: 0.50, requireStep: true },
+              { tag: 'STEP_B_TO_C_SIDE_NEG', touchX: 2.25 + jitter(0.65), touchY: -0.74, stepMagX: 0.04, stepDir: 1, stepY: -0.50, requireStep: true }
             ],
             LONGITUDINAL_STEP_CROSS: [
-              { tag: 'STEP_A_TO_B_LONG', touchX: facing === -1 ? 0.88 : 3.02, touchY: jitter(0.15), stepMagX: 0.35, stepDir: 1, stepY: 0, requireStep: true },
-              { tag: 'STEP_B_TO_C_LONG', touchX: 3.80, touchY: jitter(0.25), stepMagX: 0.35, stepDir: facing === -1 ? -1 : 1, stepY: 0, requireStep: true }
+              { tag: 'STEP_A_TO_B_SHORT', touchX: 1.02, touchY: jitter(0.18), stepMagX: 0.62, stepDir: facing === -1 ? 1 : -1, stepY: 0, requireStep: true },
+              { tag: 'STEP_A_TO_B_LONG', touchX: 2.88, touchY: jitter(0.18), stepMagX: 0.68, stepDir: facing === -1 ? -1 : 1, stepY: 0, requireStep: true },
+              { tag: 'STEP_B_TO_C_LONG', touchX: 3.68, touchY: jitter(0.50), stepMagX: 0.74, stepDir: facing === -1 ? -1 : 1, stepY: 0, requireStep: true }
             ],
             COMPLETELY_OUT_STEP: [
-              { tag: 'DMT_C_TO_COMPLETELY_OUT_SIDE', touchX: 3.40 + jitter(0.90), touchY: 1.24, stepMagX: 0.05, stepDir: 1, stepY: 0.44, requireStep: true, allowOutMat: true },
-              { tag: 'DMT_C_TO_COMPLETELY_OUT_END', touchX: 5.72, touchY: jitter(0.45), stepMagX: 0.48, stepDir: facing === -1 ? -1 : 1, stepY: 0, requireStep: true, allowOutMat: true }
+              { tag: 'DMT_C_TO_COMPLETELY_OUT_SIDE', touchX: 3.40 + jitter(0.90), touchY: 1.24, stepMagX: 0.04, stepDir: 1, stepY: 0.46, requireStep: true, allowOutMat: true },
+              { tag: 'DMT_C_TO_COMPLETELY_OUT_END', touchX: 5.66, touchY: jitter(0.45), stepMagX: 0.56, stepDir: facing === -1 ? -1 : 1, stepY: 0, requireStep: true, allowOutMat: true }
             ]
           }
         : {
             CENTER_INTERIOR: [
-              { tag: 'TUM_LZ_INTERIOR', touchX: 2.15 + jitter(1.15), touchY: jitter(0.52), stepMagX: 0.26, stepDir: 1, stepY: 0 },
-              { tag: 'TUM_LA_INTERIOR_DEEP', touchX: 4.75 + jitter(0.55), touchY: jitter(0.65), stepMagX: 0.24, stepDir: 1, stepY: 0 },
-              { tag: 'TUM_LA_INTERIOR_SIDE', touchX: 2.45 + jitter(0.75), touchY: sign() * (1.22 + jitter(0.08)), stepMagX: 0.20, stepDir: 1, stepY: 0 },
-              { tag: 'TUM_TRACK_INTERIOR', touchX: -0.58 + jitter(0.22), touchY: jitter(0.35), stepMagX: 0.22, stepDir: 1, stepY: 0 }
-            ],
-            BORDERLINE_CLIP: [
-              { tag: 'TUM_OUT_SIDE', touchX: 2.65 + jitter(0.80), touchY: sign() * (1.50 - 0.16 + clipOffset()), stepMagX: 0.20, stepDir: 1, stepY: 0 },
-              { tag: 'TUM_CLIP_LZ_TO_LA_LONG', touchX: 4.00 - 0.13 + clipOffset(), touchY: jitter(0.45), stepMagX: 0.20, stepDir: 1, stepY: 0 },
-              { tag: 'TUM_CLIP_LZ_TO_LA_SIDE', touchX: 2.25 + jitter(0.75), touchY: sign() * (1.00 - 0.16 + clipOffset()), stepMagX: 0.18, stepDir: 1, stepY: 0 }
+              { tag: 'TUM_LZ_INTERIOR', touchX: 2.00 + jitter(1.40), touchY: jitter(0.65), stepMagX: 0.24, stepDir: 1, stepY: 0 },
+              { tag: 'TUM_LA_INTERIOR_DEEP', touchX: 5.00 + jitter(0.45), touchY: jitter(1.10), stepMagX: 0.22, stepDir: 1, stepY: 0 },
+              { tag: 'TUM_LA_INTERIOR_SIDE_POS', touchX: 2.15 + jitter(0.95), touchY: 1.25 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'TUM_LA_INTERIOR_SIDE_NEG', touchX: 2.15 + jitter(0.95), touchY: -1.25 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'TUM_TRACK_INTERIOR', touchX: -0.60 + jitter(0.20), touchY: jitter(0.60), stepMagX: 0.16, stepDir: 1, stepY: 0 }
             ],
             LATERAL_STEP_CROSS: [
-              { tag: 'TUM_STEP_LZ_TO_LA_SIDE', touchX: 2.35 + jitter(0.60), touchY: 0.80, stepMagX: 0.05, stepDir: 1, stepY: 0.30, requireStep: true }
+              { tag: 'TUM_STEP_LZ_TO_LA_SIDE_POS', touchX: 2.25 + jitter(0.75), touchY: 0.74, stepMagX: 0.04, stepDir: 1, stepY: 0.50, requireStep: true },
+              { tag: 'TUM_STEP_LZ_TO_LA_SIDE_NEG', touchX: 2.25 + jitter(0.75), touchY: -0.74, stepMagX: 0.04, stepDir: 1, stepY: -0.50, requireStep: true }
             ],
             LONGITUDINAL_STEP_CROSS: [
-              { tag: 'TUM_STEP_LZ_TO_LA_LONG', touchX: 3.80, touchY: jitter(0.30), stepMagX: 0.35, stepDir: -1, stepY: 0, requireStep: true },
-              { tag: 'TUM_STEP_TRACK_TO_LZ', touchX: -0.22, touchY: jitter(0.25), stepMagX: 0.38, stepDir: 1, stepY: 0, requireStep: true }
+              { tag: 'TUM_STEP_LZ_TO_LA_LONG', touchX: 3.66, touchY: jitter(0.55), stepMagX: 0.74, stepDir: -1, stepY: 0, requireStep: true },
+              { tag: 'TUM_STEP_TRACK_TO_LZ', touchX: -0.36, touchY: jitter(0.55), stepMagX: 0.74, stepDir: 1, stepY: 0, requireStep: true }
             ],
             COMPLETELY_OUT_STEP: [
-              { tag: 'TUM_LANDING_AREA_TO_COMPLETELY_OUT_SIDE', touchX: 3.20 + jitter(0.95), touchY: -1.24, stepMagX: 0.05, stepDir: 1, stepY: -0.44, requireStep: true, allowOutMat: true },
-              { tag: 'TUM_LANDING_AREA_TO_COMPLETELY_OUT_END', touchX: 5.72, touchY: jitter(0.45), stepMagX: 0.48, stepDir: -1, stepY: 0, requireStep: true, allowOutMat: true }
+              { tag: 'TUM_LANDING_AREA_TO_COMPLETELY_OUT_SIDE', touchX: 3.20 + jitter(0.95), touchY: -1.24, stepMagX: 0.04, stepDir: 1, stepY: -0.46, requireStep: true, allowOutMat: true },
+              { tag: 'TUM_LANDING_AREA_TO_COMPLETELY_OUT_END', touchX: 5.66, touchY: jitter(0.45), stepMagX: 0.56, stepDir: -1, stepY: 0, requireStep: true, allowOutMat: true }
             ]
           };
 
@@ -1324,7 +1343,6 @@
       const chosenZonePattern = { ...groupList[Math.floor(Math.random() * groupList.length)] };
 
       if (chosenZonePattern.allowOutMat) {
-        // Stepping completely out of the landing area is always a 1.0 stability deduction
         stab = { ...archetypes.COMPLETELY_OUT_STABILITY };
       } else if (chosenZonePattern.requireStep && stab.type === 'STICK') {
         const stepPool = [
@@ -1380,9 +1398,7 @@
           trailStepRatio = 0;
         }
       } else if (state.mode === 'STABILITY') {
-        if (chosenZonePattern.allowOutMat) {
-          // Keep near edge so stability-only drill can still practice stepping completely out (1.0)
-        } else {
+        if (!chosenZonePattern.allowOutMat) {
           chosenZonePattern.touchX = state.discipline === 'DMT' ? 1.95 : 2.10;
           chosenZonePattern.touchY = 0.0;
         }
@@ -1417,7 +1433,6 @@
         touchX, touchY, peakLeadX, peakLeadY, peakTrailX, peakTrailY, handX, handY, backX, backY, cfg, facing
       );
 
-      // If any step cleared completely off the mat, stability is 1.0 (not a zone deduction)
       if (zoneEval.steppedCompletelyOut) {
         stab = { ...archetypes.COMPLETELY_OUT_STABILITY };
       }
@@ -1433,7 +1448,7 @@
         : (facing === -1 ? 'Facing DMT Bed' : 'Facing Away');
 
       let telemetryStr = '';
-      if (stab.type === 'STEP_RETURN' || stab.type === 'STEP_BODY_RETURN') {
+      if (stab.type === 'STEP_RETURN' || stab.type === 'STEP_BODY_RETURN' || stab.type === 'HOP_STEP_RETURN') {
         telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Peak: (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}] → Closed Together`;
       } else if (stab.type === 'ONE_STEP_APART' || stab.type === 'TWO_STEPS_APART') {
         telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Final Split: Lead (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) / Trail (${peakTrailX.toFixed(2)}m) [${zoneEval.steppedCompletelyOut ? 'Completely Out' : 'Unclosed'}]`;
@@ -2039,6 +2054,53 @@
           kneeBend = 26 * settle;
           shoulderAngle = -85 - (1 - settle) * 80;
           backArmAngle = shoulderAngle;
+        } else if (stype === 'HOP') {
+          // Obvious 0.26m vertical rebound bounce/hop (0.00 -> 0.58) before settling with feet together
+          if (u < 0.58) {
+            const hu = u / 0.58;
+            const hopArc = Math.sin(hu * Math.PI);
+            const hopShift = sc.stepDeltaX * Math.min(1, hu * 1.15);
+            leftFootX = sc.touchX + hopShift;
+            rightFootX = sc.touchX + hopShift;
+            airHeightM = 0.26 * hopArc;
+            trunkLean = 12 * hopArc;
+            kneeBend = 12 + 18 * (1 - hopArc);
+            shoulderAngle = -90 - 45 * hopArc;
+            backArmAngle = shoulderAngle;
+          } else {
+            const su = (u - 0.58) / 0.42;
+            const settle = Math.max(0, 1 - su * 2.2);
+            leftFootX = sc.touchX + sc.stepDeltaX;
+            rightFootX = sc.touchX + sc.stepDeltaX;
+            trunkLean = 6 * settle;
+            kneeBend = 26 * settle;
+            shoulderAngle = -110 - (1 - settle) * 55;
+            backArmAngle = shoulderAngle;
+          }
+        } else if (stype === 'HOP_STEP_RETURN') {
+          // Stage 1 (0.00 -> 0.42): Obvious 0.26m rebound bounce/hop upon landing
+          // Stage 2 (0.42 -> 1.00): Corrective step out and same-foot return together
+          if (u < 0.42) {
+            const hu = u / 0.42;
+            const hopArc = Math.sin(hu * Math.PI);
+            airHeightM = 0.26 * hopArc;
+            trunkLean = 14 * hopArc;
+            kneeBend = 12 + 18 * (1 - hopArc);
+            shoulderAngle = -85 - 40 * hopArc;
+            backArmAngle = shoulderAngle;
+          } else {
+            const su = (u - 0.42) / 0.58;
+            const stepCurve = su < 0.50
+              ? Math.sin((su / 0.50) * (Math.PI / 2))
+              : Math.cos(((su - 0.50) / 0.50) * (Math.PI / 2));
+            rightFootX = sc.touchX + sc.stepDeltaX * stepCurve;
+            rightFootY = sc.touchY + rightLatOffset + sc.stepDeltaY * stepCurve;
+            rightFootLiftM = 0.09 * Math.sin(Math.min(1, su * 2) * Math.PI) * (su < 0.92 ? 1 : 0);
+            trunkLean = 15 * stepCurve;
+            kneeBend = 22 * stepCurve;
+            shoulderAngle = -85 + 25 * stepCurve;
+            backArmAngle = shoulderAngle;
+          }
         } else if (stype === 'STEP_RETURN') {
           const stepCurve = u < 0.50 ? Math.sin((u / 0.50) * (Math.PI / 2)) : Math.cos(((u - 0.50) / 0.50) * (Math.PI / 2));
           rightFootX = sc.touchX + sc.stepDeltaX * stepCurve;
@@ -2852,7 +2914,7 @@
       if (hasLeadStep && pose.t >= 0.42) {
         drawShoe(initRightX, initRightY, '', true);
 
-        if ((sc.stability.type === 'STEP_RETURN' || sc.stability.type === 'STEP_BODY_RETURN') && pose.t >= 0.72) {
+        if ((sc.stability.type === 'STEP_RETURN' || sc.stability.type === 'STEP_BODY_RETURN' || sc.stability.type === 'HOP_STEP_RETURN') && pose.t >= 0.72) {
           drawShoe(peakRightX, peakRightY, '', true, '#38bdf8');
           drawArrow(
             matLeftX + initRightX * pxPerM,
