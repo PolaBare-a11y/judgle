@@ -1,0 +1,3397 @@
+    /**
+     * ============================================================================
+     * SCENARIO ODDS & PROBABILITY TUNING (EDIT THESE WEIGHTS ANYTIME)
+     * ============================================================================
+     */
+    const SCENARIO_ODDS = {
+      // --- Facing Orientation ---
+      // TUM athletes ALWAYS face the tumbling track (1.0 enforced in code).
+      dmtFacingBedProb: 0.85,          // 85% of DMT landings face back toward the DMT bed; 15% face forward
+
+      // --- Trampoline (TRP) Specific Probabilities ---
+      trpOutbounceProb: 0.90,          // 90% of TRP passes perform an outbounce after the final skill; 10% land directly
+      trpOutbounceFaultProb: 0.45,     // When outbouncing on TRP, 45% chance of 0.1 deduction (shape break or 2+ arm circles)
+      trpEndDeckProb: 0.14,            // 14% chance on TRP of landing on or stepping onto the end deck / frame pads (1.0)
+      trpHopProb: 0.28,                // 28% chance on TRP (when not sticking/falling/deck) of a 0.26m rebound hop (solo 0.1 or hop + step/return 0.2)
+
+      // --- Step Completely Out of Landing Area Probability (DMT & TUM) ---
+      // Note: Stepping completely out of the landing area is a 1.0 STABILITY deduction
+      // (and does NOT count as a worse-zone step).
+      completelyOutStepProb: 0.14,     // 14% chance on DMT/TUM of landing inside the mat and stepping COMPLETELY off (1.0 stability)
+
+      // --- Clean Stick Override Probability ---
+      perfectStickProb: 0.25,          // 25% chance of a clean 0.0 stick randomized across any zone
+
+      // --- Additive 0.1 Stability Movement Weights (for remaining non-stick landings) ---
+      stabilityWeights: {
+        ONE_STEP_RETURN: 0.18,         // 0.1: 1 step + bringing the same foot back together (0.1)
+        BODY_SWAY: 0.12,               // 0.1: Distinct upper-body / trunk sway without stepping (0.1)
+        STEP_BODY_RETURN: 0.20,        // 0.2: 1 step (0.1) + distinct pause + body sway (0.1) + return together (0.0)
+        TWO_STEPS_RETURN: 0.14,        // 0.2: 2 steps (0.2) + foot returned closed together (0.0)
+        UNCLOSED_FINISH: 0.16,         // 0.3 on DMT/TUM, 0.2 on TRP: feet left apart at end regardless of step count
+        TWO_STEPS_ARM_CIRCLES: 0.08,   // 0.3 on DMT/TUM, capped at 0.2 max on TRP: 2 steps + arm circles (3 movements)
+        STEPS_TO_HAND_TOUCH: 0.06,     // 0.5: Steps into hand touch or direct hand touch (greater deduction counts)
+        STEPS_TO_FALL: 0.06            // 1.0: Steps into fall to back/seat or direct fall (greater deduction counts)
+      },
+
+      // --- DMT & TUM Zone Placement & Boundary-Crossing Weights (clear >= 0.18m margins) ---
+      zoneArchetypeWeights: {
+        CENTER_INTERIOR: 0.58,         // Clearly inside a single zone with unambiguous >= 0.18m clearance
+        LATERAL_STEP_CROSS: 0.21,      // Lands clearly in good zone, steps SIDEWAYS cleanly into worse zone (+0.2)
+        LONGITUDINAL_STEP_CROSS: 0.21  // Lands clearly in good zone, steps FORWARD/BACK cleanly into worse zone (+0.2)
+      }
+    };
+
+    /**
+     * ============================================================================
+     * FIG LANDING & OUTBOUNCE TRAINER — STATE & DISCIPLINE CONFIGURATION
+     * ============================================================================
+     */
+    const state = {
+      discipline: 'DMT',          // 'DMT' | 'TUM' | 'TRP'
+      mode: 'COMBINED',           // 'COMBINED' | 'PRIMARY' | 'STABILITY'
+      sessionMode: 'RANDOM',      // 'RANDOM' | 'SHARED' | 'PACKAGE'
+      passNumber: 1,
+      totalAttempts: 0,
+      exactMatches: 0,
+      selectedZoneCode: null,     // DMT: 'A' | 'B' | 'C' ; TUM: 'TRACK' | 'LZ' | 'LA'
+      selectedWorseZone: false,   // Independent +0.2 toggle (inline on 4-col zone row)
+      selectedOutbounce: null,    // TRP: 0.0 | 0.1
+      selectedStability: null,    // 0.0 | 0.1 | 0.2 | 0.3 | 0.5 | 1.0
+      submitted: false,
+      scenario: null,
+      // Deliberate Training Package Builder & Runner State
+      pkgBuilder: {
+        title: 'FIG Judging Calibration Drill',
+        delivery: 'GUIDED',       // 'GUIDED' | 'EXAM'
+        items: []                 // Array of deterministic blueprint objects { id, label, note, bp }
+      },
+      activePackage: null,        // { title, delivery, items, index, results: [] }
+      // Playback timing (1.0s pre-roll countdown + 60fps animation)
+      preRollDuration: 1000,
+      preRollRemaining: 0,
+      animDuration: 1300,
+      trpAnimDuration: 2500,
+      playbackSpeed: 1.0,
+      animStartTime: 0,
+      animProgress: 1.0,
+      isPlaying: false,
+      rafId: null
+    };
+
+    const DISCIPLINE_CONFIG = {
+      DMT: {
+        name: 'Double Mini-Trampoline',
+        apparatusLabel: 'DMT BED',
+        zoneHint: 'Zone A (0.0) • Zone B (0.6) • Zone C (1.0) • +0.2 Worse Zone',
+        zoneButtons: [
+          { code: 'A', label: 'Zone A', ded: 0.0, badgeColor: '#dc2626' },
+          { code: 'B', label: 'Zone B', ded: 0.6, badgeColor: '#eab308' },
+          { code: 'C', label: 'Zone C', ded: 1.0, badgeColor: '#2563eb' }
+        ],
+        matLengthM: 6.0,
+        matWidthM: 3.0,
+        hasZoneA: true,
+        zoneA: { xMin: 0.70, xMax: 3.20, yHalf: 0.50, ded: 0.0, rank: 1, name: 'Zone A (Red)' },
+        zoneB: { xMin: 0.00, xMax: 4.00, yHalf: 1.00, ded: 0.6, rank: 2, name: 'Zone B (Yellow)' },
+        zoneC: { xMin: 0.00, xMax: 6.00, yHalf: 1.50, ded: 1.0, rank: 3, name: 'Zone C (Blue)' }
+      },
+      TUM: {
+        name: 'Tumbling',
+        apparatusLabel: 'TUM TRACK',
+        zoneHint: 'Track (0.4) • Zone (0.0) • Area (1.0) • +0.2 Worse Zone',
+        zoneButtons: [
+          { code: 'TRACK', label: 'Track', ded: 0.4, badgeColor: '#f97316' },
+          { code: 'LZ', label: 'Zone', ded: 0.0, badgeColor: '#eab308' },
+          { code: 'LA', label: 'Area', ded: 1.0, badgeColor: '#2563eb' }
+        ],
+        matLengthM: 6.0,
+        matWidthM: 3.0,
+        hasZoneA: false,
+        zoneA: null,
+        zoneB: { xMin: 0.00, xMax: 4.00, yHalf: 1.00, ded: 0.0, rank: 1, name: 'Landing Zone (Yellow)' },
+        zoneC: { xMin: 0.00, xMax: 6.00, yHalf: 1.50, ded: 1.0, rank: 3, name: 'Landing Area (Blue)' }
+      },
+      TRP: {
+        name: 'Individual Trampoline',
+        apparatusLabel: 'TRP BED',
+        bedLengthM: 4.28,
+        bedWidthM: 2.14,
+        padWidthM: 0.46,
+        endDeckLengthM: 1.85,
+        outbounceButtons: [
+          { val: 0.0, label: 'Clean Outbounce', sub: 'Straight or ≤1 arm circle' },
+          { val: 0.1, label: 'Shape / 2+ Arm Circles', sub: 'Body break or ≥2 circles (0.1)' }
+        ]
+      }
+    };
+
+    const STABILITY_OPTIONS = [0.0, 0.1, 0.2, 0.3, 0.5, 1.0];
+
+    // Curated Deliberate Teaching Presets for the Package Builder
+    const DELIBERATE_PRESETS = [
+      {
+        label: 'DMT: Zone A → Zone B Same-Leg Return (0.0 +0.2 + 0.1 = 0.3)',
+        note: 'Athlete lands inside Zone A, steps back into Zone B (+0.2 worse zone), and returns the same foot together (0.1 stability).',
+        bp: { d: 'DMT', f: -1, tx: 2.90, ty: 0.0, sx: 0.62, sy: 0.0, st: 'ONE_STEP_RETURN' }
+      },
+      {
+        label: 'DMT: Zone C → Completely Off Mat (1.0 +0.0 + 1.0 = 2.0)',
+        note: 'Stepping completely outside the 3.0m × 6.0m mat is a 1.0 Stability deduction and does NOT count as a worse zone (+0.0).',
+        bp: { d: 'DMT', f: -1, tx: 3.50, ty: 1.24, sx: 0.0, sy: 0.48, st: 'COMPLETELY_OUT_STABILITY' }
+      },
+      {
+        label: 'DMT: Step + Pause + Body Sway + Return (0.2 Stability)',
+        note: 'Notice the pause after stepping out before the upper-body counterbalance wave occurs (0.1 step + 0.1 body = 0.2).',
+        bp: { d: 'DMT', f: -1, tx: 1.85, ty: 0.0, sx: -0.34, sy: 0.0, st: 'STEP_BODY_RETURN' }
+      },
+      {
+        label: 'TUM: Track → Landing Zone Step (0.4 +0.0 + 0.1 = 0.5)',
+        note: 'Lands on the Track (0.4) and steps forward into the better Landing Zone (+0.0 worse-zone change) with a closed finish (0.1).',
+        bp: { d: 'TUM', f: -1, tx: -0.36, ty: 0.0, sx: 0.74, sy: 0.0, st: 'ONE_STEP_RETURN' }
+      },
+      {
+        label: 'TUM: 2 Steps Left Unclosed Apart (0.0 +0.0 + 0.3 = 0.3)',
+        note: 'Unclosed finish (feet apart at end) evaluates to 0.3 on TUM/DMT regardless of whether 1 or 2 steps were taken.',
+        bp: { d: 'TUM', f: -1, tx: 1.75, ty: 0.0, sx: -0.68, sy: 0.0, st: 'UNCLOSED_FINISH', sub: 'TWO_STEPS_APART' }
+      },
+      {
+        label: 'TRP: Rebound Hop + Step Return (0.0 + 0.2 = 0.2)',
+        note: '0.26m vertical rebound bounce/hop (0.1) followed immediately by a corrective step and return together (0.1) = 0.2 stability.',
+        bp: { d: 'TRP', f: 1, ob: true, obt: 'CLEAN_STRAIGHT', tx: 2.10, ty: 0.0, sx: 0.32, sy: 0.0, st: 'TRP_HOP_STEP_RETURN' }
+      },
+      {
+        label: 'TRP: 3-Movement 0.2 Stability Cap Test (0.0 + 0.2 = 0.2)',
+        note: '2 corrective steps + arm circles = 3 movements, capped at 0.2 max stability on Trampoline (0.3 is a distractor).',
+        bp: { d: 'TRP', f: -1, ob: true, obt: 'CLEAN_STRAIGHT', tx: 2.30, ty: 0.0, sx: -0.54, sy: 0.0, st: 'TWO_STEPS_ARM_CIRCLES' }
+      },
+      {
+        label: 'TRP: Outbounce Shape Break + End-Deck Step (0.1 + 1.0 → 1.0 Max)',
+        note: 'Outbounce pike break (0.1) + stepping onto the end deck (1.0) is strictly capped at 1.0 maximum total deduction on TRP.',
+        bp: { d: 'TRP', f: 1, ob: true, obt: 'BODY_SHAPE_BREAK', tx: 3.92, ty: 0.0, sx: 0.56, sy: 0.0, st: 'ONE_STEP_RETURN' }
+      }
+    ];
+
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // --- INITIALIZATION & URL DEEP-LINK PARSER ---
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedPackageFromStorage();
+      renderPresetGrid();
+      renderPackageModalList();
+      resizeCanvas();
+
+      const params = new URLSearchParams(window.location.search);
+      const sharedParam = params.get('s');
+      const pkgParam = params.get('pkg');
+
+      if (sharedParam) {
+        const bp = decodePayload(sharedParam);
+        if (bp && bp.d) {
+          startSharedScenarioSession(bp);
+          return;
+        }
+      }
+
+      if (pkgParam) {
+        const pkgData = decodePayload(pkgParam);
+        if (pkgData && Array.isArray(pkgData.items) && pkgData.items.length > 0) {
+          state.pkgBuilder = {
+            title: pkgData.title || 'Shared Training Package',
+            delivery: pkgData.delivery === 'EXAM' ? 'EXAM' : 'GUIDED',
+            items: pkgData.items
+          };
+          document.getElementById('pkg-title-input').value = state.pkgBuilder.title;
+          setPackageDelivery(state.pkgBuilder.delivery);
+          renderPackageModalList();
+          launchPackageSession();
+          return;
+        }
+      }
+
+      updateDisciplineUI();
+      renderInputButtons();
+      generateScenario();
+    });
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      drawScene(state.animProgress, state.preRollRemaining > 0);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.key === 'r' || e.key === 'R') {
+        replayAnimation(1.0);
+      } else if (e.key === 's' || e.key === 'S') {
+        replayAnimation(0.5);
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        if (state.submitted && state.sessionMode !== 'SHARED') {
+          e.preventDefault();
+          nextScenario();
+        }
+      }
+    });
+
+    // --- BASE64 URL ENCODING / DECODING HELPERS ---
+    function encodePayload(obj) {
+      try {
+        const json = JSON.stringify(obj);
+        const bytes = new TextEncoder().encode(json);
+        let bin = '';
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      } catch (err) {
+        return '';
+      }
+    }
+
+    function decodePayload(str) {
+      try {
+        let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4) b64 += '=';
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const json = new TextDecoder().decode(bytes);
+        return JSON.parse(json);
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast-banner');
+      document.getElementById('toast-text').textContent = msg;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 3200);
+    }
+
+    function copyTextToClipboard(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+      } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    // --- SHARE CURRENT SCENARIO (?s=...) ---
+    function shareCurrentScenario(includeRulingSummary = false) {
+      if (!state.scenario || !state.scenario.blueprint) return;
+      const encoded = encodePayload(state.scenario.blueprint);
+      const url = new URL(window.location.href.split('?')[0].split('#')[0]);
+      url.searchParams.set('s', encoded);
+      const shareUrl = url.toString();
+
+      const sc = state.scenario;
+      let summaryText = '';
+      if (includeRulingSummary && state.submitted) {
+        if (sc.discipline === 'TRP') {
+          summaryText = `FIG Judge Query (${sc.discipline}) • Outbounce ${sc.officialOutbounce.toFixed(1)} + Stability ${sc.officialStability.toFixed(1)} = ${sc.officialTotal.toFixed(1)} — Review link: ${shareUrl}`;
+        } else {
+          summaryText = `FIG Judge Query (${sc.discipline}) • ${sc.zoneEval.initZone.shortLabel} (${sc.officialInitialZone.toFixed(1)}) +${sc.officialZoneChange.toFixed(1)} + Stab ${sc.officialStability.toFixed(1)} = ${sc.officialTotal.toFixed(1)} — Review link: ${shareUrl}`;
+        }
+      } else {
+        summaryText = `FIG Judging Challenge (${sc.discipline} Pass) — Try scoring this landing: ${shareUrl}`;
+      }
+
+      copyTextToClipboard(summaryText);
+      showToast('Share link & ruling summary copied to clipboard!');
+
+      if (navigator.share) {
+        navigator.share({
+          title: `FIG Landing Trainer • ${sc.discipline} Pass`,
+          text: summaryText,
+          url: shareUrl
+        }).catch(() => {});
+      }
+    }
+
+    function startSharedScenarioSession(bp) {
+      state.sessionMode = 'SHARED';
+      state.mode = 'COMBINED';
+      state.discipline = bp.d;
+      state.submitted = false;
+      state.selectedZoneCode = null;
+      state.selectedWorseZone = false;
+      state.selectedOutbounce = null;
+      state.selectedStability = null;
+
+      document.getElementById('session-banner').classList.remove('hidden');
+      document.getElementById('session-badge').textContent = 'SHARED SCENARIO';
+      document.getElementById('session-title').textContent = `Reviewing Shared ${bp.d} Pass`;
+      document.getElementById('session-coach-note').textContent = 'Score this exact pass or replay in 0.5x slow-motion.';
+
+      // Configure bottom action buttons: Replay Pass alongside Return to Random Practice
+      document.getElementById('result-bottom-actions').className = 'grid grid-cols-1 sm:grid-cols-2 gap-2';
+      document.getElementById('next-landing-label').textContent = 'Replay Pass';
+      document.getElementById('next-landing-arrow').classList.add('hidden');
+      const bottomRandom = document.getElementById('bottom-random-btn');
+      bottomRandom.classList.remove('hidden');
+      bottomRandom.classList.add('flex');
+
+      updateDisciplineUI();
+      state.scenario = buildScenarioFromBlueprint(bp);
+      if (state.discipline === 'TRP') {
+        state.selectedOutbounce = state.scenario.hasOutbounce ? null : 0.0;
+      }
+      renderInputButtons();
+      document.getElementById('scenario-label').textContent = `Shared ${bp.d} Pass • Deterministic Replay`;
+      replayAnimation(1.0);
+    }
+
+    function exitSpecialSession() {
+      state.sessionMode = 'RANDOM';
+      state.activePackage = null;
+      document.getElementById('session-banner').classList.add('hidden');
+      document.getElementById('guided-prompt-bar').classList.add('hidden');
+      document.getElementById('package-summary-panel').classList.add('hidden');
+      document.getElementById('package-summary-panel').classList.remove('flex');
+
+      // Restore standard single-button primary bottom layout
+      document.getElementById('result-bottom-actions').className = 'grid grid-cols-1 gap-2';
+      document.getElementById('next-landing-label').textContent = 'Next Pass';
+      document.getElementById('next-landing-arrow').classList.remove('hidden');
+      const bottomRandom = document.getElementById('bottom-random-btn');
+      bottomRandom.classList.add('hidden');
+      bottomRandom.classList.remove('flex');
+
+      try {
+        window.history.replaceState({}, '', window.location.pathname);
+      } catch (e) {}
+
+      nextScenario();
+    }
+
+    // --- DELIBERATE TRAINING PACKAGE BUILDER & PLAYLIST RUNNER (?pkg=...) ---
+    function loadSavedPackageFromStorage() {
+      try {
+        const raw = localStorage.getItem('fig_landing_pkg_v1');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.items)) {
+            state.pkgBuilder = {
+              title: parsed.title || 'FIG Judging Calibration Drill',
+              delivery: parsed.delivery === 'EXAM' ? 'EXAM' : 'GUIDED',
+              items: parsed.items
+            };
+          }
+        }
+      } catch (e) {}
+      updatePackageCountBadge();
+    }
+
+    function savePackageToStorage() {
+      try {
+        localStorage.setItem('fig_landing_pkg_v1', JSON.stringify(state.pkgBuilder));
+      } catch (e) {}
+      updatePackageCountBadge();
+    }
+
+    function updatePackageCountBadge() {
+      const count = state.pkgBuilder.items.length;
+      document.getElementById('pkg-count-pill').textContent = count;
+      const modalCount = document.getElementById('pkg-modal-count');
+      if (modalCount) modalCount.textContent = count;
+    }
+
+    function togglePackageModal(open) {
+      const modal = document.getElementById('package-modal');
+      if (open) {
+        document.getElementById('pkg-title-input').value = state.pkgBuilder.title;
+        setPackageDelivery(state.pkgBuilder.delivery);
+        renderPackageModalList();
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      } else {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function updatePackageMeta() {
+      state.pkgBuilder.title = document.getElementById('pkg-title-input').value.trim() || 'FIG Judging Calibration Drill';
+      savePackageToStorage();
+    }
+
+    function setPackageDelivery(mode) {
+      state.pkgBuilder.delivery = mode;
+      document.getElementById('pkg-delivery-guided').className = mode === 'GUIDED'
+        ? 'py-1 px-2 rounded-md text-[11px] font-bold bg-[#0072ce] text-white'
+        : 'py-1 px-2 rounded-md text-[11px] font-bold text-slate-400 hover:text-white';
+      document.getElementById('pkg-delivery-exam').className = mode === 'EXAM'
+        ? 'py-1 px-2 rounded-md text-[11px] font-bold bg-[#0072ce] text-white'
+        : 'py-1 px-2 rounded-md text-[11px] font-bold text-slate-400 hover:text-white';
+      savePackageToStorage();
+    }
+
+    function renderPresetGrid() {
+      const grid = document.getElementById('preset-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      DELIBERATE_PRESETS.forEach((p, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-tactile text-left p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/90 flex items-center justify-between gap-2';
+        btn.innerHTML = `
+          <span class="text-[11px] font-semibold text-slate-200 leading-snug">${p.label}</span>
+          <span class="font-mono text-[10px] font-extrabold px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800/70 shrink-0">+ Add</span>
+        `;
+        btn.onclick = () => addPresetToPackage(idx);
+        grid.appendChild(btn);
+      });
+    }
+
+    function addPresetToPackage(idx) {
+      const p = DELIBERATE_PRESETS[idx];
+      if (!p) return;
+      state.pkgBuilder.items.push({
+        id: 'item_' + Date.now() + '_' + Math.floor(Math.random() * 999),
+        label: p.label,
+        note: p.note,
+        bp: { ...p.bp }
+      });
+      savePackageToStorage();
+      renderPackageModalList();
+      showToast('Added preset pass to Training Package!');
+    }
+
+    function addCurrentScenarioToPackage(insideModal = false) {
+      if (!state.scenario || !state.scenario.blueprint) return;
+      const sc = state.scenario;
+      const label = sc.discipline === 'TRP'
+        ? `TRP: ${sc.outbounceInfo.label} + ${sc.stability.label} (Official ${sc.officialTotal.toFixed(1)})`
+        : `${sc.discipline}: ${sc.zoneEval.initZone.shortLabel}${sc.zoneEval.movedToWorseZone ? ' (+0.2)' : ''} + ${sc.stability.label} (Official ${sc.officialTotal.toFixed(1)})`;
+
+      state.pkgBuilder.items.push({
+        id: 'item_' + Date.now() + '_' + Math.floor(Math.random() * 999),
+        label,
+        note: sc.telemetryStr,
+        bp: { ...sc.blueprint }
+      });
+      savePackageToStorage();
+      if (insideModal) renderPackageModalList();
+      showToast(`Captured pass into "${state.pkgBuilder.title}" (${state.pkgBuilder.items.length} total)`);
+    }
+
+    function updatePackageItemNote(index, val) {
+      if (state.pkgBuilder.items[index]) {
+        state.pkgBuilder.items[index].note = val;
+        savePackageToStorage();
+      }
+    }
+
+    function movePackageItem(index, dir) {
+      const target = index + dir;
+      if (target < 0 || target >= state.pkgBuilder.items.length) return;
+      const arr = state.pkgBuilder.items;
+      const tmp = arr[index];
+      arr[index] = arr[target];
+      arr[target] = tmp;
+      savePackageToStorage();
+      renderPackageModalList();
+    }
+
+    function removePackageItem(index) {
+      state.pkgBuilder.items.splice(index, 1);
+      savePackageToStorage();
+      renderPackageModalList();
+    }
+
+    function clearPackageItems() {
+      state.pkgBuilder.items = [];
+      savePackageToStorage();
+      renderPackageModalList();
+    }
+
+    function renderPackageModalList() {
+      updatePackageCountBadge();
+      const list = document.getElementById('pkg-items-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      if (state.pkgBuilder.items.length === 0) {
+        list.innerHTML = `
+          <div class="p-4 rounded-xl bg-slate-950 border border-dashed border-slate-800 text-center text-slate-400 text-xs">
+            No passes in your Training Package yet. Click any deliberate preset above or hit <strong class="text-amber-300">+ Package</strong> while practicing!
+          </div>
+        `;
+        return;
+      }
+
+      state.pkgBuilder.items.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex flex-col gap-1.5';
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-[#0072ce] text-white shrink-0">#${idx + 1}</span>
+              <span class="font-bold text-slate-100 truncate">${item.label}</span>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" onclick="movePackageItem(${idx}, -1)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px]" title="Move Up">↑</button>
+              <button type="button" onclick="movePackageItem(${idx}, 1)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px]" title="Move Down">↓</button>
+              <button type="button" onclick="removePackageItem(${idx})" class="px-1.5 py-0.5 rounded bg-rose-950/70 hover:bg-rose-900 text-rose-300 font-mono text-[10px]" title="Remove">✕</button>
+            </div>
+          </div>
+          <input type="text" value="${(item.note || '').replace(/"/g, '&quot;')}" oninput="updatePackageItemNote(${idx}, this.value)" placeholder="Optional coach prompt / debrief note..." class="w-full px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-300 focus:outline-none focus:border-sky-500" />
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function copyPackageShareLink() {
+      if (state.pkgBuilder.items.length === 0) {
+        showToast('Add at least 1 pass to your package first!');
+        return;
+      }
+      const payload = {
+        title: state.pkgBuilder.title,
+        delivery: state.pkgBuilder.delivery,
+        items: state.pkgBuilder.items
+      };
+      const encoded = encodePayload(payload);
+      const url = new URL(window.location.href.split('?')[0].split('#')[0]);
+      url.searchParams.set('pkg', encoded);
+      const shareUrl = url.toString();
+
+      copyTextToClipboard(shareUrl);
+      showToast(`Copied "${state.pkgBuilder.title}" link (${state.pkgBuilder.items.length} passes)!`);
+    }
+
+    function launchPackageSession() {
+      if (state.pkgBuilder.items.length === 0) {
+        showToast('Add at least 1 pass to your package first!');
+        return;
+      }
+      togglePackageModal(false);
+      state.sessionMode = 'PACKAGE';
+      state.mode = 'COMBINED';
+      state.activePackage = {
+        title: state.pkgBuilder.title,
+        delivery: state.pkgBuilder.delivery,
+        items: state.pkgBuilder.items.map(x => ({ ...x, bp: { ...x.bp } })),
+        index: 0,
+        results: []
+      };
+      loadPackageStep(0);
+    }
+
+    function restartActivePackage() {
+      if (!state.activePackage) return;
+      state.activePackage.index = 0;
+      state.activePackage.results = [];
+      loadPackageStep(0);
+    }
+
+    function loadPackageStep(idx) {
+      const pkg = state.activePackage;
+      if (!pkg) return;
+
+      if (idx >= pkg.items.length) {
+        showPackageSummaryScreen();
+        return;
+      }
+
+      pkg.index = idx;
+      const item = pkg.items[idx];
+      state.discipline = item.bp.d;
+      state.submitted = false;
+      state.selectedZoneCode = null;
+      state.selectedWorseZone = false;
+      state.selectedOutbounce = null;
+      state.selectedStability = null;
+
+      document.getElementById('package-summary-panel').classList.add('hidden');
+      document.getElementById('package-summary-panel').classList.remove('flex');
+      document.getElementById('result-panel').classList.add('hidden');
+      document.getElementById('result-panel').classList.remove('flex');
+      document.getElementById('judging-form').classList.remove('hidden');
+      document.getElementById('validation-msg').classList.add('hidden');
+
+      document.getElementById('session-banner').classList.remove('hidden');
+      document.getElementById('session-badge').textContent = `PACKAGE • PASS ${idx + 1} OF ${pkg.items.length}`;
+      document.getElementById('session-title').textContent = pkg.title;
+      document.getElementById('session-coach-note').textContent = pkg.delivery === 'EXAM' ? 'Assessment Mode' : 'Guided Workshop Mode';
+
+      const guidedBar = document.getElementById('guided-prompt-bar');
+      if (pkg.delivery === 'GUIDED' && item.note) {
+        document.getElementById('guided-prompt-text').textContent = item.note;
+        guidedBar.classList.remove('hidden');
+      } else {
+        guidedBar.classList.add('hidden');
+      }
+
+      document.getElementById('result-bottom-actions').className = 'grid grid-cols-1 gap-2';
+      document.getElementById('next-landing-arrow').classList.remove('hidden');
+      const bottomRandom = document.getElementById('bottom-random-btn');
+      bottomRandom.classList.add('hidden');
+      bottomRandom.classList.remove('flex');
+
+      document.getElementById('next-landing-label').textContent = (idx + 1 < pkg.items.length)
+        ? `Next Package Pass (${idx + 2}/${pkg.items.length})`
+        : 'View Package Scorecard';
+
+      updateDisciplineUI();
+      state.scenario = buildScenarioFromBlueprint(item.bp, item.note);
+      if (state.discipline === 'TRP') {
+        state.selectedOutbounce = state.scenario.hasOutbounce ? null : 0.0;
+      }
+      renderInputButtons();
+      document.getElementById('scenario-label').textContent =
+        `Package ${idx + 1}/${pkg.items.length} • ${item.bp.d}`;
+      replayAnimation(1.0);
+    }
+
+    function showPackageSummaryScreen() {
+      const pkg = state.activePackage;
+      if (!pkg) return;
+
+      document.getElementById('judging-form').classList.add('hidden');
+      document.getElementById('result-panel').classList.add('hidden');
+      document.getElementById('result-panel').classList.remove('flex');
+      document.getElementById('guided-prompt-bar').classList.add('hidden');
+
+      const panel = document.getElementById('package-summary-panel');
+      panel.classList.remove('hidden');
+      panel.classList.add('flex');
+
+      const exactCount = pkg.results.filter(r => r.isExact).length;
+      document.getElementById('pkg-sum-title').textContent = pkg.title;
+      document.getElementById('pkg-sum-score').textContent = `${exactCount} / ${pkg.items.length}`;
+
+      const list = document.getElementById('pkg-sum-list');
+      list.innerHTML = '';
+      pkg.results.forEach((r, i) => {
+        const row = document.createElement('div');
+        row.className = `p-2.5 rounded-xl border flex items-center justify-between gap-2 ${
+          r.isExact
+            ? 'bg-emerald-950/40 border-emerald-800/70 text-emerald-100'
+            : 'bg-rose-950/40 border-rose-800/70 text-rose-100'
+        }`;
+        row.innerHTML = `
+          <div class="min-w-0">
+            <div class="font-bold truncate">#${i + 1} • ${r.label}</div>
+            <div class="text-[11px] opacity-80">You: <span class="font-mono font-bold">${r.userTot.toFixed(1)}</span> &bull; Official: <span class="font-mono font-bold">${r.offTot.toFixed(1)}</span></div>
+          </div>
+          <span class="font-mono text-xs font-extrabold px-2 py-0.5 rounded ${r.isExact ? 'bg-[#009a44] text-white' : 'bg-[#e11d48] text-white'}">
+            ${r.isExact ? '✓ EXACT' : '✕ DIFF'}
+          </span>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    // --- UI STATE SETTERS ---
+    function updateDisciplineUI() {
+      const disc = state.discipline;
+
+      ['DMT', 'TUM', 'TRP'].forEach(d => {
+        document.getElementById(`disc-${d}`).className = d === disc
+          ? 'px-2.5 py-1 rounded-md text-xs font-bold transition bg-[#0072ce] text-white shadow-sm'
+          : 'px-2.5 py-1 rounded-md text-xs font-bold transition text-slate-400 hover:text-white';
+      });
+
+      document.getElementById('mode-PRIMARY').textContent = disc === 'TRP' ? 'Outbounce' : 'Zone';
+
+      const zoneGroup = document.getElementById('zone-input-group');
+      const obGroup = document.getElementById('outbounce-input-group');
+      const stabGroup = document.getElementById('stability-input-group');
+
+      if (disc === 'TRP') {
+        zoneGroup.style.display = 'none';
+        obGroup.style.display = (state.mode === 'STABILITY') ? 'none' : 'flex';
+        stabGroup.style.display = (state.mode === 'PRIMARY') ? 'none' : 'block';
+        document.getElementById('stab-group-title').textContent = '2. Bed / End-Deck Stability';
+        document.getElementById('stab-rule-hint').textContent =
+          'Stick / Return (0.0) • 1 Move (0.1) • 2+ Moves / Unclosed (0.2 Max) • Touch (0.5) • Fall/Deck (1.0)';
+      } else {
+        obGroup.style.display = 'none';
+        zoneGroup.style.display = (state.mode === 'STABILITY') ? 'none' : 'flex';
+        stabGroup.style.display = (state.mode === 'PRIMARY') ? 'none' : 'block';
+        document.getElementById('stab-group-title').textContent = '2. Landing Stability (Additive)';
+        document.getElementById('stab-rule-hint').textContent =
+          '0.1 per move • Unclosed: 0.3 • Touch: 0.5 • Fall / Step Out: 1.0';
+      }
+    }
+
+    function setDiscipline(disc) {
+      if (state.sessionMode !== 'RANDOM') {
+        exitSpecialSession();
+      }
+      state.discipline = disc;
+      updateDisciplineUI();
+      renderInputButtons();
+      nextScenario();
+    }
+
+    function setMode(mode) {
+      if (state.sessionMode !== 'RANDOM') {
+        exitSpecialSession();
+      }
+      state.mode = mode;
+      ['COMBINED', 'PRIMARY', 'STABILITY'].forEach(m => {
+        const btn = document.getElementById(`mode-${m}`);
+        btn.className = m === mode
+          ? 'px-2 py-1 rounded-md text-[11px] sm:text-xs font-semibold transition bg-slate-800 text-white border border-slate-700/80'
+          : 'px-2 py-1 rounded-md text-[11px] sm:text-xs font-semibold transition text-slate-400 hover:text-white';
+      });
+
+      updateDisciplineUI();
+      nextScenario();
+    }
+
+    function toggleWorseZoneMove() {
+      state.selectedWorseZone = !state.selectedWorseZone;
+      document.getElementById('validation-msg').classList.add('hidden');
+      renderInputButtons();
+    }
+
+    // --- DEDUCTION BUTTON RENDERING ---
+    function getDeductionColorClasses(val, isSelected) {
+      if (val <= 0.1) {
+        return isSelected
+          ? 'bg-[#009a44] text-white border-emerald-400/70 ring-2 ring-emerald-500/40 shadow-sm'
+          : 'bg-slate-900 text-slate-100 border-slate-700 hover:border-[#009a44] hover:bg-emerald-950/35';
+      } else if (val <= 0.4) {
+        return isSelected
+          ? 'bg-[#f59e0b] text-slate-950 border-amber-300 ring-2 ring-amber-400/40 shadow-sm'
+          : 'bg-slate-900 text-slate-100 border-slate-700 hover:border-[#f59e0b] hover:bg-amber-950/35';
+      } else {
+        return isSelected
+          ? 'bg-[#e11d48] text-white border-rose-400/70 ring-2 ring-rose-500/40 shadow-sm'
+          : 'bg-slate-900 text-slate-100 border-slate-700 hover:border-[#e11d48] hover:bg-rose-950/35';
+      }
+    }
+
+    function getSelectedZoneObj() {
+      const cfg = DISCIPLINE_CONFIG[state.discipline];
+      if (!cfg.zoneButtons) return null;
+      return cfg.zoneButtons.find(z => z.code === state.selectedZoneCode) || null;
+    }
+
+    function renderInputButtons() {
+      const cfg = DISCIPLINE_CONFIG[state.discipline];
+
+      if (state.discipline === 'TRP') {
+        const obContainer = document.getElementById('outbounce-buttons');
+        const obHint = document.getElementById('ob-rule-hint');
+        obContainer.innerHTML = '';
+
+        if (state.scenario && !state.scenario.hasOutbounce) {
+          obHint.textContent = 'Direct landing from final skill (no outbounce performed).';
+          obContainer.className = 'grid grid-cols-1 gap-2';
+          const badge = document.createElement('div');
+          badge.className = 'py-2 px-3 rounded-xl border border-emerald-700/70 bg-emerald-950/50 text-emerald-200 text-xs font-bold flex items-center justify-between';
+          badge.innerHTML = '<span>No Outbounce Performed (Direct Landing)</span><span class="font-mono font-extrabold px-2 py-0.5 rounded bg-[#009a44] text-white">0.0</span>';
+          obContainer.appendChild(badge);
+        } else {
+          obHint.textContent = '0.0: Clean / ≤1 arm circle • 0.1: Body break or 2+ arm circles';
+          obContainer.className = 'grid grid-cols-2 gap-2';
+          cfg.outbounceButtons.forEach(item => {
+            const isSel = state.selectedOutbounce === item.val;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `btn-tactile py-2 px-2 rounded-xl border flex flex-col items-center justify-center gap-0.5 text-center ${getDeductionColorClasses(item.val, isSel)}`;
+
+            const topLbl = document.createElement('span');
+            topLbl.className = 'text-xs font-extrabold tracking-tight';
+            topLbl.textContent = `${item.val.toFixed(1)} • ${item.label}`;
+
+            const subLbl = document.createElement('span');
+            subLbl.className = `text-[10px] font-medium ${isSel ? 'opacity-90' : 'text-slate-400'}`;
+            subLbl.textContent = item.sub;
+
+            btn.appendChild(topLbl);
+            btn.appendChild(subLbl);
+            btn.onclick = () => selectOutbounce(item.val);
+            obContainer.appendChild(btn);
+          });
+        }
+      } else {
+        document.getElementById('zone-rule-hint').textContent = cfg.zoneHint;
+
+        const zoneContainer = document.getElementById('zone-buttons');
+        zoneContainer.className = 'grid grid-cols-4 gap-1.5';
+        zoneContainer.innerHTML = '';
+
+        cfg.zoneButtons.forEach(item => {
+          const isSel = state.selectedZoneCode === item.code;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `btn-tactile py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 text-center ${
+            isSel
+              ? 'bg-[#0072ce] text-white border-sky-400 ring-2 ring-sky-400/40 shadow-sm'
+              : 'bg-slate-900 text-slate-100 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
+          }`;
+
+          const topRow = document.createElement('span');
+          topRow.className = 'flex items-center justify-center gap-1 text-[10.5px] sm:text-xs font-bold tracking-tight leading-tight';
+          const dot = document.createElement('span');
+          dot.className = 'w-2 h-2 rounded-full shrink-0 border border-white/30';
+          dot.style.backgroundColor = item.badgeColor;
+          const lbl = document.createElement('span');
+          lbl.textContent = item.label;
+          topRow.appendChild(dot);
+          topRow.appendChild(lbl);
+
+          const valSpan = document.createElement('span');
+          valSpan.className = `font-mono text-[11px] sm:text-xs font-extrabold ${isSel ? 'text-white' : 'text-slate-400'}`;
+          valSpan.textContent = item.ded.toFixed(1);
+
+          btn.appendChild(topRow);
+          btn.appendChild(valSpan);
+          btn.onclick = () => selectZone(item.code);
+          zoneContainer.appendChild(btn);
+        });
+
+        // 4th inline button: +0.2 Moved to Worse Zone toggle
+        const wzBtn = document.createElement('button');
+        wzBtn.type = 'button';
+        wzBtn.title = 'Moved into a worse zone inside the landing area (+0.2)';
+        wzBtn.className = `btn-tactile py-2 px-1 rounded-xl border flex flex-col items-center justify-center gap-0.5 text-center ${
+          state.selectedWorseZone
+            ? 'bg-[#f59e0b] text-slate-950 border-amber-300 ring-2 ring-amber-400/40 shadow-sm'
+            : 'bg-slate-900 text-slate-200 border-slate-700 hover:border-amber-500/70 hover:bg-amber-950/35'
+        }`;
+
+        const wzTop = document.createElement('span');
+        wzTop.className = 'text-[10.5px] sm:text-xs font-bold tracking-tight leading-tight';
+        wzTop.textContent = 'Worse Zone';
+
+        const wzVal = document.createElement('span');
+        wzVal.className = `font-mono text-[11px] sm:text-xs font-extrabold ${
+          state.selectedWorseZone ? 'text-slate-950' : 'text-amber-400'
+        }`;
+        wzVal.textContent = '+0.2';
+
+        wzBtn.appendChild(wzTop);
+        wzBtn.appendChild(wzVal);
+        wzBtn.onclick = () => toggleWorseZoneMove();
+        zoneContainer.appendChild(wzBtn);
+      }
+
+      const stabContainer = document.getElementById('stability-buttons');
+      stabContainer.className = 'grid grid-cols-6 gap-1.5';
+      stabContainer.innerHTML = '';
+      STABILITY_OPTIONS.forEach(val => {
+        const isSel = state.selectedStability === val;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `btn-tactile py-2 px-1 rounded-xl border font-mono text-xs sm:text-sm font-extrabold ${getDeductionColorClasses(val, isSel)}`;
+        btn.textContent = val.toFixed(1);
+        btn.onclick = () => selectStability(val);
+        stabContainer.appendChild(btn);
+      });
+
+      updatePreviewReadout();
+    }
+
+    function selectZone(code) {
+      state.selectedZoneCode = code;
+      document.getElementById('validation-msg').classList.add('hidden');
+      renderInputButtons();
+    }
+
+    function selectOutbounce(val) {
+      state.selectedOutbounce = val;
+      document.getElementById('validation-msg').classList.add('hidden');
+      renderInputButtons();
+    }
+
+    function selectStability(val) {
+      state.selectedStability = val;
+      document.getElementById('validation-msg').classList.add('hidden');
+      renderInputButtons();
+    }
+
+    function updatePreviewReadout() {
+      const sVal = state.mode === 'PRIMARY' ? 0.0 : state.selectedStability;
+      document.getElementById('selected-stab-badge').textContent =
+        state.selectedStability !== null ? state.selectedStability.toFixed(1) : 'Select';
+
+      if (state.discipline === 'TRP') {
+        const noOb = state.scenario && !state.scenario.hasOutbounce;
+        const obVal = (state.mode === 'STABILITY' || noOb) ? 0.0 : state.selectedOutbounce;
+        document.getElementById('selected-ob-badge').textContent = noOb
+          ? 'No Outbounce (0.0)'
+          : (state.selectedOutbounce !== null ? state.selectedOutbounce.toFixed(1) : 'Select');
+
+        const rawSum = (obVal || 0) + (sVal || 0);
+        const total = Number(Math.min(1.0, rawSum).toFixed(1));
+        const capNote = rawSum > 1.0 ? ' (1.0 max)' : '';
+        const obStr = state.mode === 'STABILITY' ? 'N/A' : (obVal !== null ? obVal.toFixed(1) : '—');
+        const stStr = state.mode === 'PRIMARY' ? 'N/A' : (sVal !== null ? sVal.toFixed(1) : '—');
+        document.getElementById('submit-btn-label').textContent =
+          `Submit Score (Outbounce ${obStr} + Stab ${stStr} = ${total.toFixed(1)}${capNote})`;
+      } else {
+        const zObj = getSelectedZoneObj();
+        const zBase = state.mode === 'STABILITY' ? 0.0 : (zObj ? zObj.ded : null);
+        const zChange = state.mode === 'STABILITY' ? 0.0 : (state.selectedWorseZone ? 0.2 : 0.0);
+
+        document.getElementById('selected-zone-badge').textContent = zObj
+          ? `${zObj.label} (${zObj.ded.toFixed(1)})${state.selectedWorseZone ? ' +0.2' : ''}`
+          : (state.selectedWorseZone ? '+0.2 Worse' : 'Select');
+
+        const effectiveZoneTotal = state.mode === 'STABILITY'
+          ? 0.0
+          : Number(((zBase || 0) + zChange).toFixed(1));
+        const total = Number((effectiveZoneTotal + (sVal || 0)).toFixed(1));
+        const zStr = state.mode === 'STABILITY'
+          ? 'N/A'
+          : `${zBase !== null ? zBase.toFixed(1) : '—'} +${zChange.toFixed(1)}`;
+        const sStr = state.mode === 'PRIMARY'
+          ? 'N/A'
+          : `${sVal !== null ? sVal.toFixed(1) : '—'}`;
+
+        document.getElementById('submit-btn-label').textContent =
+          `Submit Score (Zone ${zStr} + Stab ${sStr} = ${total.toFixed(1)})`;
+      }
+    }
+
+    // ============================================================================
+    // STABILITY ARCHETYPES & WEIGHTED PICKER
+    // ============================================================================
+    function getStabilityArchetypes(discipline = state.discipline, forcedSubType = null) {
+      const isTRP = discipline === 'TRP';
+      const unclosedDed = isTRP ? 0.2 : 0.3;
+      const threeMoveDed = isTRP ? 0.2 : 0.3;
+
+      return {
+        CLEAN_STICK: {
+          key: 'CLEAN_STICK',
+          ded: 0.0,
+          type: 'STICK',
+          label: 'Clean Stick (0.0)',
+          formula: 'Stability: 0.0 = Clean Stick with 2 Feet Together (0.0)',
+          desc: 'Clean stick finishing with 2 feet together and motionless upon touchdown (0.0 stability).'
+        },
+        ONE_STEP_RETURN: {
+          key: 'ONE_STEP_RETURN',
+          ded: 0.1,
+          type: 'STEP_RETURN',
+          label: '1 Step + Same-Leg Return (0.1)',
+          formula: 'Stability: 0.1 = 1 Step (0.1) + Same Foot Returned Together (0.0)',
+          desc: 'Takes 1 step out (0.1) and brings the same foot back to finish with 2 feet together (0.0 extra) = 0.1 stability.'
+        },
+        BODY_SWAY: {
+          key: 'BODY_SWAY',
+          ded: 0.1,
+          type: 'BODY_SWAY',
+          label: 'Body Sway (0.1)',
+          formula: 'Stability: 0.1 = Upper-Body / Trunk Sway Without Stepping (0.1)',
+          desc: 'Feet remain planted together while the torso/arms make a distinct balance recovery sway (0.1 stability).'
+        },
+        STEP_BODY_RETURN: {
+          key: 'STEP_BODY_RETURN',
+          ded: 0.2,
+          type: 'STEP_BODY_RETURN',
+          label: 'Step + Body + Return (0.2)',
+          formula: 'Stability: 0.2 = 1 Step (0.1) + Body Sway (0.1) + Foot Returned Together (0.0)',
+          desc: 'Steps out (0.1), pauses briefly and makes a distinct upper-body/arm sway (0.1), then returns the same foot to finish with 2 feet together (0.0) = 0.2 stability.'
+        },
+        TWO_STEPS_RETURN: {
+          key: 'TWO_STEPS_RETURN',
+          ded: 0.2,
+          type: 'TWO_STEPS_RETURN',
+          label: '2 Steps + Return Closed (0.2)',
+          formula: 'Stability: 0.2 = Step 1 (0.1) + Step 2 (0.1) + Closed Finish (0.0)',
+          desc: 'Takes 2 corrective steps (0.2) and closes feet together at the finish (0.0 extra) = 0.2 stability.'
+        },
+        UNCLOSED_FINISH: {
+          key: 'UNCLOSED_FINISH',
+          ded: unclosedDed,
+          type: forcedSubType || (Math.random() < 0.5 ? 'ONE_STEP_APART' : 'TWO_STEPS_APART'),
+          label: `Unclosed Finish (${unclosedDed.toFixed(1)})`,
+          formula: isTRP
+            ? 'Stability: 0.2 = Unclosed Finish (Feet Left Apart on TRP = 0.2 Max)'
+            : 'Stability: 0.3 = Unclosed Finish (Feet Left Apart on DMT/TUM = 0.3)',
+          desc: isTRP
+            ? 'Unclosed finish (feet left apart at end regardless of step count): 0.2 max on TRP (0.3 is a distractor).'
+            : 'Unclosed finish (feet left apart at end regardless of step count): 0.3 on DMT/TUM (0.2 on TRP).'
+        },
+        TWO_STEPS_ARM_CIRCLES: {
+          key: 'TWO_STEPS_ARM_CIRCLES',
+          ded: threeMoveDed,
+          type: 'TWO_STEPS_ARM_CIRCLES',
+          label: isTRP ? '2 Steps + Arm Circles (0.2 Max)' : '2 Steps + Arm Circles (0.3)',
+          formula: isTRP
+            ? 'Stability: 0.2 = 2 Steps + Arm Circles (3 Movements → Capped at 0.2 Max on TRP)'
+            : 'Stability: 0.3 = Step 1 (0.1) + Step 2 (0.1) + Arm Circles (0.1)',
+          desc: isTRP
+            ? '3 instability movements occurred, capped at 0.2 max stability on Trampoline (0.3 is a distractor).'
+            : 'Two corrective steps (0.2) combined with arm circles (0.1, counted once) = 0.3 maximum stability deduction.'
+        },
+        TRP_SOLO_HOP: {
+          key: 'TRP_SOLO_HOP',
+          ded: 0.1,
+          type: 'HOP',
+          label: 'Rebound Hop (0.1)',
+          formula: 'Stability: 0.1 = Small Rebound Hop on Bed (0.1)',
+          desc: 'Vertical rebound bounce/hop after touchdown before settling with 2 feet together (0.1 stability).'
+        },
+        TRP_HOP_STEP_RETURN: {
+          key: 'TRP_HOP_STEP_RETURN',
+          ded: 0.2,
+          type: 'HOP_STEP_RETURN',
+          label: 'Rebound Hop + Step Return (0.2)',
+          formula: 'Stability: 0.2 = Rebound Hop (0.1) + Corrective Step & Return (0.1)',
+          desc: 'Vertical rebound hop upon landing (0.1) followed immediately by a corrective step and return together (0.1) = 0.2 stability.'
+        },
+        STEPS_TO_HAND_TOUCH: {
+          key: 'STEPS_TO_HAND_TOUCH',
+          ded: 0.5,
+          type: forcedSubType || (Math.random() < 0.65 ? 'STEPS_INTO_HAND_TOUCH' : 'HAND_TOUCH'),
+          label: 'Hand Touch (0.5)',
+          formula: 'Stability: 0.5 = Steps → Hand Touch (0.5; greater deduction counts)',
+          desc: 'Greater-deduction rule: steps preceding a hand touch count as 0.5 only (never steps + touch).'
+        },
+        STEPS_TO_FALL: {
+          key: 'STEPS_TO_FALL',
+          ded: 1.0,
+          type: forcedSubType || (Math.random() < 0.65 ? 'STEPS_INTO_FALL' : 'FALL_TO_BACK'),
+          label: 'Fall to Back / Seat (1.0)',
+          formula: 'Stability: 1.0 = Steps → Fall to Back (1.0; greater deduction counts)',
+          desc: 'Greater-deduction rule: steps preceding a fall to back/seat count as 1.0 only (never steps + fall).'
+        },
+        COMPLETELY_OUT_STABILITY: {
+          key: 'COMPLETELY_OUT_STABILITY',
+          ded: 1.0,
+          type: 'ONE_STEP_APART',
+          label: 'Stepped Completely Out (1.0)',
+          formula: 'Stability: 1.0 = Stepped Completely Out of Landing Area (1.0 Stability; +0.0 Zone Change)',
+          desc: 'Stepping completely outside the 3.0m × 6.0m landing area is a 1.0 stability deduction and does NOT count as a worse zone (+0.0 zone change).'
+        }
+      };
+    }
+
+    function rollStabilityArchetype(discipline = state.discipline) {
+      const map = getStabilityArchetypes(discipline);
+      if (Math.random() < SCENARIO_ODDS.perfectStickProb) {
+        return { ...map.CLEAN_STICK };
+      }
+      if (discipline === 'TRP' && Math.random() < SCENARIO_ODDS.trpHopProb) {
+        return Math.random() < 0.5
+          ? { ...map.TRP_SOLO_HOP }
+          : { ...map.TRP_HOP_STEP_RETURN };
+      }
+      const keys = Object.keys(SCENARIO_ODDS.stabilityWeights);
+      const weights = keys.map(k => SCENARIO_ODDS.stabilityWeights[k] ?? 0.1);
+      const pickedKey = weightedPick(keys, weights);
+      return { ...map[pickedKey] };
+    }
+
+    // ============================================================================
+    // DETERMINISTIC BLUEPRINT COMPILER (USED FOR ?s=... & ?pkg=... REPLAYS)
+    // ============================================================================
+    function buildScenarioFromBlueprint(bp, customNote = '') {
+      const disc = bp.d;
+      const facing = bp.f;
+      const archetypes = getStabilityArchetypes(disc, bp.sub || null);
+      let stab = { ...(archetypes[bp.st] || archetypes.CLEAN_STICK) };
+
+      if (disc === 'TRP') {
+        const cfg = DISCIPLINE_CONFIG.TRP;
+        const hasOutbounce = !!bp.ob;
+        const obMap = {
+          NONE: { hasOutbounce: false, type: 'NONE', ded: 0.0, label: 'No Outbounce (0.0)', desc: 'Direct landing from final skill without an outbounce (0.0 outbounce deduction).' },
+          CLEAN_STRAIGHT: { hasOutbounce: true, type: 'CLEAN_STRAIGHT', ded: 0.0, label: 'Clean Outbounce (0.0)', desc: 'Clean straight-body outbounce with controlled arm swing (0.0 outbounce deduction).' },
+          SINGLE_ARM_CIRCLE: { hasOutbounce: true, type: 'SINGLE_ARM_CIRCLE', ded: 0.0, label: 'Outbounce + 1 Arm Circle (0.0)', desc: 'Straight outbounce with a single (1) arm circle — allowed without deduction (0.0 outbounce).' },
+          BODY_SHAPE_BREAK: { hasOutbounce: true, type: 'BODY_SHAPE_BREAK', ded: 0.1, label: 'Outbounce Shape Break (0.1)', desc: 'Noticeable hip pike / knee break during the outbounce jump (0.1 outbounce deduction).' },
+          MULTI_ARM_CIRCLES: { hasOutbounce: true, type: 'MULTI_ARM_CIRCLES', ded: 0.1, label: 'Outbounce + 2+ Arm Circles (0.1)', desc: 'Multiple (2+) arm circles during the outbounce jump (0.1 outbounce deduction).' }
+        };
+        const outbounceInfo = obMap[hasOutbounce ? (bp.obt || 'CLEAN_STRAIGHT') : 'NONE'];
+
+        const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+        const touchX = Number(clamp(bp.tx, -0.75, cfg.bedLengthM + 0.75).toFixed(2));
+        const touchY = Number(clamp(bp.ty, -1.25, 1.25).toFixed(2));
+        const stepDeltaX = Number((bp.sx || 0).toFixed(2));
+        const stepDeltaY = Number((bp.sy || 0).toFixed(2));
+
+        let trailStepRatio = 0.0;
+        if (stab.type === 'TWO_STEPS_RETURN') trailStepRatio = 1.0;
+        else if (stab.type === 'TWO_STEPS_APART') trailStepRatio = 0.52;
+        else if (stab.type === 'TWO_STEPS_ARM_CIRCLES') trailStepRatio = 0.90;
+        else if (stab.type === 'STEPS_INTO_HAND_TOUCH' || stab.type === 'STEPS_INTO_FALL') trailStepRatio = 0.65;
+
+        const peakLeadX = Number(clamp(touchX + stepDeltaX, -0.85, cfg.bedLengthM + 0.85).toFixed(2));
+        const peakLeadY = Number(clamp(touchY + stepDeltaY, -1.25, 1.25).toFixed(2));
+        const peakTrailX = Number((touchX + stepDeltaX * trailStepRatio).toFixed(2));
+        const peakTrailY = Number((touchY + stepDeltaY * trailStepRatio).toFixed(2));
+
+        const isHandTouch = (stab.type === 'HAND_TOUCH' || stab.type === 'STEPS_INTO_HAND_TOUCH');
+        const isBackFall = (stab.type === 'FALL_TO_BACK' || stab.type === 'STEPS_INTO_FALL');
+        const handX = isHandTouch ? Number(clamp(peakLeadX + 0.40 * facing, -0.85, cfg.bedLengthM + 0.85).toFixed(2)) : null;
+        const handY = isHandTouch ? peakLeadY : null;
+        const backX = isBackFall ? Number(clamp(peakLeadX - 0.50 * facing, -0.85, cfg.bedLengthM + 0.85).toFixed(2)) : null;
+        const backY = isBackFall ? peakLeadY : null;
+
+        const isOffBed = (x, y) => {
+          const halfFootL = 0.13;
+          const halfFootW = 0.05;
+          return (x - halfFootL < 0.0) || (x + halfFootL > cfg.bedLengthM) || (Math.abs(y) + halfFootW > cfg.bedWidthM / 2);
+        };
+        const leftLatOffset = -0.11 * facing;
+        const rightLatOffset = 0.11 * facing;
+
+        const landedOnEndDeck = isOffBed(touchX, touchY + leftLatOffset) || isOffBed(touchX, touchY + rightLatOffset);
+        const steppedToEndDeck = !landedOnEndDeck && (
+          isOffBed(peakLeadX, peakLeadY + rightLatOffset) ||
+          isOffBed(peakTrailX, peakTrailY + leftLatOffset) ||
+          (handX !== null && isOffBed(handX, handY)) ||
+          (backX !== null && isOffBed(backX, backY))
+        );
+
+        let officialStability = stab.ded;
+        let trpEndDeckNote = '';
+        if (landedOnEndDeck) {
+          officialStability = 1.0;
+          trpEndDeckNote = 'Landed directly on the End Deck / frame pads → automatic 1.0 landing deduction.';
+        } else if (steppedToEndDeck) {
+          officialStability = 1.0;
+          trpEndDeckNote = 'Landed on the bed then stepped onto the End Deck / frame pads → 1.0 landing deduction.';
+        }
+        if (state.mode === 'PRIMARY') officialStability = 0.0;
+
+        const officialOutbounce = state.mode === 'STABILITY' ? 0.0 : outbounceInfo.ded;
+        const rawTrpTotal = Number((officialOutbounce + officialStability).toFixed(1));
+        const wasCappedAtOne = rawTrpTotal > 1.0;
+        const officialTotal = Number(Math.min(1.0, rawTrpTotal).toFixed(1));
+        const skillTouchX = Number(clamp(touchX - 0.14 * facing, 0.25, cfg.bedLengthM - 0.25).toFixed(2));
+        const skillTouchY = touchY;
+
+        const telemetryStr = `${outbounceInfo.label} • Bed Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) → Final: (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m)`;
+        const obPart = state.mode === 'STABILITY'
+          ? 'Stability-Only Drill: Outbounce deductions excluded.'
+          : `<strong class="text-white">Outbounce: ${outbounceInfo.ded.toFixed(1)}</strong> (${outbounceInfo.desc})`;
+        const stPart = state.mode === 'PRIMARY'
+          ? 'Outbounce-Only Drill: Bed stability deductions excluded.'
+          : (trpEndDeckNote
+              ? `<strong class="text-rose-400">${trpEndDeckNote}</strong>`
+              : `<strong class="text-white">${stab.formula}.</strong> ${stab.desc}`);
+        const capPart = wasCappedAtOne
+          ? ` <strong class="text-amber-300">TRP Rule: Maximum combined deduction on TRP is strictly capped at 1.0 (${officialOutbounce.toFixed(1)} + ${officialStability.toFixed(1)} → 1.0 max).</strong>`
+          : '';
+        const coachPrefix = customNote ? `<span class="block text-amber-300 font-semibold mb-1">Coach Note: ${customNote}</span>` : '';
+
+        return {
+          discipline: 'TRP',
+          blueprint: { ...bp },
+          facing,
+          hasOutbounce,
+          outbounceInfo,
+          skillTouchX,
+          skillTouchY,
+          touchX,
+          touchY,
+          stepDeltaX,
+          stepDeltaY,
+          trailStepRatio,
+          peakLeadX,
+          peakLeadY,
+          peakTrailX,
+          peakTrailY,
+          handX,
+          handY,
+          backX,
+          backY,
+          landedOnEndDeck,
+          steppedToEndDeck,
+          stability: stab,
+          zoneEval: null,
+          officialOutbounce,
+          officialStability,
+          officialTotal,
+          telemetryStr,
+          explanation: `${coachPrefix}${obPart} ${stPart}${capPart}`,
+          entryLeanDeg: isHandTouch ? 18 : (isBackFall ? -14 : (stab.ded >= 0.2 ? 13 : 6))
+        };
+      }
+
+      // DMT or TUM Blueprint Compilation
+      const cfg = DISCIPLINE_CONFIG[disc];
+      const touchX = Number(bp.tx.toFixed(2));
+      const touchY = Number(bp.ty.toFixed(2));
+      const stepDeltaX = Number((bp.sx || 0).toFixed(2));
+      const stepDeltaY = Number((bp.sy || 0).toFixed(2));
+
+      let trailStepRatio = 0.0;
+      if (stab.type === 'TWO_STEPS_RETURN') trailStepRatio = 1.0;
+      else if (stab.type === 'TWO_STEPS_APART') trailStepRatio = 0.52;
+      else if (stab.type === 'TWO_STEPS_ARM_CIRCLES') trailStepRatio = 0.90;
+      else if (stab.type === 'STEPS_INTO_HAND_TOUCH' || stab.type === 'STEPS_INTO_FALL') trailStepRatio = 0.65;
+
+      const peakLeadX = Number((touchX + stepDeltaX).toFixed(2));
+      const peakLeadY = Number((touchY + stepDeltaY).toFixed(2));
+      const peakTrailX = Number((touchX + stepDeltaX * trailStepRatio).toFixed(2));
+      const peakTrailY = Number((touchY + stepDeltaY * trailStepRatio).toFixed(2));
+
+      const isHandTouch = (stab.type === 'HAND_TOUCH' || stab.type === 'STEPS_INTO_HAND_TOUCH');
+      const isBackFall = (stab.type === 'FALL_TO_BACK' || stab.type === 'STEPS_INTO_FALL');
+      const handX = isHandTouch ? Number((peakLeadX + 0.42 * facing).toFixed(2)) : null;
+      const handY = isHandTouch ? peakLeadY : null;
+      const backX = isBackFall ? Number((peakLeadX - 0.52 * facing).toFixed(2)) : null;
+      const backY = isBackFall ? peakLeadY : null;
+
+      const zoneEval = computeOfficialZonePenalty(
+        touchX, touchY, peakLeadX, peakLeadY, peakTrailX, peakTrailY, handX, handY, backX, backY, cfg, facing
+      );
+
+      if (zoneEval.steppedCompletelyOut) {
+        stab = { ...archetypes.COMPLETELY_OUT_STABILITY };
+      }
+
+      const officialInitialZone = state.mode === 'STABILITY' ? 0.0 : zoneEval.initZone.ded;
+      const officialZoneChange = state.mode === 'STABILITY' ? 0.0 : zoneEval.zoneChangeDed;
+      const officialTotalZone = state.mode === 'STABILITY' ? 0.0 : zoneEval.totalZoneDed;
+      const officialStability = state.mode === 'PRIMARY' ? 0.0 : stab.ded;
+      const officialTotal = Number((officialTotalZone + officialStability).toFixed(1));
+
+      const facingNote = disc === 'TUM'
+        ? 'Facing Tumbling Track'
+        : (facing === -1 ? 'Facing DMT Bed' : 'Facing Away');
+
+      let telemetryStr = '';
+      if (stab.type === 'STEP_RETURN' || stab.type === 'STEP_BODY_RETURN' || stab.type === 'HOP_STEP_RETURN') {
+        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Peak: (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}] → Closed Together`;
+      } else if (stab.type === 'ONE_STEP_APART' || stab.type === 'TWO_STEPS_APART') {
+        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Final Split: Lead (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) / Trail (${peakTrailX.toFixed(2)}m) [${zoneEval.steppedCompletelyOut ? 'Completely Out' : 'Unclosed'}]`;
+      } else if (isBackFall) {
+        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Back Contact: (${backX.toFixed(2)}m, ${backY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}]`;
+      } else if (isHandTouch) {
+        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Hand Contact: (${handX.toFixed(2)}m, ${handY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}]`;
+      } else if (Math.hypot(stepDeltaX, stepDeltaY) > 0.03) {
+        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Final: (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}]`;
+      } else {
+        telemetryStr = `${facingNote} • Planted 2 Feet Together at x=${touchX.toFixed(2)}m, y=${touchY.toFixed(2)}m (${zoneEval.initZone.name})`;
+      }
+
+      let zoneRuleNote = '';
+      if (state.mode === 'STABILITY') {
+        zoneRuleNote = 'Stability-Only Drill: Zone deductions excluded.';
+      } else {
+        const clipPrefix = zoneEval.initZone.boundaryNote ? `${zoneEval.initZone.boundaryNote} ` : '';
+        if (zoneEval.steppedCompletelyOut) {
+          zoneRuleNote = `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}). Stepping completely outside the landing area does NOT count as a zone (+0.0 zone change); it is penalized as 1.0 in Stability.`;
+        } else if (zoneEval.movedToWorseZone) {
+          zoneRuleNote = `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}), then stepped/moved into worse ${zoneEval.worstSubsequent.name} (+0.2 Moved to Worse Zone).`;
+        } else if (zoneEval.movedToBetterZone) {
+          zoneRuleNote = `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}), stepped into better ${zoneEval.worstSubsequent.name} (+0.0 worse-zone change).`;
+        } else {
+          zoneRuleNote = `${clipPrefix}Landed and remained in ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}, +0.0 zone change).`;
+        }
+      }
+
+      const coachPrefix = customNote ? `<span class="block text-amber-300 font-semibold mb-1">Coach Note: ${customNote}</span>` : '';
+      const fullExplanation = state.mode === 'PRIMARY'
+        ? `${coachPrefix}${zoneRuleNote}`
+        : `${coachPrefix}${zoneRuleNote} <strong class="text-white">${stab.formula}.</strong> ${stab.desc}`;
+
+      return {
+        discipline: disc,
+        blueprint: { ...bp },
+        facing,
+        touchX,
+        touchY,
+        stepDeltaX,
+        stepDeltaY,
+        trailStepRatio,
+        peakLeadX,
+        peakLeadY,
+        peakTrailX,
+        peakTrailY,
+        handX,
+        handY,
+        backX,
+        backY,
+        stability: stab,
+        zoneEval,
+        officialInitialZone,
+        officialZoneChange,
+        officialTotalZone,
+        officialStability,
+        officialTotal,
+        telemetryStr,
+        explanation: fullExplanation,
+        entryLeanDeg: isHandTouch ? 20 : (isBackFall ? -14 : (stab.ded >= 0.2 ? 15 : 8))
+      };
+    }
+
+    // ============================================================================
+    // TRAMPOLINE (TRP) RANDOM SCENARIO GENERATOR
+    // ============================================================================
+    function generateTrampolineScenario() {
+      const cfg = DISCIPLINE_CONFIG.TRP;
+      const facing = Math.random() < 0.5 ? 1 : -1;
+      const jitter = (amt) => (Math.random() - 0.5) * 2 * amt;
+
+      const hasOutbounce = Math.random() < SCENARIO_ODDS.trpOutbounceProb;
+      let obt = 'NONE';
+      if (hasOutbounce) {
+        const hasObFault = Math.random() < SCENARIO_ODDS.trpOutbounceFaultProb;
+        if (!hasObFault) {
+          obt = Math.random() < 0.65 ? 'CLEAN_STRAIGHT' : 'SINGLE_ARM_CIRCLE';
+        } else {
+          obt = Math.random() < 0.55 ? 'BODY_SHAPE_BREAK' : 'MULTI_ARM_CIRCLES';
+        }
+      }
+
+      const archetypes = getStabilityArchetypes('TRP');
+      let stab = state.mode === 'PRIMARY'
+        ? { ...archetypes.CLEAN_STICK }
+        : rollStabilityArchetype('TRP');
+
+      const isEndDeckIncident = (state.mode !== 'PRIMARY') && (Math.random() < SCENARIO_ODDS.trpEndDeckProb);
+
+      let touchX = 2.14 + jitter(0.85);
+      let touchY = jitter(0.45);
+      let stepDir = facing;
+      let stepMagX = 0.26;
+      let stepY = 0;
+
+      if (isEndDeckIncident) {
+        const goRight = Math.random() < 0.5;
+        if (Math.random() < 0.55) {
+          touchX = goRight ? 3.92 : 0.36;
+          touchY = jitter(0.32);
+          stepDir = goRight ? 1 : -1;
+          stepMagX = 0.56;
+          const stepPool = [
+            archetypes.ONE_STEP_RETURN,
+            archetypes.STEP_BODY_RETURN,
+            archetypes.UNCLOSED_FINISH,
+            archetypes.TWO_STEPS_ARM_CIRCLES
+          ];
+          stab = { ...stepPool[Math.floor(Math.random() * stepPool.length)] };
+        } else {
+          touchX = goRight ? (4.58 + jitter(0.16)) : (-0.30 + jitter(0.16));
+          touchY = jitter(0.32);
+          stab = { ...archetypes.CLEAN_STICK };
+        }
+      } else if (Math.random() < 0.25) {
+        const nearRight = Math.random() < 0.5;
+        touchX = nearRight ? (3.82 + jitter(0.12)) : (0.46 + jitter(0.12));
+        touchY = jitter(0.42);
+        stepDir = nearRight ? -1 : 1;
+        stepMagX = 0.22;
+      }
+
+      let signedStepX = stepMagX * stepDir;
+      let signedStepY = stepY;
+
+      if (stab.type === 'STICK' || stab.type === 'BODY_SWAY' || stab.type === 'HAND_TOUCH' || stab.type === 'FALL_TO_BACK') {
+        signedStepX = 0;
+        signedStepY = 0;
+      } else if (stab.type === 'HOP') {
+        signedStepX = 0.06 * stepDir;
+        signedStepY = 0;
+      } else if (stab.type === 'HOP_STEP_RETURN') {
+        signedStepX = Math.max(0.28, Math.abs(signedStepX)) * stepDir;
+      } else if (stab.type === 'ONE_STEP_APART') {
+        signedStepX = Math.max(0.34, Math.abs(signedStepX)) * stepDir;
+      } else if (stab.type === 'TWO_STEPS_RETURN') {
+        signedStepX = Math.max(0.46, Math.abs(signedStepX)) * stepDir;
+      } else if (stab.type === 'TWO_STEPS_APART') {
+        signedStepX = Math.max(0.62, Math.abs(signedStepX)) * stepDir;
+      } else if (stab.type === 'TWO_STEPS_ARM_CIRCLES') {
+        signedStepX = Math.max(0.52, Math.abs(signedStepX)) * stepDir;
+      } else if (stab.type === 'STEPS_INTO_HAND_TOUCH') {
+        signedStepX = 0.42 * facing;
+      } else if (stab.type === 'STEPS_INTO_FALL') {
+        signedStepX = -0.42 * facing;
+      }
+
+      const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+      touchX = Number(clamp(touchX, -0.75, cfg.bedLengthM + 0.75).toFixed(2));
+      touchY = Number(clamp(touchY, -1.25, 1.25).toFixed(2));
+      const peakLeadX = Number(clamp(touchX + signedStepX, -0.85, cfg.bedLengthM + 0.85).toFixed(2));
+      const peakLeadY = Number(clamp(touchY + signedStepY, -1.25, 1.25).toFixed(2));
+      const stepDeltaX = Number((peakLeadX - touchX).toFixed(2));
+      const stepDeltaY = Number((peakLeadY - touchY).toFixed(2));
+
+      const bp = {
+        d: 'TRP',
+        f: facing,
+        ob: hasOutbounce,
+        obt,
+        tx: touchX,
+        ty: touchY,
+        sx: stepDeltaX,
+        sy: stepDeltaY,
+        st: stab.key,
+        sub: stab.type
+      };
+
+      return buildScenarioFromBlueprint(bp);
+    }
+
+    // ============================================================================
+    // EXACT FIG ZONE EVALUATION (WORST-ZONE COUNTS; OFF-MAT IS STABILITY, NOT ZONE)
+    // ============================================================================
+    function evaluateFootprintZone(xCenter, yCenter, cfg) {
+      const halfFootL = 0.13;
+      const halfFootW = 0.05;
+      const xMin = xCenter - halfFootL;
+      const xMax = xCenter + halfFootL;
+      const yAbsMin = Math.max(0, Math.abs(yCenter) - halfFootW);
+      const yAbsMax = Math.abs(yCenter) + halfFootW;
+
+      const isCompletelyOutX = (xMin > 6.00) || (cfg.hasZoneA && xMax < 0.00);
+      const isCompletelyOutY = (yAbsMin > 1.50);
+      if (isCompletelyOutX || isCompletelyOutY) {
+        return {
+          code: cfg.hasZoneA ? 'C' : 'LA',
+          shortLabel: 'Completely Out',
+          rank: 4,
+          ded: 1.0,
+          isCompletelyOut: true,
+          name: 'Completely Out of Landing Area',
+          overlapCm: 0,
+          boundaryNote: 'Entire foot cleared outside the landing area boundary.'
+        };
+      }
+
+      if (!cfg.hasZoneA && xCenter < 0.0) {
+        if (yAbsMax > 1.00) {
+          const ovCm = Math.max(1, Math.round((yAbsMax - 1.00) * 100));
+          return {
+            code: 'LA',
+            shortLabel: 'Area',
+            rank: 3,
+            ded: 1.0,
+            isCompletelyOut: false,
+            name: 'Landing Area (1.0)',
+            overlapCm: ovCm,
+            boundaryNote: `Worst-zone rule: foot stepped outside 2.0m track sideline by ${ovCm}cm → Landing Area (1.0).`
+          };
+        }
+        return {
+          code: 'TRACK',
+          shortLabel: 'Track',
+          rank: 2,
+          ded: 0.4,
+          isCompletelyOut: false,
+          name: 'Track (0.4)',
+          overlapCm: 0,
+          boundaryNote: ''
+        };
+      }
+
+      const outX = xMax - 6.00;
+      const outY = yAbsMax - 1.50;
+      if (outX > 0 || outY > 0) {
+        const ovCm = Math.max(1, Math.round(Math.max(outX, outY) * 100));
+        if (cfg.hasZoneA) {
+          return {
+            code: 'C',
+            shortLabel: 'Zone C',
+            rank: 3,
+            ded: 1.0,
+            isCompletelyOut: false,
+            name: 'Zone C (Blue)',
+            overlapCm: ovCm,
+            boundaryNote: `Foot clipped ${ovCm}cm past outer mat edge → Zone C (1.0).`
+          };
+        }
+        return {
+          code: 'LA',
+          shortLabel: 'Area',
+          rank: 3,
+          ded: 1.0,
+          isCompletelyOut: false,
+          name: 'Landing Area (Blue)',
+          overlapCm: ovCm,
+          boundaryNote: `Foot clipped ${ovCm}cm past outer mat edge → Landing Area (1.0).`
+        };
+      }
+
+      if (cfg.hasZoneA) {
+        const overShort = cfg.zoneA.xMin - xMin;
+        const overLong = xMax - cfg.zoneA.xMax;
+        const overSide = yAbsMax - cfg.zoneA.yHalf;
+        const maxOverA = Math.max(overShort, overLong, overSide);
+
+        if (maxOverA <= 0) {
+          return { code: 'A', shortLabel: 'Zone A', rank: 1, ded: 0.0, isCompletelyOut: false, name: 'Zone A (Red)', overlapCm: 0, boundaryNote: '' };
+        }
+
+        const overBX = xMax - cfg.zoneB.xMax;
+        const overBY = yAbsMax - cfg.zoneB.yHalf;
+        const maxOverB = Math.max(overBX, overBY);
+        if (maxOverB <= 0) {
+          const ovCm = Math.max(1, Math.round(maxOverA * 100));
+          const isClip = ovCm <= 12;
+          return {
+            code: 'B',
+            shortLabel: 'Zone B',
+            rank: 2,
+            ded: 0.6,
+            isCompletelyOut: false,
+            name: 'Zone B (Yellow)',
+            overlapCm: isClip ? ovCm : 0,
+            boundaryNote: isClip ? `Worst-zone rule: foot clipped Zone A/B line by ${ovCm}cm → Zone B (0.6) counts.` : ''
+          };
+        }
+
+        const ovCmB = Math.max(1, Math.round(maxOverB * 100));
+        const isClipB = ovCmB <= 12;
+        return {
+          code: 'C',
+          shortLabel: 'Zone C',
+          rank: 3,
+          ded: 1.0,
+          isCompletelyOut: false,
+          name: 'Zone C (Blue)',
+          overlapCm: isClipB ? ovCmB : 0,
+          boundaryNote: isClipB ? `Worst-zone rule: foot clipped Zone B/C line by ${ovCmB}cm → Zone C (1.0) counts.` : ''
+        };
+      }
+
+      const overBX = xMax - cfg.zoneB.xMax;
+      const overBY = yAbsMax - cfg.zoneB.yHalf;
+      const maxOverB = Math.max(overBX, overBY);
+      if (maxOverB <= 0) {
+        return {
+          code: 'LZ',
+          shortLabel: 'Zone',
+          rank: 1,
+          ded: 0.0,
+          isCompletelyOut: false,
+          name: 'Landing Zone (Yellow)',
+          overlapCm: 0,
+          boundaryNote: ''
+        };
+      }
+
+      const ovCm = Math.max(1, Math.round(maxOverB * 100));
+      const isClip = ovCm <= 12;
+      return {
+        code: 'LA',
+        shortLabel: 'Area',
+        rank: 3,
+        ded: 1.0,
+        isCompletelyOut: false,
+        name: 'Landing Area (Blue)',
+        overlapCm: isClip ? ovCm : 0,
+        boundaryNote: isClip ? `Worst-zone rule: foot clipped Landing Zone / Area line by ${ovCm}cm → Landing Area (1.0) counts.` : ''
+      };
+    }
+
+    function computeOfficialZonePenalty(touchX, touchY, peakLeadX, peakLeadY, peakTrailX, peakTrailY, handX, handY, backX, backY, cfg, f) {
+      const leftLatOffset = -0.11 * f;
+      const rightLatOffset = 0.11 * f;
+
+      const leftInit = evaluateFootprintZone(touchX, touchY + leftLatOffset, cfg);
+      const rightInit = evaluateFootprintZone(touchX, touchY + rightLatOffset, cfg);
+      const initZone = leftInit.rank >= rightInit.rank ? leftInit : rightInit;
+
+      const leadZone = evaluateFootprintZone(peakLeadX, peakLeadY + rightLatOffset, cfg);
+      const trailZone = evaluateFootprintZone(peakTrailX, peakTrailY + leftLatOffset, cfg);
+      let worstSubsequent = leadZone.rank >= trailZone.rank ? leadZone : trailZone;
+
+      if (handX !== null) {
+        const handZone = evaluateFootprintZone(handX, handY, cfg);
+        if (handZone.rank > worstSubsequent.rank) worstSubsequent = handZone;
+      }
+
+      if (backX !== null) {
+        const backZone = evaluateFootprintZone(backX, backY, cfg);
+        if (backZone.rank > worstSubsequent.rank) worstSubsequent = backZone;
+      }
+
+      const steppedCompletelyOut = !initZone.isCompletelyOut && worstSubsequent.isCompletelyOut;
+      const movedToWorseZone = !worstSubsequent.isCompletelyOut && (worstSubsequent.rank > initZone.rank);
+      const movedToBetterZone = !worstSubsequent.isCompletelyOut && (worstSubsequent.rank < initZone.rank) &&
+        (Math.hypot(peakLeadX - touchX, peakLeadY - touchY) > 0.04 || Math.hypot(peakTrailX - touchX, peakTrailY - touchY) > 0.04);
+
+      const zoneChangeDed = movedToWorseZone ? 0.2 : 0.0;
+      const totalZoneDed = Number((initZone.ded + zoneChangeDed).toFixed(1));
+
+      return {
+        initZone,
+        worstSubsequent,
+        steppedCompletelyOut,
+        movedToWorseZone,
+        movedToBetterZone,
+        zoneChangeDed,
+        totalZoneDed
+      };
+    }
+
+    function generateScenario() {
+      if (state.discipline === 'TRP') {
+        state.scenario = generateTrampolineScenario();
+        state.selectedOutbounce = state.scenario.hasOutbounce ? null : 0.0;
+        renderInputButtons();
+        document.getElementById('scenario-label').textContent =
+          `Pass #${state.passNumber} • TRP Routine Finish${state.scenario.hasOutbounce ? ' + Outbounce' : ' (Direct Land)'}`;
+        replayAnimation(1.0);
+        return;
+      }
+
+      const facing = state.discipline === 'TUM'
+        ? -1
+        : (Math.random() < SCENARIO_ODDS.dmtFacingBedProb ? -1 : 1);
+
+      const archetypes = getStabilityArchetypes(state.discipline);
+      let stab = rollStabilityArchetype(state.discipline);
+
+      const jitter = (amt) => (Math.random() - 0.5) * 2 * amt;
+
+      // Every coordinate keeps >= 0.18m clear margin away from every boundary line
+      const zoneGroups = state.discipline === 'DMT'
+        ? {
+            CENTER_INTERIOR: [
+              { tag: 'A_INTERIOR', touchX: 1.95 + jitter(0.75), touchY: jitter(0.20), stepMagX: 0.22, stepDir: 1, stepY: 0 },
+              { tag: 'B_INTERIOR_LONG', touchX: 3.60 + jitter(0.08), touchY: jitter(0.60), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'B_INTERIOR_SIDE_POS', touchX: 2.05 + jitter(0.65), touchY: 0.75 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'B_INTERIOR_SIDE_NEG', touchX: 2.05 + jitter(0.65), touchY: -0.75 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'C_INTERIOR_DEEP', touchX: 5.00 + jitter(0.45), touchY: jitter(1.10), stepMagX: 0.22, stepDir: 1, stepY: 0 },
+              { tag: 'C_INTERIOR_SIDE_POS', touchX: 2.25 + jitter(0.85), touchY: 1.25 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'C_INTERIOR_SIDE_NEG', touchX: 2.25 + jitter(0.85), touchY: -1.25 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 }
+            ],
+            LATERAL_STEP_CROSS: [
+              { tag: 'STEP_A_TO_B_SIDE_POS', touchX: 2.00 + jitter(0.55), touchY: 0.26, stepMagX: 0.04, stepDir: 1, stepY: 0.48, requireStep: true },
+              { tag: 'STEP_A_TO_B_SIDE_NEG', touchX: 2.00 + jitter(0.55), touchY: -0.26, stepMagX: 0.04, stepDir: 1, stepY: -0.48, requireStep: true },
+              { tag: 'STEP_B_TO_C_SIDE_POS', touchX: 2.25 + jitter(0.65), touchY: 0.74, stepMagX: 0.04, stepDir: 1, stepY: 0.50, requireStep: true },
+              { tag: 'STEP_B_TO_C_SIDE_NEG', touchX: 2.25 + jitter(0.65), touchY: -0.74, stepMagX: 0.04, stepDir: 1, stepY: -0.50, requireStep: true }
+            ],
+            LONGITUDINAL_STEP_CROSS: [
+              { tag: 'STEP_A_TO_B_SHORT', touchX: 1.02, touchY: jitter(0.18), stepMagX: 0.62, stepDir: facing === -1 ? 1 : -1, stepY: 0, requireStep: true },
+              { tag: 'STEP_A_TO_B_LONG', touchX: 2.88, touchY: jitter(0.18), stepMagX: 0.68, stepDir: facing === -1 ? -1 : 1, stepY: 0, requireStep: true },
+              { tag: 'STEP_B_TO_C_LONG', touchX: 3.68, touchY: jitter(0.50), stepMagX: 0.74, stepDir: facing === -1 ? -1 : 1, stepY: 0, requireStep: true }
+            ],
+            COMPLETELY_OUT_STEP: [
+              { tag: 'DMT_C_TO_COMPLETELY_OUT_SIDE', touchX: 3.40 + jitter(0.90), touchY: 1.24, stepMagX: 0.04, stepDir: 1, stepY: 0.46, requireStep: true, allowOutMat: true },
+              { tag: 'DMT_C_TO_COMPLETELY_OUT_END', touchX: 5.66, touchY: jitter(0.45), stepMagX: 0.56, stepDir: facing === -1 ? -1 : 1, stepY: 0, requireStep: true, allowOutMat: true }
+            ]
+          }
+        : {
+            CENTER_INTERIOR: [
+              { tag: 'TUM_LZ_INTERIOR', touchX: 2.00 + jitter(1.40), touchY: jitter(0.65), stepMagX: 0.24, stepDir: 1, stepY: 0 },
+              { tag: 'TUM_LA_INTERIOR_DEEP', touchX: 5.00 + jitter(0.45), touchY: jitter(1.10), stepMagX: 0.22, stepDir: 1, stepY: 0 },
+              { tag: 'TUM_LA_INTERIOR_SIDE_POS', touchX: 2.15 + jitter(0.95), touchY: 1.25 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'TUM_LA_INTERIOR_SIDE_NEG', touchX: 2.15 + jitter(0.95), touchY: -1.25 + jitter(0.03), stepMagX: 0.18, stepDir: 1, stepY: 0 },
+              { tag: 'TUM_TRACK_INTERIOR', touchX: -0.60 + jitter(0.20), touchY: jitter(0.60), stepMagX: 0.16, stepDir: 1, stepY: 0 }
+            ],
+            LATERAL_STEP_CROSS: [
+              { tag: 'TUM_STEP_LZ_TO_LA_SIDE_POS', touchX: 2.25 + jitter(0.75), touchY: 0.74, stepMagX: 0.04, stepDir: 1, stepY: 0.50, requireStep: true },
+              { tag: 'TUM_STEP_LZ_TO_LA_SIDE_NEG', touchX: 2.25 + jitter(0.75), touchY: -0.74, stepMagX: 0.04, stepDir: 1, stepY: -0.50, requireStep: true }
+            ],
+            LONGITUDINAL_STEP_CROSS: [
+              { tag: 'TUM_STEP_LZ_TO_LA_LONG', touchX: 3.66, touchY: jitter(0.55), stepMagX: 0.74, stepDir: -1, stepY: 0, requireStep: true },
+              { tag: 'TUM_STEP_TRACK_TO_LZ', touchX: -0.36, touchY: jitter(0.55), stepMagX: 0.74, stepDir: 1, stepY: 0, requireStep: true }
+            ],
+            COMPLETELY_OUT_STEP: [
+              { tag: 'TUM_LANDING_AREA_TO_COMPLETELY_OUT_SIDE', touchX: 3.20 + jitter(0.95), touchY: -1.24, stepMagX: 0.04, stepDir: 1, stepY: -0.46, requireStep: true, allowOutMat: true },
+              { tag: 'TUM_LANDING_AREA_TO_COMPLETELY_OUT_END', touchX: 5.66, touchY: jitter(0.45), stepMagX: 0.56, stepDir: -1, stepY: 0, requireStep: true, allowOutMat: true }
+            ]
+          };
+
+      let chosenGroupKey = '';
+      if (state.mode !== 'PRIMARY' && Math.random() < SCENARIO_ODDS.completelyOutStepProb) {
+        chosenGroupKey = 'COMPLETELY_OUT_STEP';
+      } else {
+        const archetypeKeys = Object.keys(SCENARIO_ODDS.zoneArchetypeWeights);
+        const archetypeWeights = archetypeKeys.map(k => SCENARIO_ODDS.zoneArchetypeWeights[k] ?? 0.25);
+        chosenGroupKey = weightedPick(archetypeKeys, archetypeWeights);
+      }
+      const groupList = zoneGroups[chosenGroupKey];
+      const chosenZonePattern = { ...groupList[Math.floor(Math.random() * groupList.length)] };
+
+      if (chosenZonePattern.allowOutMat) {
+        stab = { ...archetypes.COMPLETELY_OUT_STABILITY };
+      } else if (chosenZonePattern.requireStep && (stab.type === 'STICK' || stab.type === 'BODY_SWAY')) {
+        const stepPool = [
+          archetypes.ONE_STEP_RETURN,
+          archetypes.STEP_BODY_RETURN,
+          archetypes.TWO_STEPS_RETURN,
+          archetypes.UNCLOSED_FINISH,
+          archetypes.TWO_STEPS_ARM_CIRCLES
+        ];
+        stab = { ...stepPool[Math.floor(Math.random() * stepPool.length)] };
+      }
+
+      let signedStepX = chosenZonePattern.stepMagX * (chosenZonePattern.stepDir * facing);
+      let signedStepY = chosenZonePattern.stepY;
+
+      if (stab.type === 'STICK' || stab.type === 'BODY_SWAY' || stab.type === 'HAND_TOUCH' || stab.type === 'FALL_TO_BACK') {
+        signedStepX = 0;
+        signedStepY = 0;
+      } else if (stab.type === 'ONE_STEP_APART') {
+        signedStepX = chosenZonePattern.allowOutMat
+          ? signedStepX
+          : Math.max(0.34, Math.abs(signedStepX)) * (chosenZonePattern.stepDir * facing);
+      } else if (stab.type === 'TWO_STEPS_RETURN') {
+        signedStepX = Math.max(0.46, Math.abs(signedStepX)) * (chosenZonePattern.stepDir * facing);
+      } else if (stab.type === 'TWO_STEPS_APART') {
+        signedStepX = Math.max(0.68, Math.abs(signedStepX)) * (chosenZonePattern.stepDir * facing);
+      } else if (stab.type === 'TWO_STEPS_ARM_CIRCLES') {
+        signedStepX = Math.max(0.56, Math.abs(signedStepX)) * (chosenZonePattern.stepDir * facing);
+      } else if (stab.type === 'STEPS_INTO_HAND_TOUCH') {
+        signedStepX = Math.max(0.45, Math.abs(signedStepX)) * facing;
+      } else if (stab.type === 'STEPS_INTO_FALL') {
+        signedStepX = -0.45 * facing;
+      }
+
+      if (state.mode === 'PRIMARY') {
+        if (!chosenZonePattern.requireStep) {
+          stab = { ...archetypes.CLEAN_STICK };
+          signedStepX = 0;
+          signedStepY = 0;
+        }
+      } else if (state.mode === 'STABILITY') {
+        if (!chosenZonePattern.allowOutMat) {
+          chosenZonePattern.touchX = state.discipline === 'DMT' ? 1.95 : 2.10;
+          chosenZonePattern.touchY = 0.0;
+        }
+      }
+
+      const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+      const minXAllowed = state.discipline === 'TUM' ? -0.95 : 0.20;
+      const maxXAllowed = chosenZonePattern.allowOutMat ? 6.32 : 5.80;
+      const maxYAllowed = chosenZonePattern.allowOutMat ? 1.72 : 1.42;
+
+      const touchX = Number(clamp(chosenZonePattern.touchX, minXAllowed, 5.75).toFixed(2));
+      const touchY = Number(clamp(chosenZonePattern.touchY, -1.36, 1.36).toFixed(2));
+
+      const peakLeadX = Number(clamp(touchX + signedStepX, minXAllowed, maxXAllowed).toFixed(2));
+      const peakLeadY = Number(clamp(touchY + signedStepY, -maxYAllowed, maxYAllowed).toFixed(2));
+      const stepDeltaX = Number((peakLeadX - touchX).toFixed(2));
+      const stepDeltaY = Number((peakLeadY - touchY).toFixed(2));
+
+      const bp = {
+        d: state.discipline,
+        f: facing,
+        tx: touchX,
+        ty: touchY,
+        sx: stepDeltaX,
+        sy: stepDeltaY,
+        st: stab.key,
+        sub: stab.type
+      };
+
+      state.scenario = buildScenarioFromBlueprint(bp);
+      document.getElementById('scenario-label').textContent =
+        `Pass #${state.passNumber} • ${state.discipline} ${state.discipline === 'DMT' ? 'Dismount' : 'Pass End'}`;
+
+      replayAnimation(1.0);
+    }
+
+    function weightedPick(items, weights) {
+      const totalW = weights.reduce((a, b) => a + b, 0);
+      const r = Math.random() * totalW;
+      let acc = 0;
+      for (let i = 0; i < items.length; i++) {
+        acc += weights[i];
+        if (r <= acc) return items[i];
+      }
+      return items[items.length - 1];
+    }
+
+    // --- SUBMISSION & NEXT SCENARIO ---
+    function submitRuling() {
+      const isTRP = state.discipline === 'TRP';
+      const needsPrimary = state.mode !== 'STABILITY';
+      const needsStab = state.mode !== 'PRIMARY';
+
+      if (isTRP) {
+        const noOb = state.scenario && !state.scenario.hasOutbounce;
+        if ((needsPrimary && !noOb && state.selectedOutbounce === null) || (needsStab && state.selectedStability === null)) {
+          document.getElementById('validation-msg').classList.remove('hidden');
+          return;
+        }
+      } else {
+        if ((needsPrimary && state.selectedZoneCode === null) || (needsStab && state.selectedStability === null)) {
+          document.getElementById('validation-msg').classList.remove('hidden');
+          return;
+        }
+      }
+
+      state.submitted = true;
+      state.isPlaying = false;
+      state.preRollRemaining = 0;
+      state.animProgress = 1.0;
+      document.getElementById('replay-badge').classList.add('hidden');
+      document.getElementById('playback-status-pill').textContent = '3.5x Zoom';
+
+      let isExact = false;
+      let uTot = 0;
+      const oTot = state.scenario.officialTotal;
+
+      if (isTRP) {
+        const noOb = !state.scenario.hasOutbounce;
+        const uOb = needsPrimary ? (noOb ? 0.0 : state.selectedOutbounce) : 0.0;
+        const uStab = needsStab ? state.selectedStability : 0.0;
+        uTot = Number(Math.min(1.0, uOb + uStab).toFixed(1));
+
+        const oOb = state.scenario.officialOutbounce;
+        const oStab = state.scenario.officialStability;
+        isExact = (uOb === oOb) && (uStab === oStab);
+
+        document.getElementById('res-row1-lbl-u').textContent = 'Outbounce:';
+        document.getElementById('res-row1-lbl-o').textContent = 'Outbounce:';
+        document.getElementById('res-row2-wrap-u').style.display = 'none';
+        document.getElementById('res-row2-wrap-o').style.display = 'none';
+
+        const uObEl = document.getElementById('user-zone-val');
+        const uStabEl = document.getElementById('user-stab-val');
+        uObEl.textContent = needsPrimary ? uOb.toFixed(1) : 'N/A';
+        uStabEl.textContent = needsStab ? uStab.toFixed(1) : 'N/A';
+
+        uObEl.className = !needsPrimary
+          ? 'font-mono font-bold text-slate-500'
+          : (uOb === oOb ? 'font-mono font-bold px-1.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60' : 'font-mono font-bold px-1.5 rounded bg-rose-950/80 text-rose-300 border border-rose-700/60');
+        uStabEl.className = !needsStab
+          ? 'font-mono font-bold text-slate-500'
+          : (uStab === oStab ? 'font-mono font-bold px-1.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60' : 'font-mono font-bold px-1.5 rounded bg-rose-950/80 text-rose-300 border border-rose-700/60');
+
+        document.getElementById('user-tot-val').textContent = uTot.toFixed(1);
+        document.getElementById('off-zone-val').textContent = needsPrimary ? oOb.toFixed(1) : 'N/A';
+        document.getElementById('off-stab-val').textContent = needsStab ? oStab.toFixed(1) : 'N/A';
+        document.getElementById('off-tot-val').textContent = oTot.toFixed(1);
+
+        const endDeckTag = state.scenario.landedOnEndDeck
+          ? 'End Deck Land (1.0)'
+          : (state.scenario.steppedToEndDeck ? 'End Deck Step (1.0)' : state.scenario.stability.label);
+        document.getElementById('var-clearance-badge').textContent =
+          `${state.scenario.outbounceInfo.label} • ${endDeckTag}`;
+      } else {
+        const zObj = getSelectedZoneObj();
+        const uInitZone = needsPrimary ? zObj.ded : 0.0;
+        const uZoneChange = needsPrimary ? (state.selectedWorseZone ? 0.2 : 0.0) : 0.0;
+        const uEffectiveZone = needsPrimary ? Number((uInitZone + uZoneChange).toFixed(1)) : 0.0;
+        const uStab = needsStab ? state.selectedStability : 0.0;
+        uTot = Number((uEffectiveZone + uStab).toFixed(1));
+
+        const oInitZone = state.scenario.officialInitialZone;
+        const oZoneChange = state.scenario.officialZoneChange;
+        const oStab = state.scenario.officialStability;
+
+        const isZoneCodeMatch = !needsPrimary || (state.selectedZoneCode === state.scenario.zoneEval.initZone.code);
+        const isZoneChangeMatch = !needsPrimary || (uZoneChange === oZoneChange);
+        isExact = isZoneCodeMatch && isZoneChangeMatch && (uStab === oStab);
+
+        document.getElementById('res-row1-lbl-u').textContent = 'Initial Zone:';
+        document.getElementById('res-row1-lbl-o').textContent = 'Initial Zone:';
+        document.getElementById('res-row2-wrap-u').style.display = 'flex';
+        document.getElementById('res-row2-wrap-o').style.display = 'flex';
+
+        const uZoneEl = document.getElementById('user-zone-val');
+        const uZChangeEl = document.getElementById('user-zchange-val');
+        const uStabEl = document.getElementById('user-stab-val');
+
+        uZoneEl.textContent = needsPrimary ? `${zObj.label} (${uInitZone.toFixed(1)})` : 'N/A';
+        uZChangeEl.textContent = needsPrimary ? `+${uZoneChange.toFixed(1)}` : 'N/A';
+        uStabEl.textContent = needsStab ? uStab.toFixed(1) : 'N/A';
+
+        uZoneEl.className = !needsPrimary
+          ? 'font-mono font-bold text-slate-500'
+          : (isZoneCodeMatch ? 'font-mono font-bold px-1.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60' : 'font-mono font-bold px-1.5 rounded bg-rose-950/80 text-rose-300 border border-rose-700/60');
+        uZChangeEl.className = !needsPrimary
+          ? 'font-mono font-bold text-slate-500'
+          : (isZoneChangeMatch ? 'font-mono font-bold px-1.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60' : 'font-mono font-bold px-1.5 rounded bg-rose-950/80 text-rose-300 border border-rose-700/60');
+        uStabEl.className = !needsStab
+          ? 'font-mono font-bold text-slate-500'
+          : (uStab === oStab ? 'font-mono font-bold px-1.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60' : 'font-mono font-bold px-1.5 rounded bg-rose-950/80 text-rose-300 border border-rose-700/60');
+
+        document.getElementById('user-tot-val').textContent = uTot.toFixed(1);
+        document.getElementById('off-zone-val').textContent = needsPrimary ? `${state.scenario.zoneEval.initZone.shortLabel} (${oInitZone.toFixed(1)})` : 'N/A';
+        document.getElementById('off-zchange-val').textContent = needsPrimary ? `+${oZoneChange.toFixed(1)}` : 'N/A';
+        document.getElementById('off-stab-val').textContent = needsStab ? oStab.toFixed(1) : 'N/A';
+        document.getElementById('off-tot-val').textContent = oTot.toFixed(1);
+
+        const badgeZoneTag = `${state.scenario.zoneEval.initZone.shortLabel}${state.scenario.zoneEval.movedToWorseZone ? ' (+0.2)' : ''}`;
+        document.getElementById('var-clearance-badge').textContent =
+          `${badgeZoneTag} • ${state.scenario.stability.label}`;
+      }
+
+      const isTotalMatch = (uTot === oTot);
+
+      state.totalAttempts++;
+      if (isExact) {
+        state.exactMatches++;
+      }
+
+      if (state.sessionMode === 'PACKAGE' && state.activePackage) {
+        const curItem = state.activePackage.items[state.activePackage.index];
+        state.activePackage.results[state.activePackage.index] = {
+          label: curItem ? curItem.label : `Pass ${state.activePackage.index + 1}`,
+          userTot: uTot,
+          offTot: oTot,
+          isExact
+        };
+      }
+
+      const accPct = Math.round((state.exactMatches / state.totalAttempts) * 100);
+      document.getElementById('stat-acc').textContent = `${accPct}% (${state.exactMatches}/${state.totalAttempts})`;
+
+      const banner = document.getElementById('result-banner');
+      const icon = document.getElementById('result-icon');
+      const title = document.getElementById('result-title');
+      const sub = document.getElementById('result-subtitle');
+
+      if (isExact) {
+        banner.className = 'rounded-xl p-3 border bg-emerald-950/60 border-emerald-700/80 text-emerald-100 flex items-center justify-between';
+        icon.className = 'w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-white text-sm bg-[#009a44]';
+        icon.textContent = '✓';
+        title.textContent = 'Exact FIG Ruling!';
+        sub.textContent = isTRP ? 'Outbounce and Bed Stability both match.' : 'Initial Zone, Zone Change & Stability all match.';
+      } else if (isTotalMatch) {
+        banner.className = 'rounded-xl p-3 border bg-amber-950/60 border-amber-700/80 text-amber-100 flex items-center justify-between';
+        icon.className = 'w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-slate-950 text-sm bg-[#f59e0b]';
+        icon.textContent = '~';
+        title.textContent = 'Same Total, Breakdown Differed';
+        sub.textContent = 'Compare individual deductions side-by-side below.';
+      } else {
+        banner.className = 'rounded-xl p-3 border bg-rose-950/60 border-rose-700/80 text-rose-100 flex items-center justify-between';
+        icon.className = 'w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-white text-sm bg-[#e11d48]';
+        icon.textContent = '✕';
+        title.textContent = `Off by ${Math.abs(uTot - oTot).toFixed(1)}`;
+        sub.textContent = 'Inspect 3.5x magnified footprint loupe on canvas.';
+      }
+
+      document.getElementById('official-total-pill').textContent = oTot.toFixed(1);
+      document.getElementById('rule-explanation').innerHTML =
+        `<span class="font-mono text-[10.5px] font-bold text-sky-200 block mb-1">${state.scenario.telemetryStr}</span>` +
+        `<span>${state.scenario.explanation}</span>`;
+
+      document.getElementById('judging-form').classList.add('hidden');
+      document.getElementById('result-panel').classList.remove('hidden');
+      document.getElementById('result-panel').classList.add('flex');
+
+      drawScene(1.0, false);
+    }
+
+    function nextScenario() {
+      if (state.sessionMode === 'SHARED') {
+        replayAnimation(1.0);
+        return;
+      }
+
+      if (state.sessionMode === 'PACKAGE' && state.activePackage) {
+        const nextIdx = state.activePackage.index + 1;
+        loadPackageStep(nextIdx);
+        return;
+      }
+
+      state.passNumber++;
+      state.submitted = false;
+      state.selectedZoneCode = null;
+      state.selectedWorseZone = false;
+      state.selectedOutbounce = null;
+      state.selectedStability = null;
+
+      document.getElementById('result-panel').classList.add('hidden');
+      document.getElementById('result-panel').classList.remove('flex');
+      document.getElementById('judging-form').classList.remove('hidden');
+      document.getElementById('validation-msg').classList.add('hidden');
+
+      renderInputButtons();
+      generateScenario();
+    }
+
+    // ============================================================================
+    // ANIMATION LOOP (1.0s PRE-ROLL COUNTDOWN) & HIGH-DPI CANVAS RENDERER
+    // ============================================================================
+    function resizeCanvas() {
+      const wrapper = document.getElementById('canvas-wrapper');
+      const rect = wrapper.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(300, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(200, Math.floor(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function replayAnimation(speed = 1.0) {
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      state.playbackSpeed = speed;
+      state.animProgress = 0;
+      state.preRollRemaining = state.preRollDuration;
+      state.animStartTime = performance.now();
+      state.isPlaying = true;
+
+      const badge = document.getElementById('replay-badge');
+      const statusPill = document.getElementById('playback-status-pill');
+      badge.textContent = '1.0s';
+      badge.classList.remove('hidden');
+      statusPill.textContent = '1.0s';
+
+      function tick(now) {
+        const rawElapsed = now - state.animStartTime;
+
+        if (rawElapsed < state.preRollDuration) {
+          state.preRollRemaining = state.preRollDuration - rawElapsed;
+          state.animProgress = 0;
+          const countdownLabel = state.preRollRemaining > 500 ? '1.0s' : '0.5s';
+          badge.textContent = countdownLabel;
+          statusPill.textContent = countdownLabel;
+          drawScene(0, true);
+          state.rafId = requestAnimationFrame(tick);
+          return;
+        }
+
+        state.preRollRemaining = 0;
+        const activeAnimDuration = state.discipline === 'TRP' ? state.trpAnimDuration : state.animDuration;
+        const animElapsed = (rawElapsed - state.preRollDuration) * state.playbackSpeed;
+        const t = Math.min(1.0, animElapsed / activeAnimDuration);
+        state.animProgress = t;
+        const modeTxt = speed < 1 ? 'Slow-Mo 0.5x' : 'GO • 1.0x';
+        badge.textContent = modeTxt.toUpperCase();
+        statusPill.textContent = modeTxt;
+        drawScene(t, false);
+
+        if (t < 1.0) {
+          state.rafId = requestAnimationFrame(tick);
+        } else {
+          state.isPlaying = false;
+          badge.classList.add('hidden');
+          statusPill.textContent = state.submitted ? '3.5x Zoom' : 'Landed • Awaiting Score';
+          drawScene(1.0, false);
+        }
+      }
+      state.rafId = requestAnimationFrame(tick);
+    }
+
+    function drawScene(t, isPreRoll = false) {
+      if (!state.scenario) return;
+      if (state.discipline === 'TRP') {
+        drawTrampolineScene(t, isPreRoll);
+        return;
+      }
+
+      const wrapper = document.getElementById('canvas-wrapper');
+      const W = wrapper.clientWidth;
+      const H = wrapper.clientHeight;
+
+      ctx.clearRect(0, 0, W, H);
+
+      const cfg = DISCIPLINE_CONFIG[state.discipline];
+
+      // Upper 62% Side Elevation, Lower 38% Top-Down Plan
+      const splitY = Math.floor(H * 0.62);
+      const sideMatTopY = Math.floor(splitY * 0.79);
+      const sideMatHeight = splitY - sideMatTopY;
+
+      const matLeftX = Math.floor(W * 0.17);
+      const matPixelWidth = Math.floor(W * 0.71);
+      const pxPerM = matPixelWidth / cfg.matLengthM;
+
+      // --- 1. UPPER VIEWPORT: SIDE-ELEVATION MAT & METER RULER ---
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, splitY);
+      bgGrad.addColorStop(0, '#0f172a');
+      bgGrad.addColorStop(1, '#1e293b');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, splitY);
+
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.07)';
+      ctx.lineWidth = 1;
+      for (let m = 0; m <= 6; m++) {
+        const gx = matLeftX + m * pxPerM;
+        ctx.beginPath();
+        ctx.moveTo(gx, 14);
+        ctx.lineTo(gx, sideMatTopY);
+        ctx.stroke();
+      }
+
+      // Apparatus block on left (x <= 0.0m)
+      ctx.fillStyle = cfg.hasZoneA ? '#334155' : '#9a3412';
+      ctx.fillRect(0, sideMatTopY + 2, matLeftX - 2, sideMatHeight - 2);
+      if (!cfg.hasZoneA) {
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(0, sideMatTopY + 2, matLeftX - 2, Math.max(6, sideMatHeight * 0.28));
+      }
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(matLeftX - 1, sideMatTopY);
+      ctx.lineTo(matLeftX - 1, splitY);
+      ctx.stroke();
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '700 8.5px Inter, sans-serif';
+      ctx.fillText(cfg.apparatusLabel, 6, sideMatTopY + 18);
+
+      // Outer floor beyond 6.0m
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(matLeftX, sideMatTopY, W - matLeftX, sideMatHeight);
+
+      // Base Mat Cross-Section
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(matLeftX, sideMatTopY, matPixelWidth, sideMatHeight);
+
+      const surfH = Math.max(7, sideMatHeight * 0.28);
+      // Blue strip (Zone C in DMT / Landing Area in TUM: 0.0m -> 6.0m)
+      ctx.fillStyle = '#2563eb';
+      ctx.fillRect(matLeftX, sideMatTopY, 6.0 * pxPerM, surfH);
+
+      // Yellow strip (Zone B in DMT / Landing Zone in TUM: 0.0m -> 4.0m)
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(matLeftX, sideMatTopY, 4.0 * pxPerM, surfH);
+
+      // Red strip (Zone A in DMT only: 0.7m -> 3.2m)
+      if (cfg.hasZoneA) {
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(matLeftX + 0.70 * pxPerM, sideMatTopY, 2.50 * pxPerM, surfH);
+      }
+
+      ctx.fillStyle = '#ffffff';
+      const keyBoundaries = cfg.hasZoneA ? [0.0, 0.7, 3.2, 4.0, 6.0] : [0.0, 4.0, 6.0];
+      keyBoundaries.forEach(m => {
+        ctx.fillRect(matLeftX + m * pxPerM - 1, sideMatTopY, 2, surfH + 3);
+      });
+
+      // Meter Ruler Ticks along bottom of Side Mat
+      const ticks = cfg.hasZoneA ? [0, 0.7, 1, 2, 3, 3.2, 4, 5, 6] : [0, 1, 2, 3, 4, 5, 6];
+      ctx.font = '600 8.5px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ticks.forEach(m => {
+        const tx = matLeftX + m * pxPerM;
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.fillRect(tx - 0.5, splitY - 5, 1, 5);
+        ctx.fillStyle = (m === 0.7 || m === 3.2) ? '#fca5a5' : '#cbd5e1';
+        const label = Number.isInteger(m) ? `${m}m` : `${m.toFixed(1)}m`;
+        ctx.fillText(label, tx, splitY - 7);
+      });
+      ctx.textAlign = 'left';
+
+      // --- 2. COMPUTE & DRAW 8-JOINT GYMNAST RIG ---
+      let pose = null;
+      if (!isPreRoll) {
+        pose = computeGymnastPose(t, state.scenario);
+        drawGymnastRig(ctx, pose, state.scenario, matLeftX, sideMatTopY, pxPerM);
+      } else {
+        drawPreRollOverlay(W, sideMatTopY);
+      }
+
+      // --- 3. LOWER VIEWPORT: TOP-DOWN BIRD'S-EYE PLAN VIEW (ALWAYS SHOW ZONE LINES) ---
+      ctx.fillStyle = '#0b1120';
+      ctx.fillRect(0, splitY, W, H - splitY);
+
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(0, splitY, W, 2);
+
+      const planPadY = 14;
+      const planTop = splitY + planPadY;
+      const planH = H - splitY - planPadY * 2;
+      const planCenterY = planTop + planH / 2;
+      const pxPerMY = planH / cfg.matWidthM; // 3.0m total width
+
+      if (cfg.hasZoneA) {
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(0, planTop + planH * 0.16, matLeftX - 2, planH * 0.68);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '700 8px Inter, sans-serif';
+        ctx.fillText('DMT BED', 6, planCenterY + 3);
+      } else {
+        const trackH = 2.0 * pxPerMY;
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(0, planCenterY - trackH / 2, matLeftX, trackH);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.6;
+        ctx.strokeRect(0, planCenterY - trackH / 2, matLeftX, trackH);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 8px JetBrains Mono, monospace';
+        ctx.fillText('TRACK (0.4)', 5, planCenterY + 3);
+      }
+
+      // Outer Blue Zone (Zone C in DMT / Landing Area in TUM: 0.0m -> 6.0m, 3.0m wide)
+      ctx.fillStyle = '#2563eb';
+      ctx.fillRect(matLeftX, planTop, 6.0 * pxPerM, planH);
+
+      // Middle Yellow Zone (Zone B in DMT / Landing Zone in TUM: 0.0m -> 4.0m, 2.0m wide)
+      const bW = 4.0 * pxPerM;
+      const bH = 2.0 * pxPerMY;
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(matLeftX, planCenterY - bH / 2, bW, bH);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.6;
+      ctx.strokeRect(matLeftX, planCenterY - bH / 2, bW, bH);
+
+      // Inner Red Zone (Zone A in DMT only: 0.7m -> 3.2m, 1.0m wide)
+      if (cfg.hasZoneA) {
+        const aX = matLeftX + 0.70 * pxPerM;
+        const aW = 2.50 * pxPerM;
+        const aH = 1.00 * pxPerMY;
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(aX, planCenterY - aH / 2, aW, aH);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.8;
+        ctx.strokeRect(aX, planCenterY - aH / 2, aW, aH);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 8.5px JetBrains Mono, monospace';
+        ctx.fillText('ZONE A (0.0)', aX + 5, planCenterY - aH / 2 + 11);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillText('ZONE B (0.6)', matLeftX + 5, planCenterY - bH / 2 + 11);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('ZONE C (1.0)', matLeftX + bW + 6, planTop + 11);
+      } else {
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '800 8.5px JetBrains Mono, monospace';
+        ctx.fillText('LANDING ZONE (0.0)', matLeftX + 6, planCenterY - bH / 2 + 11);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('LANDING AREA (1.0)', matLeftX + bW + 5, planTop + 11);
+      }
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(matLeftX, planCenterY);
+      ctx.lineTo(matLeftX + matPixelWidth, planCenterY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(matLeftX, planTop, matPixelWidth, planH);
+
+      if (!isPreRoll && pose && t >= 0.28) {
+        drawFootprintsTopDown(ctx, pose, state.scenario, matLeftX, planCenterY, pxPerM, pxPerMY);
+      }
+
+      if (state.submitted && pose) {
+        drawHawkEyeLoupe(ctx, W, H, splitY, pose, state.scenario, cfg, matLeftX, planCenterY, pxPerM, pxPerMY);
+      }
+    }
+
+    function drawPreRollOverlay(W, sideMatTopY) {
+      const countdownLabel = state.preRollRemaining > 500 ? '1.0s' : '0.5s';
+      const boxW = 112;
+      const boxH = 38;
+      const bx = (W - boxW) / 2;
+      const by = sideMatTopY * 0.42 - boxH / 2;
+      ctx.save();
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(bx, by, boxW, boxH, 10);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '800 15px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(countdownLabel, W / 2, by + 24);
+      ctx.restore();
+    }
+
+    // ============================================================================
+    // 8-JOINT ARTICULATED GYMNAST KINEMATICS & STICK-CAPSULE RENDERER
+    // ============================================================================
+    function computeGymnastPose(t, sc) {
+      const f = sc.facing;
+      const leftLatOffset = -0.11 * f;
+      const rightLatOffset = 0.11 * f;
+      const stype = sc.stability.type;
+
+      let leftFootX = sc.touchX;
+      let leftFootY = sc.touchY + leftLatOffset;
+      let rightFootX = sc.touchX;
+      let rightFootY = sc.touchY + rightLatOffset;
+      let airHeightM = 0;
+      let leftFootLiftM = 0;
+      let rightFootLiftM = 0;
+      let trunkLean = 0;
+      let kneeBend = 0;
+      let shoulderAngle = -155;
+      let backArmAngle = -155;
+      let elbowBend = 10;
+      let hipDropM = 0;
+      let handTouchActive = false;
+      let backFallActive = false;
+
+      if (t < 0.28) {
+        const u = t / 0.28;
+        const inv = 1 - u;
+        const entryDrift = sc.discipline === 'TRP' ? 0.35 : 0.72;
+        const curX = sc.touchX - entryDrift * inv;
+        leftFootX = curX;
+        rightFootX = curX;
+        airHeightM = 1.05 * inv * inv;
+        trunkLean = sc.entryLeanDeg * (0.45 + 0.55 * inv);
+        kneeBend = 12 + 16 * u;
+        shoulderAngle = -165 + u * 65;
+        backArmAngle = -165 + u * 65;
+      } else if (t < 0.42) {
+        const u = (t - 0.28) / 0.14;
+        const bell = Math.sin(u * Math.PI);
+        trunkLean = sc.entryLeanDeg * (0.45 + 0.55 * bell);
+        kneeBend = 28 + 24 * bell;
+        shoulderAngle = -100 + bell * 35;
+        backArmAngle = -100 + bell * 35;
+      } else {
+        const u = (t - 0.42) / 0.58;
+        const ease = 1 - Math.pow(1 - Math.min(1, u * 1.45), 3);
+
+        if (stype === 'STICK') {
+          const settle = Math.max(0, 1 - u * 2.5);
+          trunkLean = sc.entryLeanDeg * 0.35 * settle;
+          kneeBend = 26 * settle;
+          shoulderAngle = -85 - (1 - settle) * 80;
+          backArmAngle = shoulderAngle;
+        } else if (stype === 'BODY_SWAY') {
+          const swayWave = Math.sin(Math.min(1, u * 1.15) * Math.PI);
+          trunkLean = 32 * swayWave;
+          kneeBend = 22 * swayWave;
+          shoulderAngle = -85 + 70 * swayWave;
+          backArmAngle = -85 - 50 * swayWave;
+        } else if (stype === 'HOP') {
+          if (u < 0.58) {
+            const hu = u / 0.58;
+            const hopArc = Math.sin(hu * Math.PI);
+            const hopShift = sc.stepDeltaX * Math.min(1, hu * 1.15);
+            leftFootX = sc.touchX + hopShift;
+            rightFootX = sc.touchX + hopShift;
+            airHeightM = 0.26 * hopArc;
+            trunkLean = 12 * hopArc;
+            kneeBend = 12 + 18 * (1 - hopArc);
+            shoulderAngle = -90 - 45 * hopArc;
+            backArmAngle = shoulderAngle;
+          } else {
+            const su = (u - 0.58) / 0.42;
+            const settle = Math.max(0, 1 - su * 2.2);
+            leftFootX = sc.touchX + sc.stepDeltaX;
+            rightFootX = sc.touchX + sc.stepDeltaX;
+            trunkLean = 6 * settle;
+            kneeBend = 26 * settle;
+            shoulderAngle = -110 - (1 - settle) * 55;
+            backArmAngle = shoulderAngle;
+          }
+        } else if (stype === 'HOP_STEP_RETURN') {
+          if (u < 0.42) {
+            const hu = u / 0.42;
+            const hopArc = Math.sin(hu * Math.PI);
+            airHeightM = 0.26 * hopArc;
+            trunkLean = 14 * hopArc;
+            kneeBend = 12 + 18 * (1 - hopArc);
+            shoulderAngle = -85 - 40 * hopArc;
+            backArmAngle = shoulderAngle;
+          } else {
+            const su = (u - 0.42) / 0.58;
+            const stepCurve = su < 0.50
+              ? Math.sin((su / 0.50) * (Math.PI / 2))
+              : Math.cos(((su - 0.50) / 0.50) * (Math.PI / 2));
+            rightFootX = sc.touchX + sc.stepDeltaX * stepCurve;
+            rightFootY = sc.touchY + rightLatOffset + sc.stepDeltaY * stepCurve;
+            rightFootLiftM = 0.09 * Math.sin(Math.min(1, su * 2) * Math.PI) * (su < 0.92 ? 1 : 0);
+            trunkLean = 15 * stepCurve;
+            kneeBend = 22 * stepCurve;
+            shoulderAngle = -85 + 25 * stepCurve;
+            backArmAngle = shoulderAngle;
+          }
+        } else if (stype === 'STEP_RETURN') {
+          const stepCurve = u < 0.50 ? Math.sin((u / 0.50) * (Math.PI / 2)) : Math.cos(((u - 0.50) / 0.50) * (Math.PI / 2));
+          rightFootX = sc.touchX + sc.stepDeltaX * stepCurve;
+          rightFootY = sc.touchY + rightLatOffset + sc.stepDeltaY * stepCurve;
+          rightFootLiftM = 0.09 * Math.sin(Math.min(1, u * 2) * Math.PI) * (u < 0.92 ? 1 : 0);
+          trunkLean = 14 * stepCurve;
+          kneeBend = 22 * stepCurve;
+          shoulderAngle = -85 + 25 * stepCurve;
+          backArmAngle = shoulderAngle;
+        } else if (stype === 'STEP_BODY_RETURN') {
+          // Staged pause between corrective step out and upper-body sway/arm counterbalance
+          let stepFactor = 1.0;
+          if (u < 0.28) {
+            const su = u / 0.28;
+            stepFactor = Math.sin(su * (Math.PI / 2));
+            rightFootLiftM = 0.09 * Math.sin(su * Math.PI);
+          } else if (u < 0.76) {
+            stepFactor = 1.0;
+            rightFootLiftM = 0;
+          } else {
+            const ru = (u - 0.76) / 0.24;
+            stepFactor = Math.cos(ru * (Math.PI / 2));
+            rightFootLiftM = 0.08 * Math.sin(ru * Math.PI);
+          }
+
+          rightFootX = sc.touchX + sc.stepDeltaX * stepFactor;
+          rightFootY = sc.touchY + rightLatOffset + sc.stepDeltaY * stepFactor;
+
+          if (u < 0.44) {
+            // Stage 1 & 2: Step out and hold steady pause before upper-body sway
+            trunkLean = 8 * stepFactor;
+            kneeBend = 20 * stepFactor;
+            shoulderAngle = -90;
+            backArmAngle = -90;
+          } else if (u < 0.76) {
+            // Stage 3: Distinct upper-body sway & arm counterbalance wave while planted wide
+            const bu = (u - 0.44) / 0.32;
+            const swayWave = Math.sin(bu * Math.PI * 1.15);
+            trunkLean = 8 + 34 * swayWave;
+            kneeBend = 20 + 18 * Math.sin(bu * Math.PI);
+            shoulderAngle = -85 + 75 * swayWave;
+            backArmAngle = -85 - 55 * swayWave;
+          } else {
+            // Stage 4: Return stepped foot cleanly together
+            const ru = (u - 0.76) / 0.24;
+            trunkLean = 8 * (1 - ru);
+            kneeBend = 18 * (1 - ru);
+            shoulderAngle = -90 - 70 * ru;
+            backArmAngle = shoulderAngle;
+          }
+        } else if (stype === 'TWO_STEPS_RETURN') {
+          const rProg = Math.min(1, u / 0.36);
+          const lProg = u < 0.28 ? 0 : Math.min(1, (u - 0.28) / 0.36);
+          const closeProg = u < 0.68 ? 0 : Math.min(1, (u - 0.68) / 0.32);
+
+          rightFootX = sc.touchX + sc.stepDeltaX * rProg;
+          rightFootY = sc.touchY + rightLatOffset + sc.stepDeltaY * rProg;
+          rightFootLiftM = rProg < 1 ? 0.09 * Math.sin(rProg * Math.PI) : 0;
+
+          const trailTargetX = sc.touchX + sc.stepDeltaX * (0.55 + 0.45 * closeProg);
+          const trailTargetY = sc.touchY + leftLatOffset + sc.stepDeltaY * (0.55 + 0.45 * closeProg);
+          leftFootX = sc.touchX + (trailTargetX - sc.touchX) * lProg;
+          leftFootY = sc.touchY + leftLatOffset + (trailTargetY - (sc.touchY + leftLatOffset)) * lProg;
+          leftFootLiftM = ((lProg > 0 && lProg < 1) || (closeProg > 0 && closeProg < 1))
+            ? 0.08 * Math.sin((closeProg > 0 ? closeProg : lProg) * Math.PI)
+            : 0;
+
+          trunkLean = 16 * (1 - closeProg);
+          kneeBend = 20 * (1 - closeProg);
+          shoulderAngle = -85 - 75 * closeProg;
+          backArmAngle = shoulderAngle;
+        } else if (stype === 'ONE_STEP_APART') {
+          rightFootX = sc.touchX + sc.stepDeltaX * ease;
+          rightFootY = sc.touchY + rightLatOffset + sc.stepDeltaY * ease;
+          rightFootLiftM = u < 0.45 ? 0.09 * Math.sin((u / 0.45) * Math.PI) : 0;
+          trunkLean = 14 * (1 - ease * 0.5);
+          kneeBend = 20 * (1 - ease * 0.4);
+          shoulderAngle = -90 - 55 * ease;
+          backArmAngle = shoulderAngle;
+        } else if (stype === 'TWO_STEPS_APART') {
+          const rProg = Math.min(1, u / 0.48);
+          const lProg = u < 0.40 ? 0 : Math.min(1, (u - 0.40) / 0.52);
+          rightFootX = sc.touchX + sc.stepDeltaX * rProg;
+          rightFootY = sc.touchY + rightLatOffset + sc.stepDeltaY * rProg;
+          rightFootLiftM = rProg < 1 ? 0.09 * Math.sin(rProg * Math.PI) : 0;
+
+          leftFootX = sc.touchX + sc.stepDeltaX * sc.trailStepRatio * lProg;
+          leftFootY = sc.touchY + leftLatOffset + sc.stepDeltaY * sc.trailStepRatio * lProg;
+          leftFootLiftM = (lProg > 0 && lProg < 1) ? 0.09 * Math.sin(lProg * Math.PI) : 0;
+
+          trunkLean = 18 * (1 - lProg * 0.55);
+          kneeBend = 22 * (1 - lProg * 0.45);
+          shoulderAngle = -85 - 50 * lProg;
+          backArmAngle = shoulderAngle;
+        } else if (stype === 'TWO_STEPS_ARM_CIRCLES') {
+          const rProg = Math.min(1, u / 0.48);
+          const lProg = u < 0.40 ? 0 : Math.min(1, (u - 0.40) / 0.52);
+          rightFootX = sc.touchX + sc.stepDeltaX * rProg;
+          rightFootY = sc.touchY + rightLatOffset + sc.stepDeltaY * rProg;
+          leftFootX = sc.touchX + sc.stepDeltaX * sc.trailStepRatio * lProg;
+          leftFootY = sc.touchY + leftLatOffset + sc.stepDeltaY * sc.trailStepRatio * lProg;
+          trunkLean = 22 * (1 - u * 0.5);
+          kneeBend = 22 * (1 - u * 0.5);
+          shoulderAngle = -80 - u * 680;
+          backArmAngle = shoulderAngle - 180;
+        } else if (stype === 'HAND_TOUCH' || stype === 'STEPS_INTO_HAND_TOUCH') {
+          const stepPhase = stype === 'STEPS_INTO_HAND_TOUCH' ? Math.min(1, u / 0.45) : 0;
+          const dropPhase = stype === 'STEPS_INTO_HAND_TOUCH' ? Math.max(0, (u - 0.35) / 0.65) : Math.min(1, u / 0.65);
+          const dropEase = 1 - Math.pow(1 - dropPhase, 2);
+
+          rightFootX = sc.touchX + sc.stepDeltaX * stepPhase;
+          rightFootY = sc.touchY + rightLatOffset + sc.stepDeltaY * stepPhase;
+          leftFootX = sc.touchX + sc.stepDeltaX * sc.trailStepRatio * stepPhase;
+          leftFootY = sc.touchY + leftLatOffset + sc.stepDeltaY * sc.trailStepRatio * stepPhase;
+
+          trunkLean = 18 + 56 * dropEase;
+          kneeBend = 34 + 34 * dropEase;
+          hipDropM = 0.24 * dropEase;
+          shoulderAngle = -65 + 58 * dropEase;
+          backArmAngle = shoulderAngle;
+          elbowBend = 6;
+          if (dropPhase >= 0.68) handTouchActive = true;
+        } else if (stype === 'FALL_TO_BACK' || stype === 'STEPS_INTO_FALL') {
+          const stepPhase = stype === 'STEPS_INTO_FALL' ? Math.min(1, u / 0.42) : 0;
+          const fallPhase = stype === 'STEPS_INTO_FALL' ? Math.max(0, (u - 0.32) / 0.68) : Math.min(1, u / 0.65);
+          const fallEase = 1 - Math.pow(1 - fallPhase, 2);
+
+          rightFootX = sc.touchX + sc.stepDeltaX * stepPhase;
+          rightFootY = sc.touchY + rightLatOffset + sc.stepDeltaY * stepPhase;
+          leftFootX = sc.touchX + sc.stepDeltaX * sc.trailStepRatio * stepPhase;
+          leftFootY = sc.touchY + leftLatOffset + sc.stepDeltaY * sc.trailStepRatio * stepPhase;
+
+          trunkLean = -14 - 72 * fallEase;
+          kneeBend = 32 + 28 * fallEase;
+          hipDropM = 0.54 * fallEase;
+          shoulderAngle = -95 - 50 * fallEase;
+          backArmAngle = shoulderAngle;
+          if (fallPhase >= 0.72) backFallActive = true;
+        }
+      }
+
+      return {
+        t,
+        facing: f,
+        leftFootX,
+        leftFootY,
+        rightFootX,
+        rightFootY,
+        airHeightM,
+        leftFootLiftM,
+        rightFootLiftM,
+        trunkLean,
+        kneeBend,
+        shoulderAngle,
+        backArmAngle,
+        elbowBend,
+        hipDropM,
+        bedDeflectM: 0,
+        handTouchActive,
+        backFallActive
+      };
+    }
+
+    function drawGymnastRig(ctx, pose, sc, originX, surfaceY, pxPerM) {
+      const f = pose.facing;
+      const scale = Math.max(0.75, Math.min(1.22, pxPerM / 64));
+
+      const shinLen = 23 * scale;
+      const thighLen = 24 * scale;
+      const torsoLen = 30 * scale;
+      const upperArmLen = 17 * scale;
+      const foreArmLen = 16 * scale;
+      const headR = 7.2 * scale;
+
+      const rad = (deg) => (deg * Math.PI) / 180;
+
+      const rAnkleX = originX + pose.rightFootX * pxPerM;
+      const rAnkleY = surfaceY - (pose.airHeightM + pose.rightFootLiftM) * pxPerM - 4 * scale;
+      const lAnkleX = originX + pose.leftFootX * pxPerM;
+      const lAnkleY = surfaceY - (pose.airHeightM + pose.leftFootLiftM) * pxPerM - 4 * scale;
+
+      const midAnkleX = (rAnkleX + lAnkleX) / 2;
+      const midAnkleY = (rAnkleY + lAnkleY) / 2;
+
+      const kneeRad = rad(pose.kneeBend);
+      const trunkRad = rad(pose.trunkLean);
+
+      const legHeight = (shinLen + thighLen) * Math.cos(kneeRad * 0.58);
+      const hipX = midAnkleX + f * Math.sin(trunkRad) * 5 * scale;
+      const hipY = Math.min(surfaceY - 5 * scale, midAnkleY - legHeight + pose.hipDropM * pxPerM);
+
+      const rKneeX = (rAnkleX + hipX) / 2 + f * Math.sin(kneeRad) * shinLen * 0.65;
+      const rKneeY = (rAnkleY + hipY) / 2;
+      const lKneeX = (lAnkleX + hipX) / 2 + f * Math.sin(kneeRad) * shinLen * 0.65;
+      const lKneeY = (lAnkleY + hipY) / 2;
+
+      const shoulderX = hipX + f * Math.sin(trunkRad) * torsoLen;
+      const shoulderY = hipY - Math.cos(trunkRad) * torsoLen;
+
+      const headX = shoulderX + f * Math.sin(trunkRad) * (headR + 4 * scale);
+      const headY = shoulderY - Math.cos(trunkRad) * (headR + 4 * scale);
+
+      const computeArm = (armDeg) => {
+        const aRad = rad(armDeg + pose.trunkLean * 0.45);
+        const elbowX = shoulderX + f * Math.sin(aRad) * upperArmLen;
+        const elbowY = shoulderY + Math.cos(aRad) * upperArmLen;
+        const fRad = aRad - rad(pose.elbowBend);
+        let handX = elbowX + f * Math.sin(fRad) * foreArmLen;
+        let handY = elbowY + Math.cos(fRad) * foreArmLen;
+        if (handY > surfaceY - 2) handY = surfaceY - 2;
+        return { elbowX, elbowY, handX, handY };
+      };
+
+      const frontArm = computeArm(pose.shoulderAngle);
+      const backArm = computeArm(pose.backArmAngle);
+
+      pose.shoulderXm = (shoulderX - originX) / pxPerM;
+      pose.hipXm = (hipX - originX) / pxPerM;
+      pose.handXm = (frontArm.handX - originX) / pxPerM;
+
+      const drawLimb = (x1, y1, x2, y2, width, color) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      };
+
+      const drawShoeSide = (ax, ay, color) => {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        const footW = 13 * scale;
+        const footH = 4.5 * scale;
+        const toeShift = f === 1 ? -3 * scale : -(footW - 3 * scale);
+        ctx.roundRect(ax + toeShift, ay - 0.5 * scale, footW, footH, 2.5);
+        ctx.fill();
+      };
+
+      ctx.save();
+
+      drawLimb(shoulderX, shoulderY, backArm.elbowX, backArm.elbowY, 5.2 * scale, '#64748b');
+      drawLimb(backArm.elbowX, backArm.elbowY, backArm.handX, backArm.handY, 4.4 * scale, '#64748b');
+
+      drawLimb(hipX, hipY, lKneeX, lKneeY, 6.8 * scale, '#475569');
+      drawLimb(lKneeX, lKneeY, lAnkleX, lAnkleY, 5.6 * scale, '#64748b');
+      drawShoeSide(lAnkleX, lAnkleY, '#94a3b8');
+
+      drawLimb(hipX, hipY, shoulderX, shoulderY, 10.5 * scale, '#f8fafc');
+      drawLimb(hipX, hipY, shoulderX, shoulderY, 7.5 * scale, '#0072ce');
+
+      drawLimb(hipX, hipY, rKneeX, rKneeY, 7.4 * scale, '#cbd5e1');
+      drawLimb(rKneeX, rKneeY, rAnkleX, rAnkleY, 6.2 * scale, '#f8fafc');
+      drawShoeSide(rAnkleX, rAnkleY, '#ffffff');
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(headX, headY, headR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#0072ce';
+      ctx.beginPath();
+      ctx.arc(headX + f * headR * 0.48, headY - headR * 0.1, 1.8 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      drawLimb(shoulderX, shoulderY, frontArm.elbowX, frontArm.elbowY, 5.6 * scale, '#e2e8f0');
+      drawLimb(frontArm.elbowX, frontArm.elbowY, frontArm.handX, frontArm.handY, 4.8 * scale, '#ffffff');
+
+      if (pose.handTouchActive) {
+        ctx.strokeStyle = '#f59e0b';
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.35)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(frontArm.handX, surfaceY - 1, 8 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      if (pose.backFallActive) {
+        ctx.strokeStyle = '#e11d48';
+        ctx.fillStyle = 'rgba(225, 29, 72, 0.32)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse((hipX + shoulderX) / 2, surfaceY - 2, 18 * scale, 6 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    // ============================================================================
+    // TRAMPOLINE (TRP) DUAL VIEWPORT RENDERER & OUTBOUNCE KINEMATICS
+    // ============================================================================
+    function drawTrampolineScene(t, isPreRoll = false) {
+      const wrapper = document.getElementById('canvas-wrapper');
+      const W = wrapper.clientWidth;
+      const H = wrapper.clientHeight;
+      ctx.clearRect(0, 0, W, H);
+
+      const cfg = DISCIPLINE_CONFIG.TRP;
+      const sc = state.scenario;
+
+      const splitY = Math.floor(H * 0.62);
+      const bedRestY = Math.floor(splitY * 0.76);
+      const deckHeight = splitY - bedRestY;
+
+      const bedPixelWidth = Math.floor(W * 0.56);
+      const bedLeftX = Math.floor((W - bedPixelWidth) / 2);
+      const pxPerM = bedPixelWidth / cfg.bedLengthM;
+      const padPxW = Math.max(14, 0.42 * pxPerM);
+
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, splitY);
+      bgGrad.addColorStop(0, '#0f172a');
+      bgGrad.addColorStop(1, '#1e293b');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, splitY);
+
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.07)';
+      ctx.lineWidth = 1;
+      for (let m = 0; m <= 4; m++) {
+        const gx = bedLeftX + m * pxPerM;
+        ctx.beginPath();
+        ctx.moveTo(gx, 14);
+        ctx.lineTo(gx, bedRestY);
+        ctx.stroke();
+      }
+
+      let pose = null;
+      if (!isPreRoll) {
+        pose = computeTrampolinePose(t, sc);
+      }
+
+      const bedDepressPx = pose ? Math.max(0, -pose.bedDeflectM * pxPerM) : 0;
+      const contactPxX = pose ? (bedLeftX + ((pose.leftFootX + pose.rightFootX) / 2) * pxPerM) : (bedLeftX + bedPixelWidth / 2);
+
+      const leftDeckEnd = bedLeftX - padPxW;
+      const rightDeckStart = bedLeftX + bedPixelWidth + padPxW;
+
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(0, bedRestY - 6, leftDeckEnd, deckHeight + 6);
+      ctx.fillRect(rightDeckStart, bedRestY - 6, W - rightDeckStart, deckHeight + 6);
+
+      ctx.fillStyle = '#e11d48';
+      ctx.fillRect(0, bedRestY - 6, leftDeckEnd, 5);
+      ctx.fillRect(rightDeckStart, bedRestY - 6, W - rightDeckStart, 5);
+
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '800 8px JetBrains Mono, monospace';
+      ctx.fillText('END DECK (1.0)', 6, bedRestY + 12);
+      ctx.textAlign = 'right';
+      ctx.fillText('END DECK (1.0)', W - 6, bedRestY + 12);
+      ctx.textAlign = 'left';
+
+      ctx.fillStyle = '#1d4ed8';
+      ctx.fillRect(leftDeckEnd, bedRestY - 2, padPxW, 12);
+      ctx.fillRect(bedLeftX + bedPixelWidth, bedRestY - 2, padPxW, 12);
+      ctx.strokeStyle = '#93c5fd';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(leftDeckEnd, bedRestY - 2, padPxW, 12);
+      ctx.strokeRect(bedLeftX + bedPixelWidth, bedRestY - 2, padPxW, 12);
+
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(bedLeftX, bedRestY + 6, bedPixelWidth, deckHeight - 6);
+
+      ctx.save();
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(bedLeftX, bedRestY);
+      if (bedDepressPx > 0.5) {
+        const clampedCx = Math.max(bedLeftX + 12, Math.min(bedLeftX + bedPixelWidth - 12, contactPxX));
+        ctx.quadraticCurveTo(clampedCx, bedRestY + bedDepressPx * 1.85, bedLeftX + bedPixelWidth, bedRestY);
+      } else {
+        ctx.lineTo(bedLeftX + bedPixelWidth, bedRestY);
+      }
+      ctx.stroke();
+
+      const midBedX = bedLeftX + bedPixelWidth / 2;
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(midBedX - 2, bedRestY - 2 + bedDepressPx * 0.7, 4, 4);
+      ctx.restore();
+
+      ctx.font = '600 8.5px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      [0, 1, 2.14, 3, 4.28].forEach(m => {
+        const tx = bedLeftX + m * pxPerM;
+        ctx.fillStyle = 'rgba(255,255,255,0.45)';
+        ctx.fillRect(tx - 0.5, splitY - 5, 1, 5);
+        ctx.fillStyle = m === 2.14 ? '#fca5a5' : '#cbd5e1';
+        ctx.fillText(m === 2.14 ? 'CENTER' : `${m.toFixed(1)}m`, tx, splitY - 7);
+      });
+      ctx.textAlign = 'left';
+
+      if (!isPreRoll && pose) {
+        drawGymnastRig(ctx, pose, sc, bedLeftX, bedRestY, pxPerM);
+
+        const phaseLabel = sc.hasOutbounce
+          ? (t < 0.18 ? 'FINAL SKILL' : (t < 0.68 ? 'OUTBOUNCE' : 'FINAL LANDING'))
+          : (t < 0.30 ? 'FINAL SKILL' : 'DIRECT LANDING');
+        ctx.save();
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(W - 128, 10, 118, 22, 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = phaseLabel === 'OUTBOUNCE' ? '#fbbf24' : '#38bdf8';
+        ctx.font = '800 9.5px JetBrains Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(phaseLabel, W - 69, 24);
+        ctx.restore();
+      } else {
+        drawPreRollOverlay(W, bedRestY);
+      }
+
+      // Lower Viewport: Top-Down Olympic Trampoline Bed & End Decks (Always Show Zone Lines)
+      ctx.fillStyle = '#0b1120';
+      ctx.fillRect(0, splitY, W, H - splitY);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(0, splitY, W, 2);
+
+      const planPadY = 14;
+      const planTop = splitY + planPadY;
+      const planH = H - splitY - planPadY * 2;
+      const planCenterY = planTop + planH / 2;
+      const totalWidthM = cfg.bedWidthM + cfg.padWidthM * 2;
+      const pxPerMY = planH / totalWidthM;
+      const bedPlanH = cfg.bedWidthM * pxPerMY;
+      const bedPlanTop = planCenterY - bedPlanH / 2;
+
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(0, planTop, leftDeckEnd, planH);
+      ctx.fillRect(rightDeckStart, planTop, W - rightDeckStart, planH);
+
+      ctx.fillStyle = '#e11d48';
+      ctx.fillRect(leftDeckEnd - 3, planTop, 3, planH);
+      ctx.fillRect(rightDeckStart, planTop, 3, planH);
+
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '800 8px JetBrains Mono, monospace';
+      ctx.fillText('END DECK (1.0)', 6, planCenterY + 3);
+      ctx.textAlign = 'right';
+      ctx.fillText('END DECK (1.0)', W - 6, planCenterY + 3);
+      ctx.textAlign = 'left';
+
+      ctx.fillStyle = '#1d4ed8';
+      ctx.fillRect(leftDeckEnd, planTop, bedPixelWidth + padPxW * 2, planH);
+      ctx.strokeStyle = '#93c5fd';
+      ctx.lineWidth = 1.4;
+      ctx.strokeRect(leftDeckEnd, planTop, bedPixelWidth + padPxW * 2, planH);
+
+      ctx.strokeStyle = 'rgba(203, 213, 225, 0.35)';
+      ctx.lineWidth = 1;
+      for (let sx = bedLeftX + 8; sx < bedLeftX + bedPixelWidth; sx += 14) {
+        ctx.beginPath();
+        ctx.moveTo(sx, planTop + 2);
+        ctx.lineTo(sx, bedPlanTop);
+        ctx.moveTo(sx, bedPlanTop + bedPlanH);
+        ctx.lineTo(sx, planTop + planH - 2);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(bedLeftX, bedPlanTop, bedPixelWidth, bedPlanH);
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(bedLeftX, bedPlanTop, bedPixelWidth, bedPlanH);
+
+      const boxW = 1.08 * pxPerM;
+      const boxH = 1.08 * pxPerMY;
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 1.6;
+      ctx.strokeRect(midBedX - boxW / 2, planCenterY - boxH / 2, boxW, boxH);
+
+      ctx.beginPath();
+      ctx.moveTo(midBedX - 10, planCenterY);
+      ctx.lineTo(midBedX + 10, planCenterY);
+      ctx.moveTo(midBedX, planCenterY - 10);
+      ctx.lineTo(midBedX, planCenterY + 10);
+      ctx.stroke();
+
+      ctx.fillStyle = '#1e3a8a';
+      ctx.font = '800 7.5px JetBrains Mono, monospace';
+      ctx.fillText('TRP BED (0.0)', bedLeftX + 6, bedPlanTop + 10);
+
+      const showPrintsT = sc.hasOutbounce ? 0.68 : 0.28;
+      if (!isPreRoll && pose && t >= showPrintsT) {
+        drawFootprintsTopDown(ctx, pose, sc, bedLeftX, planCenterY, pxPerM, pxPerMY);
+      }
+
+      if (state.submitted && pose) {
+        drawTrampolineHawkEyeLoupe(ctx, W, H, splitY, pose, sc, cfg, bedLeftX, planCenterY, pxPerM, pxPerMY, padPxW);
+      }
+    }
+
+    function computeTrampolinePose(t, sc) {
+      const f = sc.facing;
+      const leftLatOffset = -0.11 * f;
+      const rightLatOffset = 0.11 * f;
+
+      if (!sc.hasOutbounce) {
+        const basePose = computeGymnastPose(t, sc);
+        let bedDeflectM = 0;
+        if (!sc.landedOnEndDeck && t >= 0.28 && t < 0.52) {
+          const u = (t - 0.28) / 0.24;
+          bedDeflectM = -0.22 * Math.sin(u * Math.PI);
+        }
+        basePose.airHeightM += bedDeflectM;
+        basePose.bedDeflectM = bedDeflectM;
+        return basePose;
+      }
+
+      if (t < 0.18) {
+        const u = t / 0.18;
+        const inv = 1 - u;
+        return {
+          t,
+          facing: f,
+          leftFootX: sc.skillTouchX - 0.35 * inv * f,
+          leftFootY: sc.skillTouchY + leftLatOffset,
+          rightFootX: sc.skillTouchX - 0.32 * inv * f,
+          rightFootY: sc.skillTouchY + rightLatOffset,
+          airHeightM: 0.90 * inv * inv,
+          leftFootLiftM: 0,
+          rightFootLiftM: 0,
+          trunkLean: 14 * inv,
+          kneeBend: 22 * inv,
+          shoulderAngle: -155 + u * 65,
+          backArmAngle: -155 + u * 65,
+          elbowBend: 14,
+          hipDropM: 0,
+          bedDeflectM: 0,
+          handTouchActive: false,
+          backFallActive: false
+        };
+      }
+
+      if (t < 0.27) {
+        const u = (t - 0.18) / 0.09;
+        const bell = Math.sin(u * Math.PI);
+        const bedDeflectM = sc.landedOnEndDeck ? 0 : -0.26 * bell;
+        return {
+          t,
+          facing: f,
+          leftFootX: sc.skillTouchX,
+          leftFootY: sc.skillTouchY + leftLatOffset,
+          rightFootX: sc.skillTouchX,
+          rightFootY: sc.skillTouchY + rightLatOffset,
+          airHeightM: bedDeflectM,
+          leftFootLiftM: 0,
+          rightFootLiftM: 0,
+          trunkLean: 6 * (1 - u),
+          kneeBend: 26 * bell,
+          shoulderAngle: -90 - u * 70,
+          backArmAngle: -90 - u * 70,
+          elbowBend: 10,
+          hipDropM: 0,
+          bedDeflectM,
+          handTouchActive: false,
+          backFallActive: false
+        };
+      }
+
+      if (t < 0.68) {
+        const u = (t - 0.27) / 0.41;
+        const arc = Math.sin(u * Math.PI);
+        const curX = sc.skillTouchX + (sc.touchX - sc.skillTouchX) * u;
+        const curY = sc.skillTouchY + (sc.touchY - sc.skillTouchY) * u;
+        const obType = sc.outbounceInfo.type;
+
+        let trunkLean = 0;
+        let kneeBend = 0;
+        let shoulderAngle = -175;
+        let backArmAngle = -175;
+        let elbowBend = 6;
+
+        if (obType === 'CLEAN_STRAIGHT') {
+          trunkLean = 0;
+          kneeBend = 0;
+          shoulderAngle = -175 + arc * 15;
+          backArmAngle = shoulderAngle;
+        } else if (obType === 'SINGLE_ARM_CIRCLE') {
+          trunkLean = 0;
+          kneeBend = 0;
+          shoulderAngle = -175 - u * 360;
+          backArmAngle = shoulderAngle;
+        } else if (obType === 'BODY_SHAPE_BREAK') {
+          trunkLean = 36 * arc;
+          kneeBend = 34 * arc;
+          shoulderAngle = -125 + arc * 45;
+          backArmAngle = shoulderAngle;
+          elbowBend = 18;
+        } else if (obType === 'MULTI_ARM_CIRCLES') {
+          trunkLean = 6 * arc;
+          kneeBend = 6 * arc;
+          shoulderAngle = -175 - u * 720;
+          backArmAngle = shoulderAngle - 180;
+        }
+
+        return {
+          t,
+          facing: f,
+          leftFootX: curX,
+          leftFootY: curY + leftLatOffset,
+          rightFootX: curX,
+          rightFootY: curY + rightLatOffset,
+          airHeightM: 0.92 * arc,
+          leftFootLiftM: 0,
+          rightFootLiftM: 0,
+          trunkLean,
+          kneeBend,
+          shoulderAngle,
+          backArmAngle,
+          elbowBend,
+          hipDropM: 0,
+          bedDeflectM: 0,
+          handTouchActive: false,
+          backFallActive: false
+        };
+      }
+
+      const mappedT = 0.28 + ((t - 0.68) / 0.32) * 0.72;
+      const finalPose = computeGymnastPose(mappedT, sc);
+      finalPose.t = t;
+
+      let bedDeflectM = 0;
+      if (!sc.landedOnEndDeck && t >= 0.68 && t < 0.80) {
+        const u = (t - 0.68) / 0.12;
+        bedDeflectM = -0.22 * Math.sin(u * Math.PI);
+      }
+      finalPose.airHeightM += bedDeflectM;
+      finalPose.bedDeflectM = bedDeflectM;
+      return finalPose;
+    }
+
+    function drawTrampolineHawkEyeLoupe(ctx, W, H, splitY, pose, sc, cfg, bedLeftX, planCenterY, pxPerM, pxPerMY, padPxW) {
+      const zoom = 3.5;
+      const radius = Math.min(64, W * 0.12, H * 0.21);
+      const loupeX = radius + 16;
+      const loupeY = radius + 14;
+
+      const rightLatOffset = 0.11 * sc.facing;
+      let focusXm = sc.peakLeadX;
+      let focusYm = sc.peakLeadY + rightLatOffset;
+      if (sc.backX !== null) {
+        focusXm = sc.backX;
+        focusYm = sc.backY;
+      } else if (sc.handX !== null) {
+        focusXm = sc.handX;
+        focusYm = sc.handY;
+      }
+
+      const targetPxX = bedLeftX + focusXm * pxPerM;
+      const targetPxY = planCenterY + focusYm * pxPerMY;
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.9)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(loupeX, loupeY + radius);
+      ctx.lineTo(targetPxX, targetPxY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(targetPxX, targetPxY, 10, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(loupeX, loupeY, radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#090d16';
+      ctx.fill();
+      ctx.clip();
+
+      ctx.translate(loupeX, loupeY);
+      ctx.scale(zoom, zoom);
+      ctx.translate(-targetPxX, -targetPxY);
+
+      const bedPixelWidth = cfg.bedLengthM * pxPerM;
+      const planH = H - splitY - 28;
+      const planTop = planCenterY - planH / 2;
+      const bedPlanH = cfg.bedWidthM * pxPerMY;
+      const bedPlanTop = planCenterY - bedPlanH / 2;
+      const leftDeckEnd = bedLeftX - padPxW;
+      const rightDeckStart = bedLeftX + bedPixelWidth + padPxW;
+
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(0, planTop, leftDeckEnd, planH);
+      ctx.fillRect(rightDeckStart, planTop, W - rightDeckStart, planH);
+
+      ctx.fillStyle = '#1d4ed8';
+      ctx.fillRect(leftDeckEnd, planTop, bedPixelWidth + padPxW * 2, planH);
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(bedLeftX, bedPlanTop, bedPixelWidth, bedPlanH);
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(bedLeftX, bedPlanTop, bedPixelWidth, bedPlanH);
+
+      drawFootprintsTopDown(ctx, pose, sc, bedLeftX, planCenterY, pxPerM, pxPerMY);
+
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(loupeX, loupeY, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Only the 3.5x magnification pill (no VAR REVIEW title)
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(loupeX - 24, loupeY - radius - 6, 48, 16, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '800 9px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('3.5x', loupeX, loupeY - radius + 5);
+      ctx.restore();
+    }
+
+    function drawFootprintsTopDown(ctx, pose, sc, matLeftX, planCenterY, pxPerM, pxPerMY) {
+      const footL = Math.max(10, 0.26 * pxPerM);
+      const footW = Math.max(4, 0.10 * pxPerMY);
+      const f = sc.facing;
+      const leftLatOffset = -0.11 * f;
+      const rightLatOffset = 0.11 * f;
+
+      const drawShoe = (mX, mY, label, isGhost, borderColor = '#0f172a') => {
+        const cx = matLeftX + mX * pxPerM;
+        const cy = planCenterY + mY * pxPerMY;
+        ctx.save();
+        ctx.fillStyle = isGhost ? 'rgba(255,255,255,0.28)' : '#ffffff';
+        ctx.strokeStyle = isGhost ? 'rgba(15,23,42,0.5)' : borderColor;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.roundRect(cx - footL / 2, cy - footW / 2, footL, footW, 3);
+        ctx.fill();
+        ctx.stroke();
+
+        if (!isGhost) {
+          ctx.fillStyle = '#0072ce';
+          const toeX = f === -1 ? (cx - footL / 2 + 1.5) : (cx + footL / 2 - 3.5);
+          ctx.fillRect(toeX, cy - footW / 2 + 1, 2, footW - 2);
+
+          if (label && footL >= 12) {
+            ctx.fillStyle = '#0f172a';
+            ctx.font = '800 7px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, cx - f * 1.5, cy + 2.5);
+          }
+        }
+        ctx.restore();
+      };
+
+      const drawArrow = (x1, y1, x2, y2, color, dashed = false) => {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const len = Math.hypot(dx, dy);
+        if (len < 4) return;
+        const ang = Math.atan2(dy, dx);
+
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 1.6;
+        if (dashed) ctx.setLineDash([3, 2]);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const head = 5;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - head * Math.cos(ang - 0.45), y2 - head * Math.sin(ang - 0.45));
+        ctx.lineTo(x2 - head * Math.cos(ang + 0.45), y2 - head * Math.sin(ang + 0.45));
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      };
+
+      const initRightX = sc.touchX;
+      const initRightY = sc.touchY + rightLatOffset;
+      const initLeftX = sc.touchX;
+      const initLeftY = sc.touchY + leftLatOffset;
+      const peakRightX = sc.peakLeadX;
+      const peakRightY = sc.peakLeadY + rightLatOffset;
+
+      const hasLeadStep = Math.hypot(sc.stepDeltaX, sc.stepDeltaY) > 0.04;
+      const hasTrailStep = Math.hypot(pose.leftFootX - initLeftX, pose.leftFootY - initLeftY) > 0.04;
+
+      if (hasLeadStep && pose.t >= 0.42) {
+        drawShoe(initRightX, initRightY, '', true);
+
+        if ((sc.stability.type === 'STEP_RETURN' || sc.stability.type === 'STEP_BODY_RETURN' || sc.stability.type === 'HOP_STEP_RETURN') && pose.t >= 0.72) {
+          drawShoe(peakRightX, peakRightY, '', true, '#38bdf8');
+          drawArrow(
+            matLeftX + initRightX * pxPerM,
+            planCenterY + initRightY * pxPerMY,
+            matLeftX + peakRightX * pxPerM,
+            planCenterY + peakRightY * pxPerMY,
+            '#38bdf8',
+            false
+          );
+          drawArrow(
+            matLeftX + peakRightX * pxPerM,
+            planCenterY + (peakRightY + 0.04) * pxPerMY,
+            matLeftX + initRightX * pxPerM,
+            planCenterY + (initRightY + 0.04) * pxPerMY,
+            '#ffffff',
+            true
+          );
+        } else {
+          drawArrow(
+            matLeftX + initRightX * pxPerM,
+            planCenterY + initRightY * pxPerMY,
+            matLeftX + pose.rightFootX * pxPerM,
+            planCenterY + pose.rightFootY * pxPerMY,
+            '#38bdf8',
+            false
+          );
+        }
+      }
+
+      if (hasTrailStep && pose.t >= 0.55) {
+        drawShoe(initLeftX, initLeftY, '', true);
+        drawArrow(
+          matLeftX + initLeftX * pxPerM,
+          planCenterY + initLeftY * pxPerMY,
+          matLeftX + pose.leftFootX * pxPerM,
+          planCenterY + pose.leftFootY * pxPerMY,
+          '#ffffff',
+          false
+        );
+      }
+
+      drawShoe(pose.leftFootX, pose.leftFootY, 'L', false);
+      drawShoe(pose.rightFootX, pose.rightFootY, 'R', false);
+
+      if (pose.handTouchActive && pose.handXm !== undefined) {
+        const hx = matLeftX + pose.handXm * pxPerM;
+        ctx.fillStyle = '#f59e0b';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(hx, planCenterY + (sc.peakLeadY - 0.14) * pxPerMY, 4, 0, Math.PI * 2);
+        ctx.arc(hx, planCenterY + (sc.peakLeadY + 0.14) * pxPerMY, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      if (pose.backFallActive && pose.shoulderXm !== undefined && pose.hipXm !== undefined) {
+        const midBackX = matLeftX + ((pose.shoulderXm + pose.hipXm) / 2) * pxPerM;
+        const midBackY = planCenterY + sc.peakLeadY * pxPerMY;
+        const torsoPxL = Math.max(18, 0.52 * pxPerM);
+        const torsoPxW = Math.max(8, 0.28 * pxPerMY);
+        ctx.save();
+        ctx.fillStyle = 'rgba(225, 29, 72, 0.85)';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.roundRect(midBackX - torsoPxL / 2, midBackY - torsoPxW / 2, torsoPxL, torsoPxW, 5);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function drawHawkEyeLoupe(ctx, W, H, splitY, pose, sc, cfg, matLeftX, planCenterY, pxPerM, pxPerMY) {
+      const zoom = 3.5;
+      const radius = Math.min(68, W * 0.13, H * 0.22);
+      const loupeX = radius + 16;
+      const loupeY = radius + 14;
+
+      const rightLatOffset = 0.11 * sc.facing;
+      let focusXm = sc.peakLeadX + 0.13 * sc.facing;
+      let focusYm = sc.peakLeadY + rightLatOffset;
+
+      if (sc.zoneEval.initZone.overlapCm > 0) {
+        focusXm = sc.touchX + 0.13 * sc.facing;
+        focusYm = sc.touchY + (sc.touchY < 0 ? -0.11 : 0.11);
+      } else if (sc.backX !== null) {
+        focusXm = sc.backX;
+        focusYm = sc.backY;
+      } else if (sc.handX !== null) {
+        focusXm = sc.handX;
+        focusYm = sc.handY;
+      }
+
+      const targetPxX = matLeftX + focusXm * pxPerM;
+      const targetPxY = planCenterY + focusYm * pxPerMY;
+
+      ctx.save();
+
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.9)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(loupeX, loupeY + radius);
+      ctx.lineTo(targetPxX, targetPxY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(targetPxX, targetPxY, 10, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(loupeX, loupeY, radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#090d16';
+      ctx.fill();
+      ctx.clip();
+
+      ctx.translate(loupeX, loupeY);
+      ctx.scale(zoom, zoom);
+      ctx.translate(-targetPxX, -targetPxY);
+
+      const matPixelWidth = cfg.matLengthM * pxPerM;
+      const planH = (H - splitY - 28);
+      const planTop = planCenterY - planH / 2;
+
+      ctx.fillStyle = '#2563eb';
+      ctx.fillRect(matLeftX, planTop, matPixelWidth, planH);
+
+      const bW = 4.0 * pxPerM;
+      const bH = 2.0 * pxPerMY;
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(matLeftX, planCenterY - bH / 2, bW, bH);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(matLeftX, planCenterY - bH / 2, bW, bH);
+
+      if (!cfg.hasZoneA) {
+        const trackH = 2.0 * pxPerMY;
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(0, planCenterY - trackH / 2, matLeftX, trackH);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(0, planCenterY - trackH / 2, matLeftX, trackH);
+      }
+
+      if (cfg.hasZoneA) {
+        const aX = matLeftX + 0.70 * pxPerM;
+        const aW = 2.50 * pxPerM;
+        const aH = 1.00 * pxPerMY;
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(aX, planCenterY - aH / 2, aW, aH);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.4;
+        ctx.strokeRect(aX, planCenterY - aH / 2, aW, aH);
+      }
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.6;
+      ctx.strokeRect(matLeftX, planTop, matPixelWidth, planH);
+
+      drawFootprintsTopDown(ctx, pose, sc, matLeftX, planCenterY, pxPerM, pxPerMY);
+
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(loupeX, loupeY, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Only the 3.5x magnification pill (no VAR REVIEW title)
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(loupeX - 24, loupeY - radius - 6, 48, 16, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '800 9px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('3.5x', loupeX, loupeY - radius + 5);
+      ctx.restore();
+    }
+  

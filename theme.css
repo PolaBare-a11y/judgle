@@ -1,0 +1,337 @@
+/* ==========================================================================
+   JUDGLE SUITE - THEME TOKENS
+   Base: jed.html World Gymnastics ribbon palette.
+   Modes are switched with <html data-theme="dark|light|mono"> (see theme.js).
+   Every page and component reads these variables; never hard-code colours.
+   ========================================================================== */
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Ribbon palette */
+  --fig-blue:   #4495e5;
+  --fig-purple: #7d5fb3;
+  --fig-pink:   #dc5183;
+  --fig-green:  #9bd98b;
+  --fig-orange: #e68a00;
+  --fig-red:    #f44336;
+  --fig-teal:   #3dbfae;
+
+  /* Tinted fills for badges / icon tiles */
+  --fig-blue-bg:   rgba(68, 149, 229, 0.15);
+  --fig-purple-bg: rgba(125, 95, 179, 0.18);
+  --fig-pink-bg:   rgba(220, 81, 131, 0.14);
+  --fig-green-bg:  rgba(155, 217, 139, 0.14);
+  --fig-orange-bg: rgba(230, 138, 0, 0.14);
+  --fig-teal-bg:   rgba(61, 191, 174, 0.14);
+
+  /* Surfaces */
+  --bg-dark:       #0a0a0f;
+  --bar-bg:        #111118;
+  --card-bg:       #14141f;
+  --surface-2:     #1a1926;
+  --surface-3:     #1e1c2e;
+  --surface-deep:  #0d0d14;
+  --surface-inset: #08080d;
+  --border-col:    #2c2940;
+  --border-hover:  #4a4668;
+
+  /* Text */
+  --text-main:  #ffffff;
+  --text-sub:   #8a8a9e;
+  --text-muted: #5f5d78;
+  --on-accent:  #ffffff;
+  --on-light-accent: #111111;
+
+  /* Soft tints used by pills / dropzones / hovers */
+  --accent-soft-bg:    rgba(68, 149, 229, 0.15);
+  --fault-pill-bg:     rgba(230, 138, 0, 0.16);
+  --dropzone-soft-bg:  rgba(68, 149, 229, 0.05);
+  --dropzone-hover-bg: rgba(68, 149, 229, 0.12);
+  --landing-row-bg:    rgba(220, 81, 131, 0.08);
+  --danger-btn-bg:     #2a1b24;
+  --dot-shadow:        rgba(125, 95, 179, 0.8);
+
+  /* 2x3 grid row bands */
+  --band-top-color: var(--fig-green);
+  --band-top-bg:    rgba(155, 217, 139, 0.12);
+  --band-mid-color: var(--fig-blue);
+  --band-mid-bg:    rgba(68, 149, 229, 0.12);
+  --band-bot-color: var(--fig-orange);
+  --band-bot-bg:    rgba(230, 138, 0, 0.12);
+
+  --shadow-card:  0 4px 14px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.45);
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Monochromatic (high-contrast greyscale) */
+[data-theme="mono"] {
+  --fig-blue:   #d4d4dc;
+  --fig-purple: #8e8e9e;
+  --fig-pink:   #b0b0be;
+  --fig-green:  #f2f2f7;
+  --fig-orange: #ffffff;
+  --fig-red:    #9e9eae;
+  --fig-teal:   #c4c4cf;
+
+  --fig-blue-bg:   rgba(255, 255, 255, 0.12);
+  --fig-purple-bg: rgba(255, 255, 255, 0.10);
+  --fig-pink-bg:   rgba(255, 255, 255, 0.10);
+  --fig-green-bg:  rgba(255, 255, 255, 0.12);
+  --fig-orange-bg: rgba(255, 255, 255, 0.14);
+  --fig-teal-bg:   rgba(255, 255, 255, 0.10);
+
+  --bg-dark:       #09090b;
+  --bar-bg:        #111114;
+  --card-bg:       #141417;
+  --surface-2:     #1b1b20;
+  --surface-3:     #1f1f25;
+  --surface-deep:  #0e0e11;
+  --surface-inset: #08080a;
+  --border-col:    #2b2b33;
+  --border-hover:  #4b4b57;
+
+  --text-sub:   #8e8e98;
+  --text-muted: #62626c;
+  --on-accent:  #111111;
+
+  --accent-soft-bg:    rgba(255, 255, 255, 0.12);
+  --fault-pill-bg:     rgba(255, 255, 255, 0.16);
+  --dropzone-soft-bg:  rgba(255, 255, 255, 0.04);
+  --dropzone-hover-bg: rgba(255, 255, 255, 0.10);
+  --landing-row-bg:    rgba(255, 255, 255, 0.07);
+  --danger-btn-bg:     #232329;
+  --dot-shadow:        rgba(255, 255, 255, 0.65);
+  --band-top-bg: rgba(255, 255, 255, 0.10);
+  --band-mid-bg: rgba(255, 255, 255, 0.07);
+  --band-bot-bg: rgba(255, 255, 255, 0.04);
+}
+
+/* Light (same ribbon hues, darkened for contrast on white) */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --fig-blue:   #2f7fd0;
+  --fig-purple: #6a4aa5;
+  --fig-pink:   #c93d70;
+  --fig-green:  #3f9a38;
+  --fig-orange: #c77700;
+  --fig-red:    #d93025;
+  --fig-teal:   #1f9c8c;
+
+  --fig-blue-bg:   rgba(47, 127, 208, 0.12);
+  --fig-purple-bg: rgba(106, 74, 165, 0.12);
+  --fig-pink-bg:   rgba(201, 61, 112, 0.12);
+  --fig-green-bg:  rgba(63, 154, 56, 0.13);
+  --fig-orange-bg: rgba(199, 119, 0, 0.13);
+  --fig-teal-bg:   rgba(31, 156, 140, 0.13);
+
+  --bg-dark:       #f4f6f9;
+  --bar-bg:        #ffffff;
+  --card-bg:       #ffffff;
+  --surface-2:     #eef1f6;
+  --surface-3:     #e6eaf2;
+  --surface-deep:  #f0f3f8;
+  --surface-inset: #f7f9fc;
+  --border-col:    #d9dfe9;
+  --border-hover:  #b4bdcc;
+
+  --text-main:  #0f172a;
+  --text-sub:   #566176;
+  --text-muted: #8a94a6;
+  --on-light-accent: #ffffff;
+
+  --accent-soft-bg:    rgba(47, 127, 208, 0.12);
+  --fault-pill-bg:     rgba(199, 119, 0, 0.14);
+  --dropzone-soft-bg:  rgba(47, 127, 208, 0.05);
+  --dropzone-hover-bg: rgba(47, 127, 208, 0.10);
+  --landing-row-bg:    rgba(201, 61, 112, 0.07);
+  --danger-btn-bg:     #fbe9ef;
+  --dot-shadow:        rgba(106, 74, 165, 0.6);
+  --band-top-bg: rgba(63, 154, 56, 0.12);
+  --band-mid-bg: rgba(47, 127, 208, 0.12);
+  --band-bot-bg: rgba(199, 119, 0, 0.12);
+
+  --shadow-card:  0 2px 10px rgba(15, 23, 42, 0.07);
+  --shadow-hover: 0 6px 18px rgba(15, 23, 42, 0.12);
+}
+
+html { background: var(--bg-dark); }
+
+/* ==========================================================================
+   SHARED SHELL - home button + footer (built by theme.js)
+   Page footer text is set once per page with:
+     <meta name="jg-footer" content="Page-specific line">
+   Optional: put <div data-jg-footer-mount></div> where the footer should sit
+   (default: end of <body>). Add data-no-home to <body> to omit the home button.
+   ========================================================================== */
+.jg-home, .jg-help {
+  position: fixed; top: 6px; left: 8px; z-index: 60;
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px; text-decoration: none;
+  background: var(--surface-3); border: 1px solid var(--border-col); color: var(--text-sub);
+  transition: color .15s ease, border-color .15s ease, transform .08s ease;
+}
+.jg-home:hover, .jg-home:focus-visible, .jg-help:hover, .jg-help:focus-visible { color: var(--fig-blue); border-color: var(--fig-blue); }
+.jg-home:active, .jg-help:active { transform: scale(.94); }
+
+/* Leave room for the home button in top bars */
+body .status-bar { padding-left: 52px; padding-right: 52px; }
+
+/* Hide the home button on full-screen live judging / playback stages */
+html:has(#judgingStage:not(.hidden)) .jg-home,
+html:has(#judgingStage:not(.hidden)) .jg-help,
+html:has(#judgingStage:not(.hidden)) .jg-help-btn,
+html:has(#playbackOverlayStage:not(.hidden)) .jg-home,
+html:has(#playbackOverlayStage:not(.hidden)) .jg-help,
+html:has(#playbackOverlayStage:not(.hidden)) .jg-help-btn,
+html:has(#gridScreen:not(.hidden)) .jg-home,
+html:has(#gridScreen:not(.hidden)) .jg-help,
+html:has(#gridScreen:not(.hidden)) .jg-help-btn,
+html:has(#swipeScreen:not(.hidden)) .jg-home,
+html:has(#swipeScreen:not(.hidden)) .jg-help,
+html:has(#swipeScreen:not(.hidden)) .jg-help-btn,
+html:has(#multiTouchScreen:not(.hidden)) .jg-home,
+html:has(#multiTouchScreen:not(.hidden)) .jg-help,
+html:has(#multiTouchScreen:not(.hidden)) .jg-help-btn,
+html:has(#recognizerScreen:not(.hidden)) .jg-home,
+html:has(#recognizerScreen:not(.hidden)) .jg-help,
+html:has(#recognizerScreen:not(.hidden)) .jg-help-btn,
+html:fullscreen .jg-home,
+html:fullscreen .jg-help,
+html:fullscreen .jg-help-btn { display: none; }
+
+.jg-footer {
+  width: 100%; flex-shrink: 0; margin-top: auto;
+  padding: .65rem 1rem .8rem; text-align: center;
+  font: .72rem/1.45 var(--font-ui); color: var(--text-sub);
+  border-top: 1px solid var(--border-col);
+  user-select: none; -webkit-user-select: none;
+}
+.jg-footer strong { color: var(--fig-purple); font-weight: 700; }
+.jg-footer-note { margin-top: 2px; }
+
+/* ==========================================================================
+   HELP BUTTON + HOW-TO SHEET (built by js/judgle-help.js from data/help.js)
+   ========================================================================== */
+.jg-help-btn {
+  position: fixed; top: 6px; right: 8px; z-index: 60;
+  width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px; cursor: pointer; padding: 0;
+  background: var(--surface-3); border: 1px solid var(--border-col); color: var(--text-sub);
+  font: 800 15px/1 var(--font-ui);
+  transition: color .15s ease, border-color .15s ease, transform .08s ease;
+}
+.jg-help-btn:hover, .jg-help-btn:focus-visible { color: var(--fig-blue); border-color: var(--fig-blue); }
+.jg-help-btn:active { transform: scale(.94); }
+
+.jg-help-overlay {
+  position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(5, 5, 10, .66); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+}
+.jg-help-overlay[hidden] { display: none; }
+.jg-help-sheet {
+  width: 100%; max-width: 580px; max-height: 88vh; max-height: 88dvh; display: flex; flex-direction: column;
+  background: var(--card-bg); color: var(--text-main); font-family: var(--font-ui);
+  border: 1px solid var(--border-col); border-radius: 16px 16px 0 0; box-shadow: 0 -10px 40px rgba(0, 0, 0, .45);
+  animation: jgHelpUp .22s ease;
+}
+@keyframes jgHelpUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (min-width: 640px) {
+  .jg-help-overlay { align-items: center; }
+  .jg-help-sheet { border-radius: 16px; max-height: 80vh; }
+}
+.jg-help-head { display: flex; justify-content: space-between; gap: 12px; padding: 16px 16px 10px; }
+.jg-help-kicker { font-size: .68rem; font-weight: 800; letter-spacing: 1.4px; color: var(--fig-blue); }
+.jg-help-head h2 { margin: 2px 0 4px; font-size: 1.15rem; font-weight: 800; }
+.jg-help-purpose { margin: 0; font-size: .82rem; line-height: 1.4; color: var(--text-sub); }
+.jg-help-close {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+  background: var(--surface-3); border: 1px solid var(--border-col); color: var(--text-sub); font-size: 14px;
+}
+.jg-help-close:hover { color: var(--fig-red); border-color: var(--fig-red); }
+.jg-help-tabs { display: flex; gap: 4px; padding: 0 12px; border-bottom: 1px solid var(--border-col); }
+.jg-help-tab {
+  padding: 8px 12px; margin-bottom: -1px; background: none; border: 0; border-bottom: 2px solid transparent;
+  color: var(--text-sub); font: 700 .8rem var(--font-ui); cursor: pointer;
+}
+.jg-help-tab[aria-selected="true"] { color: var(--text-main); border-bottom-color: var(--fig-blue); }
+.jg-help-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 14px 16px; font-size: .86rem; line-height: 1.5; text-align: left; }
+.jg-help-steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+.jg-help-steps li { position: relative; margin: 0 0 10px; padding-left: 34px; counter-increment: s; }
+.jg-help-steps li::before {
+  content: counter(s); position: absolute; left: 0; top: 0; width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--fig-blue-bg); color: var(--fig-blue); font-weight: 800; font-size: .75rem;
+}
+.jg-help-group { margin-bottom: 14px; }
+.jg-help-group h3 { margin: 0 0 6px; font-size: .7rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--text-sub); }
+.jg-help-rows { display: grid; grid-template-columns: minmax(104px, 36%) 1fr; gap: 6px 10px; align-items: start; }
+.jg-help-key {
+  justify-self: start; padding: 2px 8px; border-radius: 6px; background: var(--surface-3); border: 1px solid var(--border-col);
+  font: 700 .74rem/1.4 var(--font-mono);
+}
+.jg-help-tips { margin: 0; padding-left: 18px; }
+.jg-help-tips li { margin-bottom: 8px; }
+.jg-help-tips li::marker { color: var(--fig-orange); }
+.jg-help-empty { color: var(--text-sub); }
+.jg-help-foot {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 16px; border-top: 1px solid var(--border-col);
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.jg-help-check { display: inline-flex; align-items: center; gap: 6px; font-size: .75rem; color: var(--text-sub); cursor: pointer; }
+.jg-help-got {
+  margin-left: auto; padding: 8px 18px; border: 0; border-radius: 8px; cursor: pointer;
+  background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple)); color: var(--on-accent); font: 700 .85rem var(--font-ui);
+}
+.jg-help-rules { flex-basis: 100%; font-size: .68rem; color: var(--text-sub); }
+
+@media (max-width: 480px) {
+  body .status-bar { gap: 6px; padding-left: 46px; padding-right: 46px; }
+  body .status-bar .btn-header { padding: 4px 7px; font-size: 10.5px; }
+}
+
+/* ---- Help button (top-right) and help sheet ---- */
+.jg-help { left: auto; right: 8px; font: 700 16px/1 var(--font-ui); cursor: pointer; }
+
+.jg-sheet-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.55); backdrop-filter: blur(3px); }
+.jg-sheet-overlay[hidden] { display: none; }
+.jg-sheet {
+  width: 100%; max-width: 560px; max-height: 86vh; max-height: 86dvh; display: flex; flex-direction: column;
+  background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-col);
+  border-radius: 16px 16px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,.45); font-family: var(--font-ui);
+  animation: jgSheetUp .22s ease-out;
+}
+@keyframes jgSheetUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (min-width: 640px) {
+  .jg-sheet-overlay { align-items: center; padding: 16px; }
+  .jg-sheet { border-radius: 14px; box-shadow: 0 16px 50px rgba(0,0,0,.5); }
+}
+.jg-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px 6px; }
+.jg-sheet-title { margin: 0; font-size: 1.05rem; font-weight: 800; }
+.jg-sheet-x { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border-col); background: var(--surface-3); color: var(--text-sub); cursor: pointer; font-size: .85rem; }
+.jg-sheet-x:hover { color: var(--text-main); }
+.jg-tabs { display: flex; gap: 6px; padding: 6px 16px 0; border-bottom: 1px solid var(--border-col); }
+.jg-tab { padding: 8px 12px; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--text-sub); font: 700 .82rem var(--font-ui); cursor: pointer; }
+.jg-tab.active { color: var(--fig-blue); border-bottom-color: var(--fig-blue); }
+.jg-sheet-body { padding: 14px 16px; overflow-y: auto; flex: 1; font-size: .88rem; line-height: 1.5; }
+.jg-panel[hidden] { display: none; }
+.jg-purpose { margin: 0 0 12px; color: var(--text-sub); }
+.jg-steps { margin: 0; padding-left: 1.3rem; } .jg-steps li { margin-bottom: 8px; }
+.jg-steps li::marker { color: var(--fig-blue); font-weight: 800; }
+.jg-group { margin: 12px 0 6px; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--fig-purple); }
+.jg-group:first-child { margin-top: 0; }
+.jg-rows { display: flex; flex-direction: column; gap: 4px; }
+.jg-row { display: flex; gap: 10px; padding: 6px 10px; background: var(--surface-2); border: 1px solid var(--border-col); border-radius: 8px; }
+.jg-k { flex: 0 0 38%; font-weight: 700; } .jg-v { color: var(--text-sub); }
+.jg-tips { margin: 0; padding-left: 1.2rem; } .jg-tips li { margin-bottom: 8px; }
+.jg-tips li::marker { color: var(--fig-orange); }
+.jg-rules { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--border-col); font-size: .75rem; color: var(--text-muted); }
+.jg-sheet-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 16px 14px; border-top: 1px solid var(--border-col); }
+.jg-auto { font-size: .78rem; color: var(--text-sub); cursor: pointer; }
+.jg-sheet-ok { padding: 8px 18px; border: 0; border-radius: 8px; cursor: pointer; font: 800 .85rem var(--font-ui); color: var(--on-accent); background: linear-gradient(135deg, var(--fig-blue), var(--fig-purple)); }
+.jg-help:focus-visible, .jg-tab:focus-visible, .jg-sheet-ok:focus-visible, .jg-sheet-x:focus-visible { outline: 2px solid var(--fig-blue); outline-offset: 2px; }
