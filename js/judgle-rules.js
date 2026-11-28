@@ -2,18 +2,25 @@
    JUDGLE RULES - single source of truth for scoring rules used across the suite.
    Edit values here; every tool picks them up. Run tests/rules-test.html after changes.
 
-   STATUS: values below were consolidated from the existing tools and are
-   marked UNVERIFIED against the current FIG Trampoline Code of Points.
-   Set COP.status to 'verified' (and fill in edition + references) once checked.
+   STATUS: verified against the FIG Trampoline Gymnastics Code of Points 2025-2028 and
+   Newsletters 31, 32 and 33 (newsletters take precedence over the CoP text).
    ========================================================================== */
 (function (root) {
   'use strict';
 
   var COP = {
-    edition: 'FIG Trampoline Code of Points (edition to be confirmed)',
-    status: 'unverified',
+    edition: 'FIG Trampoline Gymnastics Code of Points 2025-2028, with Newsletters 31, 32 and 33',
+    status: 'verified',
+    note: 'Newsletters take precedence over the Code of Points text. HD uses the scale in force from 1 Nov 2026.',
     references: {
-      // e.g. landingScale: 'CoP Art. xx.x' - add as each rule is verified
+      skillScale:   'TRA 20.1, TUM 19.1, DMT 19.1 (0.0 to 0.5 per element)',
+      landingScale: 'TRA 20.2.2, TUM 19.2.2, DMT 19.2.2 (0.1-0.3, 0.5, 1.0)',
+      baseScore:    'Maximum mark for interrupted exercises, CJP duties (TRA, TUM 18.7, DMT 18.7)',
+      greaterFault: 'TRA 20.2.2: a single deduction for the greater fault only',
+      hd:           'TRA 22 and Newsletter 32 (0.1 / 0.3 / 0.5 from 1 Nov 2026)',
+      zoneChange:   'TUM 18.8.2, DMT 18.8.3 (+0.2 stepping into a worse zone)',
+      tumTrack:     'TUM 15.3 (0.4 CJP penalty when the last element is not landed in the landing area)',
+      stability:    'Newsletter 32 Q&A 1 (turning before totally stable: 0.2 TRA, 0.3 TUM/DMT)'
     }
   };
 
@@ -53,6 +60,33 @@
     var base = baseScore(disc, performed);
     return { base: base, totalDeduct: totalDeduct, netScore: Math.max(0, round1(base - totalDeduct)), landingActive: landingActive };
   }
+
+  /* TRA landing: the outbounce and landing-movement deductions (together at most 0.3) are replaced
+     by a single deduction when a greater fault occurs (hand touch 0.5, fall / off the bed 1.0). */
+  function trpLanding(outbounce, stability) {
+    var ob = round1(outbounce || 0), st = round1(stability || 0);
+    if (st >= 0.5) return { outbounce: 0, stability: st, total: st, greaterFault: true };
+    return { outbounce: ob, stability: st, total: round1(Math.min(0.3, ob + st)), greaterFault: false };
+  }
+
+  /* Horizontal displacement (TRA). Scale in force from 1 Nov 2026 (Newsletter 32).
+     Zones as fractions of the half-length / half-width of the bed:
+       centre |u|<=0.28 and |v|<=0.5 -> 0.0 ; inner sides 0.28<|u|<=0.5 (middle row) -> 0.1
+       top/bottom middle and side middles -> 0.3 ; four corners -> 0.5 */
+  var HD_SCALE = { centre: 0.0, inner: 0.1, edge: 0.3, corner: 0.5 };
+  function hdZone(xCm, yCm, halfLengthCm, halfWidthCm) {
+    var u = Math.abs(xCm) / (halfLengthCm || 214), v = Math.abs(yCm) / (halfWidthCm || 107);
+    if (v > 0.5) return u > 0.5 ? 'corner' : 'edge';
+    if (u > 0.5) return 'edge';
+    return u > 0.28 ? 'inner' : 'centre';
+  }
+  function hdDeduction(xCm, yCm, halfLengthCm, halfWidthCm) { return HD_SCALE[hdZone(xCm, yCm, halfLengthCm, halfWidthCm)]; }
+
+  /* DMT / TUM: stepping completely out of the landing area means a worse zone was crossed,
+     unless the gymnast started in the worst zone already. */
+  var ZONE_CHANGE_PENALTY = 0.2;
+  var TUM_TRACK_PENALTY = 0.4;
+  function exitZoneChange(initialZoneRank, worstZoneRank) { return initialZoneRank < worstZoneRank ? ZONE_CHANGE_PENALTY : 0.0; }
 
   /* Colour band for a deduction: 0.0-0.1 green, 0.2-0.3 orange, above red */
   function severity(v) {
@@ -100,6 +134,8 @@
     SKILL_SCALE: SKILL_SCALE, LANDING_SCALE: LANDING_SCALE, SWIPE_LABELS: SWIPE_LABELS,
     round1: round1, maxSkills: maxSkills, fullName: fullName, isLandingActive: isLandingActive,
     baseScore: baseScore, computeRoutine: computeRoutine, severity: severity,
+    trpLanding: trpLanding, HD_SCALE: HD_SCALE, hdZone: hdZone, hdDeduction: hdDeduction,
+    ZONE_CHANGE_PENALTY: ZONE_CHANGE_PENALTY, TUM_TRACK_PENALTY: TUM_TRACK_PENALTY, exitZoneChange: exitZoneChange,
     digitValue: digitValue, swipeValue: swipeValue, multitouchValue: multitouchValue, keyboardValue: keyboardValue,
     formatDeduction: function (v) { return '-' + Number(v).toFixed(1); },
     formatScore: function (v) { return Number(v).toFixed(1); }

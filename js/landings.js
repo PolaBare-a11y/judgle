@@ -16,7 +16,7 @@
 
       // --- Step Completely Out of Landing Area Probability (DMT & TUM) ---
       // Note: Stepping completely out of the landing area is a 1.0 STABILITY deduction
-      // (and does NOT count as a worse-zone step).
+      // (a worse zone is assumed to have been crossed, so +0.2 applies unless the gymnast started in the worst zone).
       completelyOutStepProb: 0.14,     // 14% chance on DMT/TUM of landing inside the mat and stepping COMPLETELY off (1.0 stability)
 
       // --- Clean Stick Override Probability ---
@@ -28,7 +28,7 @@
         BODY_SWAY: 0.12,               // 0.1: Distinct upper-body / trunk sway without stepping (0.1)
         STEP_BODY_RETURN: 0.20,        // 0.2: 1 step (0.1) + distinct pause + body sway (0.1) + return together (0.0)
         TWO_STEPS_RETURN: 0.14,        // 0.2: 2 steps (0.2) + foot returned closed together (0.0)
-        UNCLOSED_FINISH: 0.16,         // 0.3 on DMT/TUM, 0.2 on TRP: feet left apart at end regardless of step count
+        UNCLOSED_FINISH: 0.16,         // 0.3 on DMT/TUM, 0.2 on TRP: turned to the judges before being totally stable
         TWO_STEPS_ARM_CIRCLES: 0.08,   // 0.3 on DMT/TUM, capped at 0.2 max on TRP: 2 steps + arm circles (3 movements)
         STEPS_TO_HAND_TOUCH: 0.06,     // 0.5: Steps into hand touch or direct hand touch (greater deduction counts)
         STEPS_TO_FALL: 0.06            // 1.0: Steps into fall to back/seat or direct fall (greater deduction counts)
@@ -137,7 +137,7 @@
       },
       {
         label: 'DMT: Zone C → Completely Off Mat (1.0 +0.0 + 1.0 = 2.0)',
-        note: 'Stepping completely outside the 3.0m × 6.0m mat is a 1.0 Stability deduction and does NOT count as a worse zone (+0.0).',
+        note: 'Stepping completely outside the 3.0m × 6.0m mat is a 1.0 Stability deduction. Starting in Zone C there is no worse zone to move into, so there is no zone change (+0.0).',
         bp: { d: 'DMT', f: -1, tx: 3.50, ty: 1.24, sx: 0.0, sy: 0.48, st: 'COMPLETELY_OUT_STABILITY' }
       },
       {
@@ -151,8 +151,8 @@
         bp: { d: 'TUM', f: -1, tx: -0.36, ty: 0.0, sx: 0.74, sy: 0.0, st: 'ONE_STEP_RETURN' }
       },
       {
-        label: 'TUM: 2 Steps Left Unclosed Apart (0.0 +0.0 + 0.3 = 0.3)',
-        note: 'Unclosed finish (feet apart at end) evaluates to 0.3 on TUM/DMT regardless of whether 1 or 2 steps were taken.',
+        label: 'TUM: 2 Steps, Not Stable Before Turning (0.0 +0.0 + 0.3 = 0.3)',
+        note: 'Turning to the judges before being totally stable evaluates to 0.3 on TUM/DMT (0.2 on TRP), however many steps were taken.',
         bp: { d: 'TUM', f: -1, tx: 1.75, ty: 0.0, sx: -0.68, sy: 0.0, st: 'UNCLOSED_FINISH', sub: 'TWO_STEPS_APART' }
       },
       {
@@ -166,9 +166,19 @@
         bp: { d: 'TRP', f: -1, ob: true, obt: 'CLEAN_STRAIGHT', tx: 2.30, ty: 0.0, sx: -0.54, sy: 0.0, st: 'TWO_STEPS_ARM_CIRCLES' }
       },
       {
-        label: 'TRP: Outbounce Shape Break + End-Deck Step (0.1 + 1.0 → 1.0 Max)',
-        note: 'Outbounce pike break (0.1) + stepping onto the end deck (1.0) is strictly capped at 1.0 maximum total deduction on TRP.',
+        label: 'TRP: Outbounce Shape Break + End-Deck Step (0.1 + 1.0 → 1.0, greater fault only)',
+        note: 'Outbounce pike break (0.1) + stepping onto the end deck (1.0): a single deduction for the greater fault only applies, so the total is 1.0.',
         bp: { d: 'TRP', f: 1, ob: true, obt: 'BODY_SHAPE_BREAK', tx: 3.92, ty: 0.0, sx: 0.56, sy: 0.0, st: 'ONE_STEP_RETURN' }
+      },
+      {
+        label: 'TRP: Outbounce Shape Break + Hand Touch (0.1 + 0.5 → 0.5, greater fault only)',
+        note: 'A hand touch (0.5) is a greater fault than the outbounce shape break (0.1). A single deduction for the greater fault only applies, so the total is 0.5, not 0.6.',
+        bp: { d: 'TRP', f: 1, ob: true, obt: 'BODY_SHAPE_BREAK', tx: 2.05, ty: 0.0, sx: 0.0, sy: 0.0, st: 'STEPS_TO_HAND_TOUCH', sub: 'HAND_TOUCH' }
+      },
+      {
+        label: 'DMT: Zone A → Completely Off Mat (0.0 +0.2 + 1.0 = 1.2)',
+        note: 'Leaving the landing area from Zone A means a worse zone was crossed on the way out (+0.2 zone change), plus 1.0 stability for leaving the landing area.',
+        bp: { d: 'DMT', f: -1, tx: 2.00, ty: 0.30, sx: 0.0, sy: 1.40, st: 'COMPLETELY_OUT_STABILITY' }
       }
     ];
 
@@ -715,14 +725,14 @@
         stabGroup.style.display = (state.mode === 'PRIMARY') ? 'none' : 'block';
         document.getElementById('stab-group-title').textContent = '2. Bed / End-Deck Stability';
         document.getElementById('stab-rule-hint').textContent =
-          'Stick / Return (0.0) • 1 Move (0.1) • 2+ Moves / Unclosed (0.2 Max) • Touch (0.5) • Fall/Deck (1.0)';
+          'Stick / Return (0.0) • 1 Move (0.1) • 2+ Moves / Not stable before turning (0.2 Max) • Touch (0.5) • Fall/Deck (1.0)';
       } else {
         obGroup.style.display = 'none';
         zoneGroup.style.display = (state.mode === 'STABILITY') ? 'none' : 'flex';
         stabGroup.style.display = (state.mode === 'PRIMARY') ? 'none' : 'block';
         document.getElementById('stab-group-title').textContent = '2. Landing Stability (Additive)';
         document.getElementById('stab-rule-hint').textContent =
-          '0.1 per move • Unclosed: 0.3 • Touch: 0.5 • Fall / Step Out: 1.0';
+          '0.1 per move • Not stable before turning: 0.3 • Touch: 0.5 • Fall / Step Out: 1.0';
       }
     }
 
@@ -928,9 +938,9 @@
           ? 'No Outbounce (0.0)'
           : (state.selectedOutbounce !== null ? state.selectedOutbounce.toFixed(1) : 'Select');
 
-        const rawSum = (obVal || 0) + (sVal || 0);
-        const total = Number(Math.min(1.0, rawSum).toFixed(1));
-        const capNote = rawSum > 1.0 ? ' (1.0 max)' : '';
+        const trpPrev = JudgleRules.trpLanding(obVal || 0, sVal || 0);
+        const total = trpPrev.total;
+        const capNote = (trpPrev.greaterFault && (obVal || 0) > 0) ? ' (greater fault only)' : '';
         const obStr = state.mode === 'STABILITY' ? 'N/A' : (obVal !== null ? obVal.toFixed(1) : '—');
         const stStr = state.mode === 'PRIMARY' ? 'N/A' : (sVal !== null ? sVal.toFixed(1) : '—');
         document.getElementById('submit-btn-label').textContent =
@@ -1013,13 +1023,13 @@
           key: 'UNCLOSED_FINISH',
           ded: unclosedDed,
           type: forcedSubType || (Math.random() < 0.5 ? 'ONE_STEP_APART' : 'TWO_STEPS_APART'),
-          label: `Unclosed Finish (${unclosedDed.toFixed(1)})`,
+          label: `Not Stable Before Turning (${unclosedDed.toFixed(1)})`,
           formula: isTRP
-            ? 'Stability: 0.2 = Unclosed Finish (Feet Left Apart on TRP = 0.2 Max)'
-            : 'Stability: 0.3 = Unclosed Finish (Feet Left Apart on DMT/TUM = 0.3)',
+            ? 'Stability: 0.2 = Turned to the Judges Before Being Totally Stable (TRP = 0.2)'
+            : 'Stability: 0.3 = Turned to the Judges Before Being Totally Stable (DMT/TUM = 0.3)',
           desc: isTRP
-            ? 'Unclosed finish (feet left apart at end regardless of step count): 0.2 max on TRP (0.3 is a distractor).'
-            : 'Unclosed finish (feet left apart at end regardless of step count): 0.3 on DMT/TUM (0.2 on TRP).'
+            ? 'Turning to the judges before being totally stable (not corrected, or not held about 3 seconds): 0.2 on TRP (0.3 is a distractor).'
+            : 'Turning to the judges before being totally stable (not corrected, or not held about 3 seconds): 0.3 on DMT/TUM (0.2 on TRP).'
         },
         TWO_STEPS_ARM_CIRCLES: {
           key: 'TWO_STEPS_ARM_CIRCLES',
@@ -1070,8 +1080,8 @@
           ded: 1.0,
           type: 'ONE_STEP_APART',
           label: 'Stepped Completely Out (1.0)',
-          formula: 'Stability: 1.0 = Stepped Completely Out of Landing Area (1.0 Stability; +0.0 Zone Change)',
-          desc: 'Stepping completely outside the 3.0m × 6.0m landing area is a 1.0 stability deduction and does NOT count as a worse zone (+0.0 zone change).'
+          formula: 'Stability: 1.0 = Stepped Completely Out of Landing Area (1.0 Stability)',
+          desc: 'Stepping completely outside the 3.0m × 6.0m landing area is a 1.0 stability deduction. A worse zone is assumed to have been crossed on the way out (+0.2 zone change) unless the gymnast started in the worst zone.'
         }
       };
     }
@@ -1164,10 +1174,11 @@
         }
         if (state.mode === 'PRIMARY') officialStability = 0.0;
 
-        const officialOutbounce = state.mode === 'STABILITY' ? 0.0 : outbounceInfo.ded;
-        const rawTrpTotal = Number((officialOutbounce + officialStability).toFixed(1));
-        const wasCappedAtOne = rawTrpTotal > 1.0;
-        const officialTotal = Number(Math.min(1.0, rawTrpTotal).toFixed(1));
+        const officialOutbounceRaw = state.mode === 'STABILITY' ? 0.0 : outbounceInfo.ded;
+        const trpResult = JudgleRules.trpLanding(officialOutbounceRaw, officialStability);
+        const officialOutbounce = trpResult.outbounce;
+        const greaterFaultApplied = trpResult.greaterFault && officialOutbounceRaw > 0;
+        const officialTotal = trpResult.total;
         const skillTouchX = Number(clamp(touchX - 0.14 * facing, 0.25, cfg.bedLengthM - 0.25).toFixed(2));
         const skillTouchY = touchY;
 
@@ -1180,8 +1191,8 @@
           : (trpEndDeckNote
               ? `<strong class="text-rose-400">${trpEndDeckNote}</strong>`
               : `<strong class="text-white">${stab.formula}.</strong> ${stab.desc}`);
-        const capPart = wasCappedAtOne
-          ? ` <strong class="text-amber-300">TRP Rule: Maximum combined deduction on TRP is strictly capped at 1.0 (${officialOutbounce.toFixed(1)} + ${officialStability.toFixed(1)} → 1.0 max).</strong>`
+        const capPart = greaterFaultApplied
+          ? ` <strong class="text-amber-300">TRP rule: a single deduction for the greater fault only. The ${officialStability.toFixed(1)} fault replaces the ${officialOutbounceRaw.toFixed(1)} outbounce deduction, so the total is ${officialTotal.toFixed(1)}.</strong>`
           : '';
         const coachPrefix = customNote ? `<span class="block text-amber-300 font-semibold mb-1">Coach Note: ${customNote}</span>` : '';
 
@@ -1266,7 +1277,7 @@
       if (stab.type === 'STEP_RETURN' || stab.type === 'STEP_BODY_RETURN' || stab.type === 'HOP_STEP_RETURN') {
         telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Peak: (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}] → Closed Together`;
       } else if (stab.type === 'ONE_STEP_APART' || stab.type === 'TWO_STEPS_APART') {
-        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Final Split: Lead (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) / Trail (${peakTrailX.toFixed(2)}m) [${zoneEval.steppedCompletelyOut ? 'Completely Out' : 'Unclosed'}]`;
+        telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Final Split: Lead (${peakLeadX.toFixed(2)}m, ${peakLeadY.toFixed(2)}m) / Trail (${peakTrailX.toFixed(2)}m) [${zoneEval.steppedCompletelyOut ? 'Completely Out' : 'Not Stable'}]`;
       } else if (isBackFall) {
         telemetryStr = `${facingNote} • Touchdown: (${touchX.toFixed(2)}m, ${touchY.toFixed(2)}m) [${zoneEval.initZone.shortLabel}] → Back Contact: (${backX.toFixed(2)}m, ${backY.toFixed(2)}m) [${zoneEval.worstSubsequent.shortLabel}]`;
       } else if (isHandTouch) {
@@ -1283,7 +1294,9 @@
       } else {
         const clipPrefix = zoneEval.initZone.boundaryNote ? `${zoneEval.initZone.boundaryNote} ` : '';
         if (zoneEval.steppedCompletelyOut) {
-          zoneRuleNote = `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}). Stepping completely outside the landing area does NOT count as a zone (+0.0 zone change); it is penalized as 1.0 in Stability.`;
+          zoneRuleNote = zoneEval.movedToWorseZone
+            ? `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}). Stepping completely out of the landing area means a worse zone was crossed on the way (+0.2 Moved to Worse Zone), plus 1.0 in Stability for leaving the landing area.`
+            : `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}). Already in the worst zone, so there is no zone change (+0.0); leaving the landing area is 1.0 in Stability.`;
         } else if (zoneEval.movedToWorseZone) {
           zoneRuleNote = `${clipPrefix}Initial ${zoneEval.initZone.name} (${zoneEval.initZone.ded.toFixed(1)}), then stepped/moved into worse ${zoneEval.worstSubsequent.name} (+0.2 Moved to Worse Zone).`;
         } else if (zoneEval.movedToBetterZone) {
@@ -1611,7 +1624,9 @@
       }
 
       const steppedCompletelyOut = !initZone.isCompletelyOut && worstSubsequent.isCompletelyOut;
-      const movedToWorseZone = !worstSubsequent.isCompletelyOut && (worstSubsequent.rank > initZone.rank);
+      // Stepping completely out implies a worse zone was crossed, unless the gymnast started in the worst zone
+      const movedToWorseZone = (!worstSubsequent.isCompletelyOut && (worstSubsequent.rank > initZone.rank)) ||
+        (steppedCompletelyOut && JudgleRules.exitZoneChange(initZone.rank, 3) > 0);
       const movedToBetterZone = !worstSubsequent.isCompletelyOut && (worstSubsequent.rank < initZone.rank) &&
         (Math.hypot(peakLeadX - touchX, peakLeadY - touchY) > 0.04 || Math.hypot(peakTrailX - touchX, peakTrailY - touchY) > 0.04);
 
@@ -1834,11 +1849,12 @@
         const noOb = !state.scenario.hasOutbounce;
         const uOb = needsPrimary ? (noOb ? 0.0 : state.selectedOutbounce) : 0.0;
         const uStab = needsStab ? state.selectedStability : 0.0;
-        uTot = Number(Math.min(1.0, uOb + uStab).toFixed(1));
+        const uTrp = JudgleRules.trpLanding(uOb, uStab);
+        uTot = uTrp.total;
 
         const oOb = state.scenario.officialOutbounce;
         const oStab = state.scenario.officialStability;
-        isExact = (uOb === oOb) && (uStab === oStab);
+        isExact = (uTrp.outbounce === oOb) && (uStab === oStab);
 
         document.getElementById('res-row1-lbl-u').textContent = 'Outbounce:';
         document.getElementById('res-row1-lbl-o').textContent = 'Outbounce:';
@@ -1852,7 +1868,7 @@
 
         uObEl.className = !needsPrimary
           ? 'font-mono font-bold text-slate-500'
-          : (uOb === oOb ? 'font-mono font-bold px-1.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60' : 'font-mono font-bold px-1.5 rounded bg-rose-950/80 text-rose-300 border border-rose-700/60');
+          : (uTrp.outbounce === oOb ? 'font-mono font-bold px-1.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60' : 'font-mono font-bold px-1.5 rounded bg-rose-950/80 text-rose-300 border border-rose-700/60');
         uStabEl.className = !needsStab
           ? 'font-mono font-bold text-slate-500'
           : (uStab === oStab ? 'font-mono font-bold px-1.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60' : 'font-mono font-bold px-1.5 rounded bg-rose-950/80 text-rose-300 border border-rose-700/60');

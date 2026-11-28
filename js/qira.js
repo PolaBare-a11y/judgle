@@ -68,39 +68,25 @@
         { name: "10: Triffus (T)", flips: 3, pose: "tuck" }
       ];
 
+      /* HD zones and scale come from JudgleRules (scale in force from 1 Nov 2026): 0.0 / 0.1 / 0.3 / 0.5 */
       function calcHdDed(x, y) {
-        const nx = Math.abs(x) / 214;
-        const ny = Math.abs(y) / 107;
-        const d = Math.max(nx, ny * 0.92);
-        if (d <= 0.32) return 0.0;
-        if (d <= 0.56) return 0.1;
-        if (d <= 0.78) return 0.3;
-        return 0.5;
+        return JudgleRules.hdDeduction(x, y, 214, 107);
       }
 
+      /* Pick a landing inside the cell that carries the target deduction (clear of the zone lines) */
       function generateLandingInZone(targetDed, tof) {
-        const signX = Math.random() < 0.5 ? -1 : 1;
-        const signY = Math.random() < 0.5 ? -1 : 1;
-
-        const bands = {
-          0.0: [0.02, 0.30],
-          0.1: [0.34, 0.54],
-          0.3: [0.58, 0.76],
-          0.5: [0.80, 0.96]
-        };
-        const [minR, maxR] = bands[targetDed] || [0.05, 0.90];
-        const primaryR = minR + Math.random() * (maxR - minR);
-        const secondaryR = Math.random() * maxR;
-
-        let x, y;
-        if (Math.random() < 0.55) {
-          x = Math.round(signX * primaryR * 214);
-          y = Math.round(signY * secondaryR * 107);
-        } else {
-          x = Math.round(signX * secondaryR * 214);
-          y = Math.round(signY * primaryR * 107);
+        const sx = Math.random() < 0.5 ? -1 : 1;
+        const sy = Math.random() < 0.5 ? -1 : 1;
+        const r = (lo, hi) => lo + Math.random() * (hi - lo);
+        let u, v;
+        if (targetDed === 0.1)      { u = r(0.33, 0.45); v = r(0, 0.40); }          // inner side boxes
+        else if (targetDed === 0.3) {                                               // top/bottom middle or side middles
+          if (Math.random() < 0.5)  { u = r(0, 0.45);    v = r(0.58, 0.95); }
+          else                      { u = r(0.58, 0.95); v = r(0, 0.40); }
         }
-        return { x, y, tof };
+        else if (targetDed === 0.5) { u = r(0.58, 0.95); v = r(0.58, 0.95); }       // corners
+        else                        { u = r(0, 0.22);    v = r(0, 0.40); }          // centre
+        return { x: Math.round(sx * u * 214), y: Math.round(sy * v * 107), tof };
       }
 
       let routineZonePool = [];
@@ -158,14 +144,14 @@
                 routineNum: 1,
                 athlete: { last: "SCHMIDT", first: "Dylan", order: 2 },
                 warmups: 5,
-                zones: [0.0, 0.1, 0.0, 0.2, 0.1, 0.1, 0.0, 0.2, 0.1, 0.1],
+                zones: [0.0, 0.1, 0.0, 0.3, 0.1, 0.1, 0.0, 0.3, 0.1, 0.1],
                 breakAfter: 11.5
               },
               {
                 routineNum: 2,
                 athlete: { last: "PAGE", first: "Bryony", order: 4 },
                 warmups: 6,
-                zones: [0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 0.1, 0.2, 0.0, 0.1],
+                zones: [0.0, 0.0, 0.1, 0.1, 0.3, 0.0, 0.1, 0.3, 0.0, 0.1],
                 breakAfter: 13.0
               },
               {
@@ -801,7 +787,7 @@
 
       function appendWarmupJump() {
         const idx = warmupSpikesCount;
-        const zoneChoices = [0.0, 0.1, 0.2];
+        const zoneChoices = [0.0, 0.1, 0.3];
         const z = zoneChoices[Math.floor(Math.random() * zoneChoices.length)];
         const tof = +(1.18 + Math.min(0.46, idx * 0.06)).toFixed(3);
         const amp = Math.min(0.56, 0.18 + idx * 0.055);
@@ -1178,6 +1164,9 @@
         ctx.moveTo(x2, 0); ctx.lineTo(x2, h);
         ctx.moveTo(0, y1); ctx.lineTo(w, y1);
         ctx.moveTo(0, y2); ctx.lineTo(w, y2);
+        // inner side boxes (0.1) either side of the centre zone
+        ctx.moveTo(w * 0.36, y1); ctx.lineTo(w * 0.36, y2);
+        ctx.moveTo(w * 0.64, y1); ctx.lineTo(w * 0.64, y2);
         ctx.stroke();
 
         const cx = w / 2;
