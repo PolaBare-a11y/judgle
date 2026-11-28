@@ -126,8 +126,9 @@ window.JUDGLE_HELP = {
     ],
     tips: [
       'An exact result needs the initial zone, the zone change and the stability all to match.',
-      'Stepping completely off the landing area is a 1.0 stability deduction, not a zone change.',
+      'Stepping completely off the landing area is 1.0 in stability. If you started in a better zone, a worse zone was crossed on the way out, so the +0.2 zone change applies too.',
       'If a foot touches a worse zone line, the worse zone counts.',
+      'On TRP only the greater fault counts: a hand touch (0.5) or a fall (1.0) replaces the outbounce and movement deductions.',
       'Explanations follow the trainer\'s current rule set. Check them against the latest Code of Points.'
     ]
   },
@@ -155,6 +156,7 @@ window.JUDGLE_HELP = {
     ],
     tips: [
       'The previous confirmed HD and time-of-flight show at the top of READY.',
+      'HD uses the current scale: 0.0 centre, 0.1 inner side boxes, 0.3 edges, 0.5 corners.',
       'On a phone, use the on-screen keys and the red button.',
       'This is a practice simulator and not the real software. Follow the Eurotramp manual for competitions.'
     ]
